@@ -25,9 +25,13 @@ import SelectionBox from "./others/SelectionBox.js" //框选
 import {
 	ListenEvent
 } from "./event/index.js"
-
-
-
+//渲染相关
+import {
+	Render
+} from "./render/render.js";
+import {
+	RenderSAO
+} from "./render/render_sao.js"
 import {
 	ViewCube
 } from "./core/viewcube.js"
@@ -49,6 +53,9 @@ import {
 import {
 	heightMeasure
 } from "./extensions/measures/heightMeasure.js"
+import {
+	ModelSelection
+} from "./core/ModelSelection.js"
 
 
 
@@ -73,7 +80,10 @@ import {
 // BIM引擎封装
 export function BIMEngine(domid, options, GLTFLoader) {
 	var _bimEngine = new Object();
+	_bimEngine.render = new Render(_bimEngine);
+	_bimEngine.RenderSAO = new RenderSAO(_bimEngine);
 	_bimEngine.DisPlayModel = new disPlayModel(_bimEngine);
+	_bimEngine.ModelSelection = new ModelSelection(_bimEngine);
 	_bimEngine.MinMap = new MinMap(_bimEngine);
 	_bimEngine.scene = null;
 	_bimEngine.GLTFLoader = GLTFLoader;
