@@ -1,0 +1,31 @@
+/* 原点 */
+.OriginPoint {
+	width: 10px;
+	height: 10px;
+	position: absolute;
+	z-index: 1000;
+	background: #F89B00;
+	border-radius: 50%;
+	text-align: center;
+	transform: translateX(-50%) translateY(-50%);
+}
+
+/* 可视范围 */
+.OriginDirection {
+	background: linear-gradient(-45deg, #FFFFFF 20%, #F89B00 100%);
+	width: 30px;
+	border-radius: 0 0 100% 0;
+	height: 30px;
+	position: absolute;
+	text-align: center;
+	transform-origin: left top;
+}
+
+.miniMap {
+	/* z-index: 10; */
+	position: absolute;
+	bottom: 0px;
+	left: 10px;
+	bottom: 10px;
+	box-shadow: 0px 0px 4px 0px black;
+}

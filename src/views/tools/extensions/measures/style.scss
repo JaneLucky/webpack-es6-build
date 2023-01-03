@@ -1,0 +1,175 @@
+#MeasurePoint{//测量坐标点的样式
+	position: absolute;
+	top: 0;
+	left: 0;
+	pointer-events: auto;
+	.PointItem{
+		transform: translate(-50%,-50%);
+		position: absolute;
+		z-index: 2;
+		.ItemContain{
+			position: relative;
+			width: 10px;
+			height: 10px;
+			box-sizing: border-box;
+			background-color: #009bff;
+			border-style: solid;
+			border-width: 2px;
+			border-color: #fff;
+			border-radius: 100%;
+			.PointXYZ{
+				position: absolute;
+				top: 10px;
+				left: 50%;
+				transform: translate(-50%,0);
+				width: 100px;
+				.Point{
+					display: flex;
+					height: 26px;
+					line-height: 26px;
+					overflow: hidden;
+					width: 100%;
+					box-shadow: 0 2px 5px 0 #182a3d;
+					box-sizing: border-box;
+					border-radius: 10px;
+					.Span{
+						color: #ffffff;
+						padding: 0 5px;
+						border-radius: 10px 0 0 10px;
+					}
+					.Text{
+						padding: 0 8px;
+						border-radius: 0 10px 10px 0;
+						background: #ffffff;
+						flex: 1;
+					}
+				}
+				.PointX{
+					.Span{
+						background: #ec4545;
+					}
+					.Text{
+						color: #ec4545;
+					}
+				}
+				.PointY{
+					.Span{
+						background: #45c345;
+					}
+					.Text{
+						color: #45c345;
+					}
+				}
+				.PointZ{
+					.Span{
+						background: #5757da;
+					}
+					.Text{
+						color: #5757da;
+					}
+				}
+			}
+		}
+	}
+}
+
+#MeasureLine{//测量距离的样式
+	position: absolute;
+	top: 0;
+	left: 0;
+	pointer-events: auto;
+	.LineItem {
+		position: absolute;
+		z-index: 2;
+		.dom_start,.dom_end,.dom_line,.dom_text {
+			position: absolute;
+			pointer-events: none;
+		}
+		
+		.dom_line {
+			background: dodgerblue;
+			height: 4px;
+		}
+		.dom_text
+		 {
+			color: white;
+			background: dodgerblue;
+			height: 20px;
+			width: 100px;
+			border-radius: 8px;
+			margin-left: -50px;
+			margin-top: -10px;
+			padding: 3px;
+			padding-top: 6px;
+			text-align: center;
+			box-shadow: 0px 1px 3px 1px rgb(0 0 0 / 25%);
+			z-index: 3;
+			cursor:pointer;
+		}
+		.dom_text :hover{
+			box-shadow: 1px 2px 6px 2px rgb(0 0 0 / 80%);
+		}
+		 
+		.BoxControllerUI {
+			display: inline-block;
+			position: absolute;
+			width: 7px;
+			height: 7px;
+			left: -5px;
+			top: -5px;
+			background-color: #009bff;
+			border-style: solid;
+			border-width: 2px;
+			border-color: #fff;
+			border-radius: 100px;
+			box-shadow: 0 2px 5px 0 #182a3d;
+			z-index: 2;
+			margin: -4.5px;
+		}
+	}
+	.LineFinal{
+		.dom_start,.dom_end,.dom_line,.dom_text {
+			pointer-events: auto !important;
+		}
+	}
+}
+
+#MeasureChuiDianPink{
+	position: absolute;
+	width: 10px;
+	height: 10px;
+	box-sizing: border-box;
+	background-color: #ffff00;
+	border-style: solid;
+	border-width: 2px;
+	border-color: #fff;
+	border-radius: 100%;
+	display: none;
+}
+
+
+.MeasurePointPink{
+	position: absolute;
+	box-sizing: border-box;
+	z-index: 2;
+	width: 20px;
+	height: 20px;
+	border-width: 3px;
+	border-style: solid;
+	border-color: rgb(0, 255, 0);
+	display: none;
+	pointer-events: none;
+	transform: translate(-50%,-50%);
+	transform-origin: center center;
+	background: rgba($color: rgb(0, 255, 0), $alpha: 0.2)
+}
+
+
+.HeightMeasuePanel{
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	background: rgb(0 0 0 / 25%);
+	padding: 10px;
+	color: #ffffff;
+}

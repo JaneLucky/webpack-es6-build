@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试打包出来的文件是否可用</title>
+  <style>
+    html,body,#threejs-sence-container{
+      width:100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+    *{
+      padding: 0;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- 注意点：这个文件只能测试挂在window上的对象，不能测试import方式，如果需要测试import的方式，就只能将包通过publish-library-es6-es5推送到npm上，然后再测试了 -->
+  <script src="./dist/index.js"></script>
+  <div id="threejs-sence-container"></div>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/public/build/three.module.js"
+      }
+    }
+  </script>
+  <script type="module">
+    import { GLTFLoader } from '/public/three/loaders/GLTFLoader.js';
+    import { DRACOLoader } from '/public/three/loaders/DRACOLoader.js';
+
+
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath( '/public/draco/' );
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader( dracoLoader );
+    var bimEngine = new BIMEngine("threejs-sence-container", null,loader);
+    console.log(bimEngine);
+
+
+
+    bimEngine.init();
+    bimEngine.start("static/glb/13", "glbjson", {}, res => {
+      //显示边线
+      // bimEngine.render.DisplayEdge(true); 
+    });
+    console.log(window.bimEngine)
+	
+  </script>
+</body>
+</html>

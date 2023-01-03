@@ -1,0 +1,108 @@
+.homeViewWrapper {
+	display: block;
+	outline: none;
+	margin: 18px 0 0 -20px;
+	opacity: .7;
+	width: 24px;
+	height: 24px;
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAACxMAAAsTAQCanBgAAARFSURBVEhL5ZZfbFN1FMdvTPQFA0bjk6++gGZ2oX/W/127tawrc4L8kW2sgw3LWGHZVrPJwgKYmJg4RKsSFxMCxgWoyJuard0MxPiiCAnrbrZ07fqPbv3f21UyZjnfi7cp5Ebjsw8nOTvn+/2c+/tzb8fUm23/GqYdLYxCY9piaGwephhRaIwvoCamfTpEi9VhtNgYgjLb6/Rme3fvbFdP7+z2Op0ZNfTEPNUhWhTCaNnJqA0WpkaqanP2u+LJZDKXonD2D8VRQw8aMa8QokUEjJp6C/OGTNM3Mnr6fj6fi6aSq8tJCuSooacmzT8NES0aKZS6BkauMbrcX36VLJfL4WAwGOvoOjLTbj8ygxw19Og8XNDCI8YSLdYqtC/rTdaxq57rgIf+uHM3u2tfu7dGqt6EQI4aetc83yehhUeM9cQfJlqqRK7d2tSy+9aU15chQMDrmynssO3+kQ52i1xtZBCUb0aNehw006SFRyLTbgWjmllJ9A1W7Ldif1vXvfl5Fk++NHnlakmlN1+SqgzPSpUGSedhhw9Bea2Mauh9Sxpo4YEXDLAqA3Dd+MOUqpsdzv6FlZWVxMb6+v3x824/gftkqnr0jD0OZzQYDOVDoVC+56gzhhp6NKhv/BO3Hx54wQALTLAZhbbhlTptg2107GygUMgnihwXGz45FqQ9ba3TmuiKqluPHR8MBwKBBMdxc9SfW1oKJFCj3lvQQAsPvGCMjn0QABNsprl17+TJU2eitMxILBZLdL/rZCVyjYKWz9TKtQffP3VmJR6Px7KZzHwkEmERGcpRQw8aaOGBFwywwASboeX+MnnlWjkcDnNv7+u4LZFpapS6RnoqnePDjz5OZbOZZYL7AY5Go3wgRw09aKCFB15i/L5MLDDBZva22V0nBt77wd7t+JVu0GtKfSNDhzh47rw7lctlI+l0+gl49RD0oDn3qTtF5zUELzG2gQUm2IzO1PQSLfFVlcH8IgVDItfFS9+kilxhmQ6N35an4UKgBw208NAqXGDwLGKCXblOKppuamoZ8Xx3I/2gVFoiI//ktKfs2lqR/bNUYkulNT6Qo4be30P88Hiu30iDAVblmgoJXa1NR50D/r82HsYTiQT/5ADQ2dzzzf4cmpr2Ppj2zvCBHDX0hCHwwAsGWGIDnj92YvA2PWFI2AL6erILCwtR+mr6tknkfXRj+ECOGnrQCHp4wQBLdEDv8YHfikWuMmB1dZVdXFwsWt/cM6GmvRW0yFFDDxpBDy8Y/3VAjmCXRQZcRu9/NOD1WuXm/qHhOXrNgxsP11kE5WwhnyvQK++pvnrIUUMPmip9EAywBG3FRB+n5/Yc6Jye+Pri+mefX8ggvrgwkaWvarnR2jpOL01Fixw19KAR9PCCAZagrTJZn7HYdp1ts/fceqfj0E+IAwcPT+1v77pJv7md+PQK2sf/UezsRA8aQQ8vGGA91tqYR+x+Tqk1N9vIAAAAAElFTkSuQmCC);
+	cursor: pointer;
+	pointer-events: auto;
+	position: absolute;
+}
+
+
+
+/* 窗口 */
+.FormControl {
+	position: absolute;
+	bottom: 10px; 
+	color: azure;
+	border-radius: 3px;
+}
+
+.FormHeard {
+	padding: 6px;
+	width: 100%;
+	float: left;
+	background: rgb(0, 0, 0, 0.6);
+	border-bottom: 0.0625rem solid rgb(255, 255, 255, 0.5);
+}
+
+.FormTitle {
+	float: left;
+	margin-top: 2px;
+}
+
+.FormClose {
+	float: right;
+	font-size: 25px;
+	cursor: pointer;
+}
+
+.FormMin {
+	float: right;
+	margin-right: 10px;
+	margin-top: -2px;
+	font-size: 25px;
+	cursor: pointer;
+}
+
+.FormMax {
+	float: right;
+	margin-right: 10px;
+	margin-top: -3px;
+	font-size: 25px;
+	cursor: pointer;
+}
+
+.FormMain {
+	background: rgb(0, 0, 0, 0.5);
+	margin-top: 42px;
+	width: 100%;
+	padding: 6px;
+	height: 200px;
+}
+
+/* 窗口 */
+/* 开关 */
+input[type='checkbox'].switch {
+	outline: none;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	position: relative;
+	width: 40px;
+	height: 20px;
+	background: #ccc;
+	border-radius: 10px;
+	transition: border-color .3s, background-color .3s;
+}
+
+input[type='checkbox'].switch::after {
+	content: '';
+	display: inline-block;
+	width: 1rem;
+	height: 1rem;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: 0, 0, 2px, #999;
+	transition: .4s;
+	top: 2px;
+	position: absolute;
+	left: 2px;
+}
+
+input[type='checkbox'].switch:checked {
+	background: rgb(19, 206, 102);
+}
+
+/* 当input[type=checkbox]被选中时：伪元素显示下面样式 位置发生变化 */
+input[type='checkbox'].switch:checked::after {
+	content: '';
+	position: absolute;
+	left: 55%;
+	top: 2px;
+}
+
+/* 开关 */
