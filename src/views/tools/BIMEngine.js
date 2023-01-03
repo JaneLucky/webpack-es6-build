@@ -21,6 +21,7 @@ import {
 import {
 	CreatorPipe
 } from "./modelCreator/MEPModel.js" //模型管道、桥梁等
+import SelectionBox from "./others/SelectionBox.js" //框选
 import {
 	ListenEvent
 } from "./event/index.js"
@@ -162,10 +163,6 @@ export function BIMEngine(domid, options, GLTFLoader) {
 			}
 		})
 
-		// const geometry = new THREE.BoxGeometry( 100, 100, 100 );
-		// const material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-		// const cube = new THREE.Mesh( geometry, material );
-		// scene.add( cube );
     setTimeout(()=>{
       //漫游
       // InitFirstPersonControls(window.bimEngine.scene, res => {
@@ -175,6 +172,8 @@ export function BIMEngine(domid, options, GLTFLoader) {
       // window.bimEngine.MinMap.show("minimap");
 			//测量
 			// window.bimEngine.Measures.SimpleMeasure.Active()
+			// 框选
+			window.bimEngine && window.bimEngine.openSelectionBox()
     },3000)
 	}
 	//加载模型
@@ -236,8 +235,8 @@ export function BIMEngine(domid, options, GLTFLoader) {
 	//开启框选
 	_bimEngine.openSelectionBox = function() {
 		//closeSelectionBox：关闭框选
-		// _bimEngine.closeSelectionBox = SelectionBox(_bimEngine.scene.camera, _bimEngine.scene, _bimEngine.scene
-		// 	.renderer, _bimEngine.scene.controls);
+		_bimEngine.closeSelectionBox = SelectionBox(_bimEngine.scene.camera, _bimEngine.scene, _bimEngine.scene
+			.renderer, _bimEngine.scene.controls);
 	}
 
 	//获取当前所有的模型
