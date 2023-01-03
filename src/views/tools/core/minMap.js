@@ -11,8 +11,7 @@ export function MinMap(bimEngine) {
 	_minMap.visible = false;
 	const HEIGHT = (window.innerHeight) * window.devicePixelRatio;
 	//更新位置
-	_minMap.renderUpdata = function() {
-
+	_minMap.renderUpdata = function() { 
 		if (_minMap.camera == null) return;
 		if (_minMap.visible == false) return;
 		//更新相机的位置
@@ -42,16 +41,17 @@ export function MinMap(bimEngine) {
 		// console.log(bimEngine.scene.camera.rotation.y)
 	}
 	//显示
-	_minMap.show = function() {
+	_minMap.show = function() { 
 		initCamera();
 		_minMap.visible = true;
 		document.getElementById("minimap").addEventListener("click", function(res) {
 			let sceneCamera = bimEngine.scene.camera;
+			console.log(res);
 			//res.offsetX  res.offsetY
-			let point = get3DVec({
+			let point = getRayPoint({
 				x: res.offsetX,
 				y: res.offsetY
-			}); 
+			});
 			sceneCamera.position.set(point.x, sceneCamera.position.y, point.z);
 		})
 	}
@@ -92,16 +92,16 @@ export function MinMap(bimEngine) {
 			return;
 		}
 		//初始化相机，并跳转过去
+		
 		if (dom != null) {
 			var width = dom.offsetWidth; //窗口宽度
 			var height = dom.offsetHeight; //窗口高度
 			var k = width / height; //窗口宽高比 
 			var s = 100; //三维场景显示范围控制系数，系数越大，显示的范围越大
-			var camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 0.01, 1000000);
+			var camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 0.01, 3000);
 			_minMap.camera = camera;
 			camera.name = "miniMap";
-			camera.viewport = new THREE.Vector4(dom.getBoundingClientRect().x, dom.getBoundingClientRect().y, dom
-				.offsetWidth, dom.offsetHeight);
+			camera.viewport = new THREE.Vector4(dom.getBoundingClientRect().x, dom.getBoundingClientRect().y, 200, 200);
 
 			//跳转至当先相机位置 
 			let controls = new THREE.OrbitControls(camera, dom);
@@ -126,11 +126,31 @@ export function MinMap(bimEngine) {
 		const x = (mouseX / _minMap.camera.viewport.z) * 2 - 1;
 		const y = -(mouseY / _minMap.camera.viewport.w) * 2 + 1;
 		const stdVector = new THREE.Vector3(x, y, 0.5);
+		 
 		const worldVector = stdVector.unproject(_minMap.camera);
+		// const worldVector = stdVector.unproject(bimEngine.scene.camera);  
 		return worldVector
 	}
 
+	function getRayPoint(pos) {
+		const mouseX = pos.x;
+		const mouseY = pos.y;
+		let rayCaster = new THREE.Raycaster();
+		let mouse = new THREE.Vector2();
 
+		mouse.x = (mouseX / _minMap.camera.viewport.z) * 2 - 1;
+		mouse.y = -(mouseY / _minMap.camera.viewport.w) * 2 + 1; //这里为什么是-号，没有就无法点中
+
+		//通过鼠标点击的位置(二维坐标)和当前相机的矩阵计算出射线位置
+		rayCaster.setFromCamera(mouse, _minMap.camera);
+		//获取与射线相交的对象数组， 其中的元素按照距离排序，越近的越靠前。
+		//+true，是对其后代进行查找，这个在这里必须加，因为模型是由很多部分组成的，后代非常多。
+		let intersects = (rayCaster.intersectObjects(bimEngine.GetAllVisibilityModel(), true));
+		if (intersects.length > 0) {
+			 
+			return intersects[0].point;
+		}
+	}
 
 
 
