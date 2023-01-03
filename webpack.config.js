@@ -58,7 +58,8 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: '[name].js', //打包之后生成的文件名，可以随意写。
+    // filename: '[name].js', //打包之后生成的文件名，可以随意写。
+    filename: 'BIMEngine.js', //打包之后生成的文件名，可以随意写。
     library: 'BIMEngine', // 指定类库名,主要用于直接引用的方式(比如使用script 标签)
     libraryExport: "default", // 对外暴露default属性，就可以直接调用default里的属性
     globalObject: 'this', // 定义全局变量,兼容node和浏览器运行，避免出现"window is not defined"的情况

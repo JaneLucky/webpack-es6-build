@@ -17,36 +17,26 @@
   </style>
 </head>
 <body>
-  <!-- 注意点：这个文件只能测试挂在window上的对象，不能测试import方式，如果需要测试import的方式，就只能将包通过publish-library-es6-es5推送到npm上，然后再测试了 -->
-  <script src="./dist/index.js"></script>
+  <!-- 引入封装好的引擎BIMEnginejs -->
+  <script src="./dist/BIMEngine.js"></script>
   <div id="threejs-sence-container"></div>
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "/public/build/three.module.js"
-      }
-    }
-  </script>
   <script type="module">
-    import { GLTFLoader } from '/public/three/loaders/GLTFLoader.js';
-    import { DRACOLoader } from '/public/three/loaders/DRACOLoader.js';
+    import { GLTFLoader } from '/public/three/loaders/GLTFLoader.js';//加载GLTF的loader
+    import { DRACOLoader } from '/public/three/loaders/DRACOLoader.js'; //解压draco的js
 
+    const dracoLoader = new DRACOLoader();//创建解压对象
+    dracoLoader.setDecoderPath( '/public/draco/' );//设置解压文件
+    const loader = new GLTFLoader();//创建加载GLTF的load对象
+    loader.setDRACOLoader( dracoLoader );//设置加载前解压
 
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath( '/public/draco/' );
-    const loader = new GLTFLoader();
-    loader.setDRACOLoader( dracoLoader );
-    var bimEngine = new BIMEngine("threejs-sence-container", null,loader);
-    console.log(bimEngine);
-
-
-
-    bimEngine.init();
+    
+    let bimEngine = new BIMEngine("threejs-sence-container", null,loader);//创建BIM引擎对象
+    bimEngine.init();//初始化场景
+    //加载模型
     bimEngine.start("static/glb/13", "glbjson", {}, res => {
       //显示边线
       // bimEngine.render.DisplayEdge(true); 
     });
-    console.log(window.bimEngine)
 	
   </script>
 </body>
