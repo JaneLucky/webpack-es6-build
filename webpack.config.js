@@ -1,5 +1,6 @@
 let path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
   mode: "production", // 告诉webpack使用production模式的内置优化,
@@ -65,7 +66,8 @@ module.exports = {
     publicPath:"./dist/"
   },
   plugins: [
-    new CleanWebpackPlugin()
+    new CleanWebpackPlugin(),
+    new UglifyJsPlugin()
   ],
   resolve: {
     alias: {

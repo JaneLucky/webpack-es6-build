@@ -57,14 +57,6 @@ import {
 	ModelSelection
 } from "./core/ModelSelection.js"
 
-
-
-
-import {
-  InitFirstPersonControls
-} from "./initialize/InitControls.js";
-
-
 import {
 	FirstPersonRoaming
 } from "./core/FirstPersonRoaming.js"
@@ -77,6 +69,10 @@ import {
 	MinMap
 } from "./core/minMap.js"
 
+
+import {
+  InitFirstPersonControls
+} from "./initialize/InitControls.js";
 // BIM引擎封装
 export function BIMEngine(domid, options, GLTFLoader) {
 	var _bimEngine = new Object();
@@ -123,6 +119,8 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		var viewcube = new ViewCube(scene, domid);
 		_bimEngine.ViewCube = viewcube;
 		viewcube.init();
+
+
 		//监听相机
 		var myEvent = new CustomEvent('bimengine:camerachange', {
 			detail: ""
@@ -148,9 +146,9 @@ export function BIMEngine(domid, options, GLTFLoader) {
 
 			//cube场景 
 			viewcube.renderScene();
-			// //阴影
-			// _bimEngine.RenderSAO.render();
-			//
+			//阴影
+			_bimEngine.RenderSAO.render();
+			//小地图
 			_bimEngine.MinMap.renderUpdata();
 		}
 		render();
@@ -210,7 +208,6 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		}
 
 		CreatorPipe(scene, url)
-
 
 	}
 
