@@ -2,32 +2,48 @@ const THREE = require('three')
 import '@/three/interactive/SelectionBox.js';
 import '@/three/interactive/SelectionHelper.js';
 import "../style/selectBox.css"
-
-export default function(camera, scene, renderer, controls) {
-	controls.enabled = false
-	let rootmodels = scene.children.filter(o => o.name == "rootModel" && o.type == "Mesh");
-	for (let rootmodel of rootmodels) {
-		for (let model of rootmodel.ElementInfos) {
-			//屏幕坐标
-			let screenCenter = model.center.clone()
-			let vector = screenCenter.project(camera);
-			let halfWidth = scene.renderer.domElement.clientWidth / 2,
-				halfHeight = scene.renderer.domElement.clientHeight / 2;
-			let screenPosition = {
-				x: Math.round(vector.x * halfWidth + halfWidth),
-				y: Math.round(-vector.y * halfHeight + halfHeight)
+export function selectBox(bimengine) {
+	var _selectBox = new Object();
+	var scene = bimengine.scene;
+	var camera = bimengine.scene.camera;
+	var renderer = bimengine.scene.renderer;
+	var controls = bimengine.scene.controls;
+	let helper, selectionBox, rootmodels = [];
+	//激活
+	_selectBox.Active = function() {
+		rootmodels = scene.children.filter(o => o.name == "rootModel" && o.type == "Mesh");
+		for (let rootmodel of rootmodels) {
+			for (let model of rootmodel.ElementInfos) {
+				//屏幕坐标
+				let screenCenter = model.center.clone()
+				let vector = screenCenter.project(camera);
+				let halfWidth = scene.renderer.domElement.clientWidth / 2,
+					halfHeight = scene.renderer.domElement.clientHeight / 2;
+				let screenPosition = {
+					x: Math.round(vector.x * halfWidth + halfWidth),
+					y: Math.round(-vector.y * halfHeight + halfHeight)
+				}
+				model.screenPosition = screenPosition
 			}
-			model.screenPosition = screenPosition
 		}
-	}
+		helper = new THREE.SelectionHelper(renderer, 'selectBox');
+		selectionBox = resetSelectionBox()
+		controls.enabled = false
+		window.addEventListener('pointerdown', onPointerDown, false);
 	
-	let helper = new THREE.SelectionHelper(renderer, 'selectBox');
-	window.addEventListener('pointerdown', onPointerDown, false);
+		window.addEventListener('pointermove', onPointerMove, false);
+	
+		window.addEventListener('pointerup', onPointerUp, false);
+	}
+	_selectBox.DisActive = function() {
+		controls.enabled = true
+		window.removeEventListener('pointerdown', onPointerDown);
+		window.removeEventListener('pointermove', onPointerMove);
+		window.removeEventListener('pointerup', onPointerUp);
+		helper && (helper.element = null, helper = null)
+	}
 
-	window.addEventListener('pointermove', onPointerMove, false);
 
-	window.addEventListener('pointerup', onPointerUp, false);
-	let selectionBox = resetSelectionBox()
 
 	function onPointerDown(event) {
 		selectionBox = resetSelectionBox()
@@ -189,13 +205,5 @@ export default function(camera, scene, renderer, controls) {
 			}
 		}
 	}
-
-	let dispose = function() {
-		controls.enabled = true
-		window.removeEventListener('pointerdown', onPointerDown);
-		window.removeEventListener('pointermove', onPointerMove);
-		window.removeEventListener('pointerup', onPointerUp);
-		helper && (helper.element = null, helper = null)
-	};
-	return dispose
+	return _selectBox
 }

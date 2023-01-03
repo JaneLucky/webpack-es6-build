@@ -21,7 +21,9 @@ import {
 import {
 	CreatorPipe
 } from "./modelCreator/MEPModel.js" //模型管道、桥梁等
-import SelectionBox from "./others/SelectionBox.js" //框选
+import {
+	selectBox
+} from "./others/SelectionBox.js" //框选
 import {
 	ListenEvent
 } from "./event/index.js"
@@ -163,6 +165,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		_bimEngine.Measures.PointMeasure = new pointMeasure(_bimEngine);
 		_bimEngine.Measures.HeightMeasure = new heightMeasure(_bimEngine);
 		_bimEngine.Clipping = new Clipping(scene) //剖切对象
+		_bimEngine.SelectionBox = new selectBox(_bimEngine); //框选对象
 		//加载TransformControls控制器-用于模型剖切
 		setTransformControls(scene, camera, renderer);
 		FirstPersonRoaming(_bimEngine);
@@ -243,12 +246,6 @@ export function BIMEngine(domid, options, GLTFLoader) {
 	//运行外部插件
 	_bimEngine.getExtension = function() {
 
-	}
-	//开启框选
-	_bimEngine.openSelectionBox = function() {
-		//closeSelectionBox：关闭框选
-		_bimEngine.closeSelectionBox = SelectionBox(_bimEngine.scene.camera, _bimEngine.scene, _bimEngine.scene
-			.renderer, _bimEngine.scene.controls);
 	}
 
 	//获取当前所有的模型
