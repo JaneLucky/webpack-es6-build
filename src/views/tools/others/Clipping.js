@@ -607,3 +607,21 @@ export function ClippingMultiSide(scene, status) {
 		return list
 	}
 }
+
+// 剖切对象
+export function Clipping(scene) {
+	var _clippingObject = new Object();
+  _clippingObject.SingleSideOpen = function(side) {
+    ClippingSingleSide(scene, true, side)
+  }
+  _clippingObject.SingleSideClose = function() {
+    ClippingSingleSide(scene, false)
+  }
+  _clippingObject.MultiSideOpen = function() {
+    ClippingMultiSide(scene, true)
+  }
+  _clippingObject.MultiSideClose = function() {
+    ClippingMultiSide(scene, false)
+  }
+	return _clippingObject;
+}

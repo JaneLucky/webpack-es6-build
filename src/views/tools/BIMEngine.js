@@ -69,6 +69,10 @@ import {
 	MinMap
 } from "./core/minMap.js"
 
+import {
+	Clipping
+} from "./others/Clipping"
+
 
 import {
   InitFirstPersonControls
@@ -158,6 +162,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		_bimEngine.Measures.DistanceMeasure = new distanceMeasure(_bimEngine);
 		_bimEngine.Measures.PointMeasure = new pointMeasure(_bimEngine);
 		_bimEngine.Measures.HeightMeasure = new heightMeasure(_bimEngine);
+		_bimEngine.Clipping = new Clipping(scene) //剖切对象
 		//加载TransformControls控制器-用于模型剖切
 		setTransformControls(scene, camera, renderer);
 		FirstPersonRoaming(_bimEngine);
