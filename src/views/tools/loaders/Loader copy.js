@@ -4,41 +4,27 @@ import '@/three/loaders/DRACOLoader.js'
 import LoadJSON from "@/utils/LoadJSON.js"
 import * as BufferGeometryUtils from "@/three/utils/BufferGeometryUtils.js"
 //解压文件
-// const dracoLoader = new THREE.DRACOLoader()
-// dracoLoader.setDecoderPath('/draco/')
-// dracoLoader.preload()
+const dracoLoader = new THREE.DRACOLoader()
+dracoLoader.setDecoderPath('/draco/')
+dracoLoader.preload()
 
-// const GLTFLoader = new THREE.GLTFLoader()
-// GLTFLoader.setDRACOLoader(dracoLoader) //设置glth/glb解压后再加载
+const GLTFLoader = new THREE.GLTFLoader()
+GLTFLoader.setDRACOLoader(dracoLoader) //设置glth/glb解压后再加载
 
 export function LoadGLB(GroupBox, path, option, callback) {
-	window.bimEngine.GLTFLoader.load(path, (gltf) => {
+	GLTFLoader.load(path, (gltf) => {
 		gltf.scene.scale.set(1, 1, 1) //  设置模型大小缩放
 		var models = gltf.scene.children;
-		let allMeshs = [];
-		let mergeModelDatas = [];
+		let allMeshs = []
 		for (let model of models) {
-			if (model.type === "Group") {
+			if(model.type === "Group"){
 				if (model.children && model.children.length) {
-					for (let i = 0; i < model.children.length; i++) {
-						let child = model.children[i];
+					for (let child of model.children) {
 						child.userData = model.userData
-
-						child.IsMerge = true;
-						child.MergeCount = model.children.length;
-						child.MergeIndex = i;
-						child.MergeName = model.name; 
-						 
-						
-
 						allMeshs.push(child)
 					}
 				}
-			} else if (model.type === "Mesh") {
-				model.IsMerge = false;
-				model.MergeIndex = 0;
-				model.MergeCount = 1;
-				model.MergeName = model.name;
+			}else if(model.type === "Mesh"){
 				allMeshs.push(model)
 			}
 		}
@@ -46,12 +32,7 @@ export function LoadGLB(GroupBox, path, option, callback) {
 			callback(null)
 			return
 		}
-		if(option==null){
-			debugger
-			GroupBox.add(gltf.scene);
-			// mergeBufferModel(GroupBox, allMeshs);
-		}
-		if (option&&option.name === 'modelList') {
+		if (option.name === 'modelList') {
 			for (var i = 0; i < allMeshs.length; i++) {
 				var mesh = allMeshs[i];
 				if (option.position != null && option.position.Point != null) {
@@ -67,88 +48,28 @@ export function LoadGLB(GroupBox, path, option, callback) {
 				}
 			}
 			mergeBufferModel(GroupBox, allMeshs);
-		} else if (option&&option.name === 'instanceList') {
+		} else if (option.name === 'instanceList') {
 			let instanceMeshs = []
 			for (let item of option.children) {
 				for (var i = 0; i < allMeshs.length; i++) {
 					if (item.meshId === allMeshs[i].userData.name) {
-						let _childs = new THREE.InstancedMesh(allMeshs[i].geometry, allMeshs[i].material, item
-							.children.length);
-						let ElementInfoArray = []; // 将你的要赋值的多个material放入到该数组
-						window.color = new THREE.Color();
-						for (var j = 0; j < item.children.length; j++) {
+						for (let child of item.children) {
+
+							let _child = allMeshs[i].clone()
+							_child.name = child.name
 							//平移
-							let child = item.children[j];
-							let matrix = new THREE.Matrix4();
-							matrix = matrix.clone().makeRotationY(child.angle_a);
-							matrix.elements[12] = child.Point.X * 0.3048;
-							matrix.elements[13] = child.Point.Z * 0.3048;
-							matrix.elements[14] = -child.Point.Y * 0.3048;
-							_childs.setMatrixAt(j, matrix);
-							_childs.setColorAt(j, window.color);
+							_child.matrix = _child.matrix.clone().makeRotationY(child.angle_a);
+							_child.matrix.elements[12] = child.Point.X * 0.3048;
+							_child.matrix.elements[13] = child.Point.Z * 0.3048;
+							_child.matrix.elements[14] = -child.Point.Y * 0.3048;
 
-							let _min = allMeshs[i].geometry.boundingBox.min.clone().applyMatrix4(matrix
-								.clone());
-							let _max = allMeshs[i].geometry.boundingBox.max.clone().applyMatrix4(matrix
-								.clone());
-							let min = new THREE.Vector3(Math.min(_min.x, _max.x), Math.min(_min.y, _max.y), Math
-								.min(_min.z, _max.z));
-							let max = new THREE.Vector3(Math.max(_min.x, _max.x), Math.max(_min.y, _max.y), Math
-								.max(_min.z, _max.z));
-							let center = min.clone().add(max.clone()).multiplyScalar(0.5);
-
-							//计算边线-并存储，用于测量捕捉
-							var edges = new THREE.EdgesGeometry(allMeshs[i].geometry, 89); //大于89度才添加线条 
-							var ps = edges.attributes.position.array;
-							let positions = []
-							for (var ii = 0; ii < ps.length; ii = ii + 3) {
-								let point = new THREE.Vector3(ps[ii],ps[ii+1],ps[ii+2]);
-								let newpoint = point.clone().applyMatrix4(matrix.clone());
-								positions.push(newpoint.x);
-								positions.push(newpoint.y);
-								positions.push(newpoint.z);
-							}
-							// 绘制边线
-							// let geometry = new THREE.BufferGeometry()
-							// geometry.setAttribute(
-							// 	'position',
-							// 	new THREE.Float32BufferAttribute(positions, 3)
-							// )
-							// const bufferline = new THREE.LineSegments(
-							// 	geometry,
-							// 	new THREE.LineBasicMaterial({
-							// 		color: '#000000'
-							// 	})
-							// )
-							// GroupBox.add(bufferline);
-
-							ElementInfoArray.push({
-								name: child.name,
-								min: min,
-								max: max,
-								center: center,
-								dbid: j,
-								IsMerge: allMeshs[i].IsMerge,
-								MergeIndex: allMeshs[i].MergeIndex,
-								MergeCount: allMeshs[i].MergeCount,
-								MergeName: allMeshs[i].MergeName,
-								url: path,
-								EdgeList:positions
-							});
+							instanceMeshs.push(_child)
 						}
-						_childs.ElementInfos = ElementInfoArray;
-						_childs.name = "rootModel";
-						_childs.TypeName = "InstancedMesh";
-						_childs.MeshId = item.meshId;
-						_childs.cloneMaterialArray = allMeshs[i].material.clone;
-						_childs.url = path;
-						GroupBox.add(_childs);
-						// instanceMeshs.push(_childs)
 						// break
 					}
 				}
 			}
-			// mergeBufferModel(GroupBox, instanceMeshs);
+			mergeBufferModel(GroupBox, instanceMeshs);
 		}
 		callback(gltf)
 	}, (xhr) => {
@@ -178,43 +99,12 @@ export function LoadGLB(GroupBox, path, option, callback) {
 				let max = new THREE.Vector3(Math.max(_min.x, _max.x), Math.max(_min.y, _max.y), Math
 					.max(_min.z, _max.z));
 				let center = min.clone().add(max.clone()).multiplyScalar(0.5);
-
-				//计算边线-并存储，用于测量捕捉
-				var edges = new THREE.EdgesGeometry(o.geometry, 89); //大于89度才添加线条 
-				var ps = edges.attributes.position.array;
-				let positions = []
-				for (var i = 0; i < ps.length; i = i + 3) {
-					let point = new THREE.Vector3(ps[i],ps[i+1],ps[i+2]);
-					let newpoint = point.clone().applyMatrix4(o.matrix.clone());
-					positions.push(newpoint.x);
-					positions.push(newpoint.y);
-					positions.push(newpoint.z);
-				}
-				// 绘制边线
-				// let geometry = new THREE.BufferGeometry()
-				// geometry.setAttribute(
-				// 	'position',
-				// 	new THREE.Float32BufferAttribute(positions, 3)
-				// )
-				// const bufferline = new THREE.LineSegments(
-				// 	geometry,
-				// 	new THREE.LineBasicMaterial({
-				// 		color: '#000000'
-				// 	})
-				// )
-				// GroupBox.add(bufferline);
-
 				ElementInfoArray.push({
 					name: o.name,
 					min: min,
 					max: max,
 					center: center,
-					dbid: ElementInfoArray.length,
-					IsMerge: o.IsMerge,
-					MergeIndex: o.MergeIndex,
-					MergeCount: o.MergeCount,
-					MergeName: o.MergeName,
-					EdgeList:positions
+					dbid: ElementInfoArray.length
 				});
 			}
 		}
@@ -225,7 +115,6 @@ export function LoadGLB(GroupBox, path, option, callback) {
 		singleMergeMesh.ElementInfos = ElementInfoArray;
 		singleMergeMesh.cloneMaterialArray = cloneMaterialArray;
 		singleMergeMesh.name = "rootModel";
-		singleMergeMesh.TypeName = "Mesh";
 		singleMergeMesh.meshs = meshs;
 		singleMergeMesh.url = path;
 		GroupBox.add(singleMergeMesh);
@@ -276,7 +165,6 @@ export function mergeModel(GroupBox) {
 	singleMergeMesh.name = "rootModel";
 	singleMergeMesh.meshs = meshs;
 	GroupBox.add(singleMergeMesh);
-	console.log("加载完成")
 }
 
 //批量加载glb模型，json - 大量相同模型合并
@@ -301,7 +189,7 @@ export function LoadGlbJsonList(GroupBox, path = "/file/gis/fl/bim/100004", opti
 					}, gltf => {
 						currentIndex = currentIndex + 1;
 						if (currentIndex == 1) {
-							// window.bimEngine.ViewCube.cameraGoHome();
+							window.bimEngine.ViewCube.cameraGoHome();
 						}
 						//全部加载完成，然后去合并模型
 						if (currentIndex == glbList.length) {
@@ -334,7 +222,7 @@ export function LoadGlbJsonList(GroupBox, path = "/file/gis/fl/bim/100004", opti
 					}, gltf => {
 						currentIndex = currentIndex + 1;
 						if (currentIndex == 1) {
-							// window.bimEngine.ViewCube.cameraGoHome();
+							window.bimEngine.ViewCube.cameraGoHome();
 						}
 						//全部加载完成，然后去合并模型
 						if (currentIndex == glbList.length) {

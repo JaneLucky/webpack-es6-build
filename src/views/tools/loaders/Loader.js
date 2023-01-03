@@ -38,7 +38,7 @@ export function LoadGLB(GroupBox, path, option, callback) {
 			return
 		}
 		if(option==null){
-			debugger
+			 
 			GroupBox.add(gltf.scene);
 			// mergeBufferModel(GroupBox, allMeshs);
 		}

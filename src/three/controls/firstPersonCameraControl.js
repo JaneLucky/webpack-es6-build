@@ -10,8 +10,9 @@ export class FirstPersonCameraControl {
 		this.camera = camera;
 		this.domElement = domElement;
 		this._isEnabled = false;
-		// internal params for move forward/right
-		this._rayCastObjects = rayCastObjects;
+		// internal params for move forward/right 
+		// this._rayCastObjects = rayCastObjects;
+		// console.log(rayCastObjects)
 		this._rayOriginOffset = new THREE.Vector3(0, -1, 0);
 		this._camerLocalDirection = new THREE.Vector3();
 		this._tmpVector = new THREE.Vector3();
@@ -208,7 +209,7 @@ export class FirstPersonCameraControl {
 	}
 
 	gravityTest() {
-		if (this.applyGravity && this._rayCastObjects) {
+		if (this.applyGravity) {
 			let isFalling = true;
 			this._fallingTime += 0.01;
 			this._tmpVector.set(0, -1, 0);
@@ -295,9 +296,13 @@ export class FirstPersonCameraControl {
 		this._rayCaster.ray.origin = origin;
 		this._rayCaster.ray.direction = this._tmpVector;
 		const intersect = this._rayCaster.intersectObjects(
-			this._rayCastObjects,
+			window.bimEngine.GetAllVisibilityModel(),
 			true
 		);
+		// const intersect = this._rayCaster.intersectObjects(
+		// 	this._rayCastObjects,
+		// 	true
+		// );
 		if (intersect && intersect.length > 0) {
 			result = intersect[0];
 		}

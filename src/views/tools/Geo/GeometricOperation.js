@@ -11,7 +11,7 @@ export function GeometricOperation() {
 	//基准点，向量，大小
 	var GetProjectPoints = function(point, nomal, size) {
 		//首先判断一下面是不是水平的
-		size = size * 0.2;
+		size = size * 0.1;
 		if (nomal.x == 0 && nomal.z == 0) {
 			//直的
 			let dirx = new THREE.Vector3(1, 0, 0);

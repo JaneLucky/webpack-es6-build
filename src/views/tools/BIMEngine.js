@@ -183,7 +183,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 			//测量
 			// window.bimEngine.Measures.SimpleMeasure.Active()
 			// 框选
-			window.bimEngine && window.bimEngine.openSelectionBox()
+			// window.bimEngine && window.bimEngine.openSelectionBox()
     },3000)
 	}
 	//加载模型
