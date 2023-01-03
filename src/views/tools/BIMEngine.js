@@ -75,10 +75,10 @@ import {
 	Clipping
 } from "./others/Clipping"
 
-
 import {
-  InitFirstPersonControls
-} from "./initialize/InitControls.js";
+	firstPersonControls
+} from "./controls/FirstPersonControls.js"
+
 // BIM引擎封装
 export function BIMEngine(domid, options, GLTFLoader) {
 	var _bimEngine = new Object();
@@ -166,6 +166,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		_bimEngine.Measures.HeightMeasure = new heightMeasure(_bimEngine);
 		_bimEngine.Clipping = new Clipping(scene) //剖切对象
 		_bimEngine.SelectionBox = new selectBox(_bimEngine); //框选对象
+		_bimEngine.FirstPersonControls = new firstPersonControls(_bimEngine) //漫游
 		//加载TransformControls控制器-用于模型剖切
 		setTransformControls(scene, camera, renderer);
 		FirstPersonRoaming(_bimEngine);
@@ -178,19 +179,6 @@ export function BIMEngine(domid, options, GLTFLoader) {
 				window.dispatchEvent(myEvent);
 			}
 		})
-
-    setTimeout(()=>{
-      //漫游
-      // InitFirstPersonControls(window.bimEngine.scene, res => {
-      //   // this.FirstPersonControls = res
-      // })
-      // //初始化小地图
-      // window.bimEngine.MinMap.show("minimap");
-			//测量
-			// window.bimEngine.Measures.SimpleMeasure.Active()
-			// 框选
-			// window.bimEngine && window.bimEngine.openSelectionBox()
-    },3000)
 	}
 	//加载模型
 	//url:模型加载路径
