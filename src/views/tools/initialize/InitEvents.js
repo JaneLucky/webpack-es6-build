@@ -7,6 +7,7 @@ import '@/three/controls/TransformControls.js';
 import {
 	HandleModelSelect
 } from "@/views/tools/handleModels/index.js"
+import "../style/RightClickMenu.scss"
 
 
 //定义窗口的设置
@@ -24,6 +25,56 @@ export function setWindown() {
 //定义鼠标事件
 export function setEventsMouse(bimEngine, callBack) {
 	let CAMERA_POSITION
+	let showMenu = true;
+	let right_click_menu_container;
+	let _container = bimEngine.scene.renderer.domElement.parentElement;
+	let menuList = [{//右键菜单列表
+		value: '1',
+		label: '查看属性',
+		domItem: null,
+		childContain: null
+	}, {
+		value: '2',
+		label: '工程量',
+		domItem: null,
+		childContain: null
+	},  {
+		value: '3',
+		label: '隔离',
+		domItem: null,
+		childContain: null
+	},  {
+		value: '4',
+		label: '隐藏',
+		domItem: null,
+		childContain: null
+	},  {
+		value: '5',
+		label: '显示全部',
+		domItem: null,
+		childContain: null
+	},  {
+		value: '6',
+		label: '隐藏全部',
+		domItem: null,
+		childContain: null
+	}, {
+		value: '7',
+		label: '快速选择',
+		domItem: null,
+		childContain: null,
+		children: [{
+			value: '71',
+			label: '同类构建'
+		}, {
+			value: '72',
+			label: '同层构建'
+		}, {
+			value: '73',
+			label: '同类同层构建'
+		}]
+	}];
+	showMenu && CreatorRightClickMenu()
 	//点击了鼠标左键 - 高亮选中的构建，并返回选中的构建
 	bimEngine.scene.renderer.domElement.addEventListener('click', function(event) {
 		// console.log(event);
@@ -249,6 +300,7 @@ export function setEventsMouse(bimEngine, callBack) {
 				callBack({
 					type: 'LeftClick'
 				})
+				showMenu && CloseMenu()
 			}
 		}
 		//包含关系
@@ -307,10 +359,12 @@ export function setEventsMouse(bimEngine, callBack) {
 						y: event.y
 					}
 				})
+				showMenu && OpenMenu()
 			} else {
 				callBack({
 					type: 'LeftClick'
 				})
+				showMenu && CloseMenu()
 			}
 		}
 	}, false);
@@ -324,6 +378,122 @@ export function setEventsMouse(bimEngine, callBack) {
 		}
 	}, false);
 
+	function OpenMenu() {
+		right_click_menu_container && (right_click_menu_container.style.display = "block");//关闭弹框UI
+		right_click_menu_container && (right_click_menu_container.style.top = event.y+'px');//关闭弹框UI
+		right_click_menu_container && (right_click_menu_container.style.left = event.x+'px');//关闭弹框UI
+		for(let i=0;i<menuList.length;i++){
+			if(menuList[i].value !== '5' && menuList[i].value !== '6' ){
+				menuList[i].domItem.style.display = window.bimEngine.Selection && window.bimEngine.Selection.length ?"block":"none"
+			}
+		}
+	}
+
+	function CloseMenu() {
+		right_click_menu_container && (right_click_menu_container.style.display = "none");//关闭弹框UI
+	}
+
+	function CreatorRightClickMenu() {
+		if(right_click_menu_container){
+			right_click_menu_container.style.display = "block";//关闭弹框UI
+			return
+		}
+		right_click_menu_container = document.createElement("div");
+		right_click_menu_container.className = "Right-Click-Menu-Container"
+
+		for(let i=0;i<menuList.length;i++){
+			let menu_item = document.createElement("div");
+			menu_item.className = "Menu-Item"
+			if(menuList[i].children && menuList[i].children.length){
+				let menu_item_span = document.createElement("span");
+				menu_item_span.innerHTML = menuList[i].label
+				menu_item.appendChild(menu_item_span)
+				let menu_item_icon = document.createElement("span");
+				menu_item_icon.className = "Menu-Item-Icon"
+				menu_item_icon.innerHTML = ">";
+				menu_item.appendChild(menu_item_icon)
+
+				let menu_child_container = document.createElement("div");
+				menu_child_container.className = "Menu_Child_Container"
+				for(let j=0;j<menuList[i].children.length;j++){
+					let menu_child_item = document.createElement("div");
+					menu_child_item.className = "Menu-Item"
+
+					let menu_child_item_span = document.createElement("span");
+					menu_child_item_span.innerHTML = menuList[i].children[j].label
+					menu_child_item_span.dataset.value = menuList[i].children[j].value
+					menu_child_item.appendChild(menu_child_item_span)
+					menu_child_item.onclick = (e)=>{
+						handleMenuClickChange(e.target.dataset.value)
+					}
+					menu_child_container.appendChild(menu_child_item)
+				}
+				menu_item.addEventListener("mouseover", (e)=> {
+					menu_child_container.style.display = "block";
+					menu_item.style.background = "#ffffff";
+					menu_item.style.color = "#409EFF";
+				})
+				menu_item.appendChild(menu_child_container)
+				menuList[i].childContain = menu_child_container
+				menuList[i].domItem = menu_item
+			}else{
+				let menu_item_span = document.createElement("span");
+				menu_item_span.innerHTML = menuList[i].label
+				menu_item.appendChild(menu_item_span)
+				menuList[i].domItem = menu_item
+				menu_item.addEventListener("mouseover", (e)=> {
+					for(let k=0;k<menuList.length;k++){
+						if(menuList[k].childContain){
+							menuList[k].childContain.style.display = "none"
+							menuList[k].domItem.style.background = "transparent";
+							menuList[k].domItem.style.color = "#ffffff";
+						}
+					}
+				})
+			}
+			menu_item.dataset.value = menuList[i].value
+			menu_item.onclick = (e)=>{
+				console.log(e.target.dataset.value)
+				handleMenuClickChange(e.target.dataset.value)
+			}
+			right_click_menu_container.appendChild(menu_item)
+		}
+		_container.appendChild(right_click_menu_container);
+	}
+
+	function handleMenuClickChange(val) {
+		switch (val) {
+			case '1':
+				
+				break;
+			case '2':
+				
+				break;
+			case '3'://隔离
+				if(window.bimEngine.Selection && window.bimEngine.Selection.length){
+					//隐藏所有
+					HandleModelSelect(null,[{key:'visible',val:false}])
+					//显示选中的
+					HandleModelSelect(window.bimEngine.Selection,[{key:'visible',val:true}])
+				}
+				break;
+			case '4'://隐藏
+				if(window.bimEngine.Selection && window.bimEngine.Selection.length){
+					HandleModelSelect(window.bimEngine.Selection,[{key:'visible',val:false}])
+				}
+				break;
+			case '5'://显示全部
+				HandleModelSelect(null,[{key:'visible',val:true}])
+				break;
+			case '6'://隐藏全部
+				HandleModelSelect(null,[{key:'visible',val:false}])
+				break;
+		
+			default:
+				break;
+		}
+		CloseMenu()
+	}
 }
 
 //定义键盘按键事件

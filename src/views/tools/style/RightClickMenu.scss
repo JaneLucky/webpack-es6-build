@@ -1,0 +1,66 @@
+// @charset "UTF-8"
+.Right-Click-Menu-Container{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: fit-content;
+  height: fit-content;
+  background: #656565;
+  display: none;
+  padding: 6px 0;
+  color: #ffffff;
+  font-size: 14px;
+  box-sizing: border-box;
+  .Menu-Item{
+    padding: 0 25px;
+    height: 34px;
+    line-height: 34px;
+    display: flex;
+    align-items: center;
+    span{
+      pointer-events: none;
+    }
+    &:hover{
+      background: #ffffff;
+      color: #409EFF;
+    }
+    .Menu-Item-Icon{
+      right: 10px;
+      padding-left: 5px;
+    }
+    .Menu_Child_Container{
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: fit-content;
+      height: fit-content;
+      background: #656565;
+      padding: 6px 0;
+      color: #ffffff;
+      font-size: 14px;
+      transform: translate(100%,0);
+      border-left: 1px solid rgb(226, 227, 224);
+      box-sizing: border-box;
+      display: none;
+      .Menu-Item{
+        padding: 0 25px;
+        height: 34px;
+        line-height: 34px;
+        display: flex;
+        align-items: center;
+        width: 90px;
+        span{
+          pointer-events: auto;
+        }
+        &:hover{
+          background: #ffffff;
+          color: #409EFF;
+          .Menu_Child_Container{
+            display: block;
+          }
+        }
+      }
+
+    }
+  }
+}
