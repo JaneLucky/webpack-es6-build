@@ -60,16 +60,16 @@ import {
 } from "./core/ModelSelection.js"
 
 import {
-	FirstPersonRoaming
-} from "./core/FirstPersonRoaming.js"
-
-import {
 	Multiview
 } from "./initialize/InitMultiview.js"
 
 import {
 	MinMap
 } from "./core/minMap.js"
+
+import { 
+	D3Measure
+} from "@/views/tools/extensions/d3measures/index.js"
 
 import {
 	Clipping
@@ -87,6 +87,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 	_bimEngine.DisPlayModel = new disPlayModel(_bimEngine);
 	_bimEngine.ModelSelection = new ModelSelection(_bimEngine);
 	_bimEngine.MinMap = new MinMap(_bimEngine);
+	_bimEngine.D3Measure = new D3Measure(_bimEngine);
 	_bimEngine.scene = null;
 	_bimEngine.GLTFLoader = GLTFLoader;
 	_bimEngine.Measure = {
@@ -169,7 +170,6 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		_bimEngine.FirstPersonControls = new firstPersonControls(_bimEngine) //漫游
 		//加载TransformControls控制器-用于模型剖切
 		setTransformControls(scene, camera, renderer);
-		FirstPersonRoaming(_bimEngine);
 		//加载点击事件
 		setEventsMouse(_bimEngine, (res) => {
 			if (res != null) { //鼠标单击事件（左键和右键）
