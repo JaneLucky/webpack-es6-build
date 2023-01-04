@@ -84,7 +84,7 @@ import { PointRoam } from "./others/PointRoam.js"
 // BIM引擎封装
 export function BIMEngine(domid, options, GLTFLoader) {
 	var _bimEngine = new Object();
-	_bimEngine.render = new Render(_bimEngine);
+	_bimEngine.Render = new Render(_bimEngine);
 	_bimEngine.RenderSAO = new RenderSAO(_bimEngine);
 	_bimEngine.DisPlayModel = new disPlayModel(_bimEngine);
 	_bimEngine.ModelSelection = new ModelSelection(_bimEngine);

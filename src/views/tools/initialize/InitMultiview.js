@@ -126,11 +126,11 @@ export function Multiview(bimEngine, camera) {
 		if (camera.ControlType == "D3") {
 			window.bimEngine.scene.controls.enableRotate = true;
 			document.getElementsByClassName("ViewCube")[0].style.visibility = "visible"
-			window.bimEngine.render.DisplayEdge(false);
+			window.bimEngine.Render.DisplayEdge(false);
 		} else if (camera.ControlType == "Plane") {
 			window.bimEngine.scene.controls.enableRotate = false;
 			document.getElementsByClassName("ViewCube")[0].style.visibility = "hidden"
-			window.bimEngine.render.DisplayEdge(true);
+			window.bimEngine.Render.DisplayEdge(true);
 		}
 		TileView(bimEngine);
 
