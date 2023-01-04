@@ -79,6 +79,8 @@ import {
 	firstPersonControls
 } from "./controls/FirstPersonControls.js"
 
+import { PointRoam } from "./others/PointRoam.js"
+
 // BIM引擎封装
 export function BIMEngine(domid, options, GLTFLoader) {
 	var _bimEngine = new Object();
@@ -88,6 +90,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 	_bimEngine.ModelSelection = new ModelSelection(_bimEngine);
 	_bimEngine.MinMap = new MinMap(_bimEngine);
 	_bimEngine.D3Measure = new D3Measure(_bimEngine);
+	_bimEngine.PointRoam = new PointRoam();//定点漫游
 	_bimEngine.scene = null;
 	_bimEngine.GLTFLoader = GLTFLoader;
 	_bimEngine.Measure = {
@@ -95,6 +98,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		SimpleLineMeasure: []
 	}
 	_bimEngine.StopClick = false //是否禁用单击
+	_bimEngine.RightClickActive = true //是否显示鼠标右键列表
 	window.THREE = THREE;
 	//初始化
 	_bimEngine.init = function() {
@@ -171,14 +175,16 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		//加载TransformControls控制器-用于模型剖切
 		setTransformControls(scene, camera, renderer);
 		//加载点击事件
-		setEventsMouse(_bimEngine, (res) => {
-			if (res != null) { //鼠标单击事件（左键和右键）
-				var myEvent = new CustomEvent('bimengine:click', {
-					detail: res
-				});
-				window.dispatchEvent(myEvent);
-			}
-		})
+		if(_bimEngine.RightClickActive){
+			setEventsMouse(_bimEngine, (res) => {
+				if (res != null) { //鼠标单击事件（左键和右键）
+					var myEvent = new CustomEvent('bimengine:click', {
+						detail: res
+					});
+					window.dispatchEvent(myEvent);
+				}
+			})
+		}
 	}
 	//加载模型
 	//url:模型加载路径
