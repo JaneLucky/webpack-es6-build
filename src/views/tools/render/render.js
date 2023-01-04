@@ -35,13 +35,22 @@ export function Render(bimengine) {
 				}
 			}
 		} else {
-			var rootmodel = bimengine.scene.children.findLast(x => x.Name == "ModelEdges");
+			var rootmodel = bimengine.scene.children.filter(x => x.Name == "ModelEdges")[0];
 			bimengine.scene.remove(rootmodel)
 		}
 	}
 	//设置背景颜色
 	_render.SetBackGroundColor = function(color) {
-		bimengine.renderer.setClearColor(0xb9d3ff, 1); //设置背景颜色
+		// bimengine.renderer.setClearColor(0xb9d3ff, 1); //设置背景颜色
+		bimengine.scene.renderer.domElement.parentElement.style.background = color;
+	}
+	//设置环境光
+	_render.SetAmbientLightColor = function(color) {
+		bimengine.scene.ambientLight.color = new THREE.Color(color);
+	}
+	//设置曝光强度
+	_render.SetAmbientLightIntensity = function(val) {
+		bimengine.scene.ambientLight.intensity = val;
 	}
 	//设置阴影强度
 

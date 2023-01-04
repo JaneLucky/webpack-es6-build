@@ -19,8 +19,9 @@ export function InitLight(scene){
   point.castShadow = true;
   scene.add(point); //点光源添加到场景中
   //环境光
-  var ambient = new THREE.AmbientLight(0xffffff, 0.6);
-  scene.add(ambient);
+  var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  scene.add(ambientLight);
+  scene.ambientLight = ambientLight
   return point
 }
 
