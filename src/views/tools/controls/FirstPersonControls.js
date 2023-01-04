@@ -15,7 +15,7 @@ export function firstPersonControls(bimengine) {
 		_firstPersonControls.controls.name = "FirstPersonControls"
 		_firstPersonControls.isActive = true
 		
-		bimengine.MinMap.show("minimap");//打开小地图
+		bimengine.MinMap.show();//打开小地图
 		CreatorRoamDialog() //创建弹框UI
 		/* 属性参数默认 */
 		let settings = {
@@ -23,11 +23,13 @@ export function firstPersonControls(bimengine) {
 			gravity: false,
 			collision: false,
 			positionEasing: true,
+			speed:0.02
 		}; 
 		_firstPersonControls.controls.enabled = settings.firstPerson;
 		_firstPersonControls.controls.applyGravity = settings.gravity;
 		_firstPersonControls.controls.applyCollision = settings.collision;
 		_firstPersonControls.controls.positionEasing = settings.positionEasing; 
+		_firstPersonControls.controls.moveSpeed = settings.speed; 
 		window.addEventListener('resize', onWindowResize, false);
 		render();
 	}
@@ -117,7 +119,7 @@ export function firstPersonControls(bimengine) {
 		input_item_0.onchange = (e)=>{
 			console.log(e.target.checked)
 			if(e.target.checked){
-				bimengine.MinMap.show("minimap");//打开小地图
+				bimengine.MinMap.show();//打开小地图
 			}else{
 				bimengine.MinMap.close();//关闭小地图
 			}
@@ -166,12 +168,12 @@ export function firstPersonControls(bimengine) {
 		let input_item_3 = document.createElement("input")
 		input_item_3.className = "inputtext"
 		input_item_3.type = "number"
-		input_item_3.min = "0.1"
-		input_item_3.man = "10"
-		input_item_3.step = "0.1"
-		input_item_3.value = 0.1
+		input_item_3.min = "1"
+		input_item_3.man = "100"
+		input_item_3.step = "1"
+		input_item_3.value = 2
 		input_item_3.onchange = (e)=>{
-			bimengine.FirstPersonControls.controls.moveSpeed = e.target.value
+			bimengine.FirstPersonControls.controls.moveSpeed = e.target.value/100
 		}
 		form_item_3.appendChild(input_item_3);
 	
