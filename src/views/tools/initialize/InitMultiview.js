@@ -97,15 +97,19 @@ export function Multiview(bimEngine, camera) {
 		CreatorView(bimEngine, option);
 	}
 	//平铺视图
-	multiview.tileView = function(bimEngine) {
+	multiview.TileView = function(bimEngine) {
+		var cameras = bimEngine.ArrayCamera.cameras;
+		for (let ca of cameras) {
+			ca.IsVisibility = true;
+		}
 		TileView(bimEngine);
 	}
 	//清除视图
-	multiview.clearView = function(bimEngine) {
+	multiview.ClearView = function(bimEngine) {
 		ClearViews(bimEngine)
 	}
 	//切换
-	multiview.switchViews = function(bimEngine, camera) {
+	multiview.SwitchView = function(bimEngine, camera) {
 		let cameras = bimEngine.ArrayCamera.cameras;
 		for (var item_ of cameras) {
 			if (item_.Id == camera.Id) {
@@ -136,7 +140,8 @@ export function Multiview(bimEngine, camera) {
 
 	}
 	//创建三维正交视图
-	multiview.New3DOrthogonal = function(bimEngine, viewdata) {
+	multiview.New3DOrthogonal = function(bimEngine) {
+		let viewdata = multiview.Get3DOrthogonalData();
 		//判断一下有没有吧
 		let index = bimEngine.ArrayCamera.cameras.findIndex(x => x.Id == viewdata.Id);
 		if (index == -1) {
@@ -149,16 +154,17 @@ export function Multiview(bimEngine, camera) {
 			camera.Id = viewdata.Id;
 			camera.ControlType = "D3";
 			bimEngine.ArrayCamera.cameras.splice(0,0,camera);
-			multiview.switchViews(bimEngine, camera);
+			multiview.SwitchView(bimEngine, camera);
 			//跳转至最佳位置 
 			bimEngine.ViewCube.cameraGoHome()
 		} else {
-			multiview.switchViews(bimEngine, bimEngine.ArrayCamera.cameras[index]);
+			multiview.SwitchView(bimEngine, bimEngine.ArrayCamera.cameras[index]);
 		}
 		window.bimEngine.scene.controls.enableRotate = true
 	}
 	//创建三维透视视图
-	multiview.New3DPerspective = function(bimEngine, viewdata) {
+	multiview.New3DPerspective = function(bimEngine) {
+		let viewdata = multiview.Get3DPerspectiveData();
 		//判断一下有没有吧
 		let index = bimEngine.ArrayCamera.cameras.findIndex(x => x.Id == viewdata.Id);
 		if (index == -1) {
@@ -171,11 +177,11 @@ export function Multiview(bimEngine, camera) {
 			camera.Id = viewdata.Id;
 			camera.ControlType = "D3";
 			bimEngine.ArrayCamera.cameras.splice(0,0,camera);
-			multiview.switchViews(bimEngine, camera);
+			multiview.SwitchView(bimEngine, camera);
 			bimEngine.ViewCube.cameraGoHome();
 			//跳转至最佳位置
 		} else {
-			multiview.switchViews(bimEngine, bimEngine.ArrayCamera.cameras[index]);
+			multiview.SwitchView(bimEngine, bimEngine.ArrayCamera.cameras[index]);
 		}
 		window.bimEngine.scene.controls.enableRotate = true;
 		document.getElementsByClassName("ViewCube")[0].style.visibility = "visible";
@@ -205,9 +211,9 @@ export function Multiview(bimEngine, camera) {
 			bimEngine.ViewCube.animateCamera(bimEngine.scene.camera.position, position, bimEngine.scene.controls
 				.target
 				.clone(), target);
-			multiview.switchViews(bimEngine, camera);
+			multiview.SwitchView(bimEngine, camera);
 		} else {
-			multiview.switchViews(bimEngine, bimEngine.ArrayCamera.cameras[index]);
+			multiview.SwitchView(bimEngine, bimEngine.ArrayCamera.cameras[index]);
 		}
 		window.bimEngine.scene.controls.enableRotate = false;
 		document.getElementsByClassName("ViewCube")[0].style.visibility = "hidden"
@@ -237,13 +243,26 @@ export function Multiview(bimEngine, camera) {
 			bimEngine.ViewCube.animateCamera(bimEngine.scene.camera.position, position, bimEngine.scene.controls
 				.target
 				.clone(), target)
-			multiview.switchViews(bimEngine, camera);
+			multiview.SwitchView(bimEngine, camera);
 		} else {
-			multiview.switchViews(bimEngine, bimEngine.ArrayCamera.cameras[index]);
+			multiview.SwitchView(bimEngine, bimEngine.ArrayCamera.cameras[index]);
 		}
 		window.bimEngine.scene.controls.enableRotate = false
 		document.getElementsByClassName("ViewCube")[0].style.visibility = "hidden"
 	}
+
+	//获得三维正交视图数据
+	multiview.Get3DOrthogonalData = function () {
+		let data = window.bimEngine.D3Measure.ViewList.filter(item=>item.ViewType == "3DOrthogonal")
+		let item = data && data.length?data[0]:{}
+		return item
+	}
+	//获得三维透视视图数据
+	multiview.Get3DPerspectiveData = function () {
+		let data = window.bimEngine.D3Measure.ViewList.filter(item=>item.ViewType == "3DPerspective")
+		let item = data && data.length?data[0]:{}
+		return item
+	}  
 
 	return multiview;
 }

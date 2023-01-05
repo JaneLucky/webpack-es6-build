@@ -16,20 +16,20 @@ export function GeometricOperation() {
 			//直的
 			let dirx = new THREE.Vector3(1, 0, 0);
 			let diry = new THREE.Vector3(0, 0, 1);
-			 let results = [
+			let results = [
 				point.clone().add(dirx.clone().multiplyScalar(size)).add(diry.clone().multiplyScalar(size)),
-				point.clone().add(dirx.clone().multiplyScalar(size)).add(diry.clone().multiplyScalar(-size)), 
+				point.clone().add(dirx.clone().multiplyScalar(size)).add(diry.clone().multiplyScalar(-size)),
 				point.clone().add(dirx.clone().multiplyScalar(-size)).add(diry.clone().multiplyScalar(-size)),
 				point.clone().add(dirx.clone().multiplyScalar(-size)).add(diry.clone().multiplyScalar(size))
-			]; 
+			];
 			return results
 		} else {
 			//斜的
 			let dirx = nomal.clone().cross(new THREE.Vector3(0, 1, 0)).normalize();
-			let diry = nomal.clone().cross(dirx).normalize(); 
+			let diry = nomal.clone().cross(dirx).normalize();
 			return [
 				point.clone().add(dirx.clone().multiplyScalar(size)).add(diry.clone().multiplyScalar(size)),
-				point.clone().add(dirx.clone().multiplyScalar(size)).add(diry.clone().multiplyScalar(-size)), 
+				point.clone().add(dirx.clone().multiplyScalar(size)).add(diry.clone().multiplyScalar(-size)),
 				point.clone().add(dirx.clone().multiplyScalar(-size)).add(diry.clone().multiplyScalar(-size)),
 				point.clone().add(dirx.clone().multiplyScalar(-size)).add(diry.clone().multiplyScalar(size))
 			];
@@ -64,12 +64,19 @@ export function GeometricOperation() {
 	//1. 点到线的距离  目标点,线的起点，线的终点
 	var PointDistanceLine = function(point, start, end) {
 		var result = PointProjectLine(point, start, end);
-		if(IsPointProjectLine(point, start, end)){
+		if (IsPointProjectLine(point, start, end)) {
 			return result.distanceTo(point);
-		}
-		else{
+		} else {
 			return 100000000;
 		}
+	}
+	//1.1 点到延长线的距离
+	var PointDistanceLineExtend = function(point, start, end) {
+		
+		let dir = end.clone().sub(start.clone()).setLength(10000);
+		let newStart = start.clone().sub(dir);
+		let newEnd = end.clone().add(dir);
+		return PointDistanceLine(point, newStart, newEnd);
 	}
 	//2. 点投影是否在线内  目标点,线的起点，线的终点
 	var IsPointProjectLine = function(point, start, end) {
@@ -171,7 +178,19 @@ export function GeometricOperation() {
 		PointDistanceLine,
 		PointPointDis,
 		PointProjectLine,
-		GetProjectPoints
+		GetProjectPoints,
+		PointDistanceLineExtend,
+		LineProjectFace,
+		LineFaceIntersection,
+		LineplaneParallel,
+		LineLineWorldIntersection,
+		LineLineIntersection,
+		LineLineParallel,
+		IsPointInFace,
+		PointProjectFace,
+		IsPointProjectFace,
+		PointDistanceFace,
+		IsPointInLine
 	}
 }
 

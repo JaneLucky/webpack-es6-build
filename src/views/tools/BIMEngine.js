@@ -115,10 +115,8 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		InitOthers(domid, renderer)
 		let point = InitLight(scene)
 		//鼠标操作3D模型
-		var multiview = new Multiview(_bimEngine, camera);
 		var controls = setControl(domid, camera, renderer)
 		scene.controls = controls;
-		_bimEngine.multiview = multiview;
 		_bimEngine.controls = controls;
 		//性能监控器
 		let stats = new Stats();
@@ -127,10 +125,9 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		stats.domElement.style.top = '0px';
 		document.getElementById(domid).appendChild(stats.domElement);
 
-		var viewcube = new ViewCube(scene, domid);
-		_bimEngine.ViewCube = viewcube;
-		viewcube.init();
-
+		_bimEngine.ViewCube = new ViewCube(scene, domid); //相机视图对象
+		_bimEngine.ViewCube.init();
+		_bimEngine.MultiView = new Multiview(_bimEngine, camera); //多视图对象
 
 		//监听相机
 		var myEvent = new CustomEvent('bimengine:camerachange', {
@@ -147,7 +144,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 			requestAnimationFrame(render);
 			// renderer.setViewport(0, 0, window.innerWidth, window.innerHeight); //主场景视区 
 			// renderer.render(scene, scene.camera); //执行渲染操作 
-			multiview.updaterender();
+			_bimEngine.MultiView.updaterender();
 			// controls.update(); //更新控制器
 			stats.update();
 
@@ -156,7 +153,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 			point.position.set(vector.x, vector.y, vector.z); //点光源位置
 
 			//cube场景 
-			viewcube.renderScene();
+			_bimEngine.ViewCube.renderScene();
 			//阴影
 			_bimEngine.RenderSAO.render();
 			//小地图
@@ -201,12 +198,8 @@ export function BIMEngine(domid, options, GLTFLoader) {
 				callback();
 			})
 		} else if (type == "glbjson") {
-			if (_bimEngine.LoadPaths == null) {
-				_bimEngine.LoadPaths = [];
-			}
-			_bimEngine.LoadPaths.push(url);
-
-			LoadGlbJsonList(scene, url, option);
+			_bimEngine.D3Measure.UpdateViewList(url)//更新视图数据
+			LoadGlbJsonList(scene, url, option); //加载模型
 		}
 
 		CreatorPipe(scene, url)

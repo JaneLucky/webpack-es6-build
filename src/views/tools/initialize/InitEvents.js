@@ -25,7 +25,6 @@ export function setWindown() {
 //定义鼠标事件
 export function setEventsMouse(bimEngine, callBack) {
 	let CAMERA_POSITION
-	let showMenu = true;
 	let right_click_menu_container;
 	let _container = bimEngine.scene.renderer.domElement.parentElement;
 	let menuList = [{//右键菜单列表
@@ -74,7 +73,7 @@ export function setEventsMouse(bimEngine, callBack) {
 			label: '同类同层构建'
 		}]
 	}];
-	showMenu && CreatorRightClickMenu()
+	CreatorRightClickMenu()
 	//点击了鼠标左键 - 高亮选中的构建，并返回选中的构建
 	bimEngine.scene.renderer.domElement.addEventListener('click', function(event) {
 		// console.log(event);
@@ -300,7 +299,7 @@ export function setEventsMouse(bimEngine, callBack) {
 				callBack({
 					type: 'LeftClick'
 				})
-				showMenu && CloseMenu()
+				CloseMenu()
 			}
 		}
 		//包含关系
@@ -359,12 +358,12 @@ export function setEventsMouse(bimEngine, callBack) {
 						y: event.y
 					}
 				})
-				showMenu && OpenMenu()
+				OpenMenu()
 			} else {
 				callBack({
 					type: 'LeftClick'
 				})
-				showMenu && CloseMenu()
+				CloseMenu()
 			}
 		}
 	}, false);

@@ -1,7 +1,13 @@
 const THREE = require('three');
+import "@/views/tools/style/d3measure.css"
+import LoadJSON from "@/utils/LoadJSON.js"
 import {
 	worldPointToScreenPoint
 } from "@/views/tools/common/index.js"
+import {
+	GeometricOperation
+} from "@/views/tools/Geo/GeometricOperation.js"
+
 import {
 	drawCircle,
 	drawLine,
@@ -10,11 +16,39 @@ import {
 	getPinkType,
 	IncludeElement
 } from "../measures/MeasurePink"
+import {
+	LoadViewList
+} from "./LoadViewList.js"
 //3D测量
 export function D3Measure(bimEngine) {
 	var _D3Measure = new Object();
-
+	//当前操作模式
 	_D3Measure.MouseType = "none";
+	//图纸比例尺
+	_D3Measure.DrawingScale = 1;
+	//绘制点
+	_D3Measure.CurrentView = {};
+	// 视图列表
+	_D3Measure.ViewList = []
+	//默认有正交和透视图
+	_D3Measure.ViewList.push({
+		label: "三维正交",
+		Id: guid(),
+		ViewType: "3DOrthogonal",
+	})
+	_D3Measure.ViewList.push({
+		label: "三维透视",
+		Id: guid(),
+		ViewType: "3DPerspective",
+	})
+	//更新视图列表
+	_D3Measure.UpdateViewList = function(url) {
+		LoadViewList(bimEngine, url);
+	}
+	//删除视图剖面
+	_D3Measure.DeleteView = function() {
+
+	}
 	//绘制剖面视图
 	_D3Measure.CreatorUI = function() {
 		CreatorUI();
@@ -24,6 +58,15 @@ export function D3Measure(bimEngine) {
 		let ViewType = GetCurrentViewType();
 		return ViewType;
 	}
+	//获取相机工作平面
+	_D3Measure.GetCameraWorkPlane = function() {
+		let cameraDir = new THREE.Vector3();
+		bimEngine.scene.camera.getWorldDirection(cameraDir);
+		//然后是获取位置
+		let position = bimEngine.scene.camera.position;
+		let plane = new THREE.Plane(cameraDir, -position.distanceTo(new THREE.Vector3(0, 0, 0)));
+		return plane;
+	}
 	//绘制剖面视图
 	_D3Measure.CreatorSection = function() {
 		let ViewType = GetCurrentViewType();
@@ -31,8 +74,13 @@ export function D3Measure(bimEngine) {
 			return;
 		}
 		//三维视图跳过，平面视图保留
-
-
+		_D3Measure.MouseType = "DrawSection";
+		_D3Measure.CurrentView = {
+			viewPoints: [],
+			Id: guid(),
+			workerPlane: _D3Measure.GetCurrentWorkPlane()
+		};
+		addEventLicense();
 	}
 	//绘制剖面线
 	_D3Measure.DrawSelectLines = function(viewLists) {
@@ -47,13 +95,8 @@ export function D3Measure(bimEngine) {
 		if (bimEngine.WorkPlane != null) {
 			return bimEngine.WorkPlane;
 		} else {
-			//取相机正对的平面作为工作平面
-			//首先获取相机的法向量
-			let cameraDir = new THREE.Vector3();
-			bimEngine.scene.camera.getWorldDirection(cameraDir);
-			//然后是获取位置
-			let position = bimEngine.scene.camera.position;
-			let plane = new THREE.Plane(cameraDir, position.distanceTo(new THREE.Vector3(0, 0, 0)));
+			//取相机正对的平面作为工作平面 
+			let plane = _D3Measure.GetCameraWorkPlane();
 			return plane;
 		}
 	}
@@ -98,30 +141,60 @@ export function D3Measure(bimEngine) {
 		}
 		bimEngine.StopClick = false;
 	}
-	//按下键盘事件
+	//按下键盘事件,按下ESC清空所有事件和UI
 	function onKeyDown() {
 		if (e.keycode == 27) {
-
+			removeEventLicense();
 		}
 	}
 	//鼠标按下
 	function onMouseDown(event) {
+		if (event.button != 0) {
+			return;
+		}
 		_D3Measure.mouse = mousePosition(event);
-		//获取鼠标按下数据
-		let mouse = mousePosition(event);
-		let rayCaster = new THREE.Raycaster();
-		rayCaster.setFromCamera(mouse, bimEngine.scene.camera);
-		let intersects = (rayCaster.intersectObjects(bimEngine.GetAllVisibilityModel(), true));
-		if (intersects.length > 0) {
-			// console.log(intersects);
-			let plane = new THREE.Plane(intersects[0].face.normal, intersects[0].point.clone().distanceTo(new THREE
-				.Vector3()));
-			bimEngine.WorkPlane = plane;
-			removeEventLicense();
+		//拾取工作平面
+		if (_D3Measure.MouseType == "HandlePlane") {
+			//获取鼠标按下数据
+			let mouse = mousePosition(event);
+			let rayCaster = new THREE.Raycaster();
+			rayCaster.setFromCamera(mouse, bimEngine.scene.camera);
+			let intersects = (rayCaster.intersectObjects(bimEngine.GetAllVisibilityModel(), true));
+			if (intersects.length > 0) {
+				// console.log(intersects);
+				let plane = new THREE.Plane(intersects[0].face.normal, intersects[0].point.clone().distanceTo(new THREE
+					.Vector3()));
+				bimEngine.WorkPlane = plane;
+				removeEventLicense();
+			}
+		}
+		//绘制剖面线，
+		if (_D3Measure.MouseType == "DrawSection") {
+			let point = GetRayWorldPointPlane(_D3Measure.mouse);
+			if (point == null) {
+				return;
+			}
+			if (_D3Measure.CurrentView.viewPoints.length == 0) {
+				//一个点都没有
+				_D3Measure.CurrentView.viewPoints.push(point);
+			} else if (_D3Measure.CurrentView.viewPoints.length == 1) {
+				//有一个点
+				_D3Measure.CurrentView.viewPoints.push(point);
+			} else if (_D3Measure.CurrentView.viewPoints.length == 2) {
+				//有两个点,绘制第三个点
+				_D3Measure.CurrentView.viewPoints.push(point);
+			} else if (_D3Measure.CurrentView.viewPoints.length == 3) {
+				// _D3Measure.CurrentView.viewPoints = [];
+				_D3Measure.ViewLists.push(JSON.parse(JSON.stringify(_D3Measure.CurrentView)));
+			}
+			// console.log(_D3Measure.CurrentView.viewPoints)
 		}
 	}
 	//鼠标弹起
 	function onMouseUp(event) {
+		if (event.button != 0) {
+			return;
+		}
 		_D3Measure.mouse = mousePosition(event);
 
 	}
@@ -131,8 +204,17 @@ export function D3Measure(bimEngine) {
 		if (_D3Measure.MouseType == "HandlePlane") {
 			Animate_MeasurePointPink(event);
 		}
+		//绘制剖面线，
+		if (_D3Measure.MouseType == "DrawSection") {
+			let point = GetRayWorldPointPlane(_D3Measure.mouse);
+			if (point == null) {
+				return;
+			}
+			_D3Measure.CurrentView.currentPoint = point.clone(); 
+			DrawSelectLineTemp(_D3Measure.CurrentView);
+		}
 	}
-	//一些常用的方法
+	//一些常用的方法 
 	//创建UI界面
 	function CreatorUI() {
 
@@ -143,9 +225,37 @@ export function D3Measure(bimEngine) {
 			DrawSelectLine(view);
 		}
 	}
+	//绘制剖面线，临时
+	function DrawSelectLineTemp(view) {
+		if (view.viewPoints.length == 0) {
+			return;
+		} else if (view.viewPoints.length == 1) {
+			let renderPoints = [];
+			//第一个点
+			renderPoints.push(view.viewPoints[0]);
+			//第二个点
+			renderPoints.push(view.currentPoint);
+			//第三个点
+			let dir = view.currentPoint.clone().sub(view.viewPoints[0]);
+			let nomal = view.workerPlane.normal;
+			view.disDir = dir.clone().cross(nomal.clone());
+			renderPoints.push((view.viewPoints[0].clone().add(view.currentPoint)).add(view.disDir));
+			//绘制线条
+			SelectLine("temp", renderPoints, false);
+		} else if (view.viewPoints.length == 2) {
+			let renderPoints = [];
+			//第一个点
+			renderPoints.push(view.viewPoints[0]);
+			//第二个点
+			renderPoints.push(view.viewPoints[1]); 
+			//第三个点
+			renderPoints.push(view.currentPoint);
+			SelectLine("temp", renderPoints, false);
+		}
+	}
 	//绘制剖面线
 	function DrawSelectLine(view) {
-		//view 的结构数据
+		//view 的结构数据 计算管件参数 
 		view = {
 			//相机位置
 			Origin: new THREE.Vector3(),
@@ -161,8 +271,81 @@ export function D3Measure(bimEngine) {
 			Deep: 1
 		};
 		// 创建视图
+	}
+	//剖面示意线条
+	function SelectLine(id, points, active = false) {
+		/*
+		       ------------------center-----------------
+		       |                                       |
+			   |                                       |
+			   |start                                  |end
+			 ---------------------------------------------
+		*/
+		let start = points[0];
+		let end = points[1];
+		let center = points[2];
+		let linePoints = [];
+		let l = 1 / _D3Measure.DrawingScale;
+		let plane = _D3Measure.GetCameraWorkPlane();
+		let dirx = end.clone().sub(start.clone());
+		let diry = dirx.clone().cross(plane.normal);
+		//临时交点
+		let dis = GeometricOperation().PointDistanceLineExtend(center, start, end);
+		let inter1 = start.clone().add(diry.clone().setLength(dis));
+		let inter2 = end.clone().add(diry.clone().setLength(dis));
+		//确定相应的方向
+		linePoints.push(start);
+		linePoints.push(end);
 
+		//文字标识
+		linePoints.push(start);
+		linePoints.push(start.clone().add(dirx.clone().setLength(-l)));
+		linePoints.push(start.clone().add(dirx.clone().setLength(-l)));
+		linePoints.push(start.clone().add(dirx.clone().setLength(-l)).add(diry.clone().setLength(l)));
+		linePoints.push(end);
+		linePoints.push(end.clone().add(dirx.clone().setLength(l)));
+		linePoints.push(end.clone().add(dirx.clone().setLength(l)));
+		linePoints.push(end.clone().add(dirx.clone().setLength(l)).add(diry.clone().setLength(l)));
+		//激活的状态
+		if (active) {
+			linePoints.push(start);
+			linePoints.push(inter1);
+			linePoints.push(inter1);
+			linePoints.push(inter2);
+			linePoints.push(end);
+			linePoints.push(inter2);
+		}
+		//更新图形
+		//首先判断视图中是否存在相应的线条
+		let index = bimEngine.scene.children.findIndex(x => x.id == id);
+		if (index != -1) {
+			//已存在图形，更新形状
 
+		} else {
+			//新增图形
+			let control1 = document.createElement("div");
+			control1.className = "Control";
+			control1.id = "ViewControl1"
+			let control2 = document.createElement("div");
+			control2.className = "Contro2";
+			control2.id = "ViewControl2"
+			let control3 = document.createElement("div");
+			control3.className = "Contro3";
+			control3.id = "ViewControl3"
+			let text = document.createElement("div");
+			text.className = "ViewText";
+			text.id = "ViewText"
+			let handleDir = document.createElement("div");
+			handleDir.className = "handleDir";
+			text.id = "ViewhandleDir";
+			//数据
+		}
+		//更新UI控制按钮及文字
+		
+		
+		
+		
+		return null;
 	}
 	//创建视图前遮罩
 	function CreatorViewMask_Front(view) {
@@ -230,7 +413,7 @@ export function D3Measure(bimEngine) {
 		bimEngine.scene.add(mesh);
 	}
 	//渲染遮罩边线
-	function renderMaskSide() {
+	function renderMaskSide(points) {
 		var geometry = new THREE.Geometry(); //声明一个空几何体对象
 		geometry.vertices = points;
 		var material_ = new THREE.MeshBasicMaterial({
@@ -295,7 +478,7 @@ export function D3Measure(bimEngine) {
 
 	//世界坐标转屏幕坐标 
 	function get2DVec(vector3) {
-		const stdVector = vector3.project(_minMap.camera);
+		const stdVector = vector3.project(bimEngine.scene.camera);
 		const a = window.innerWidth / 2;
 		const b = window.innerHeight / 2;
 		const x = Math.round(stdVector.x * a + a);
@@ -352,28 +535,33 @@ export function D3Measure(bimEngine) {
 					_D3Measure.MeasurePink_Area.firstChild.setAttribute('points', areaPoints.join(' '))
 				}
 				break;
-				// case "line":
-				// 	drawLine(bimEngine.scene, PINK_DETAILS.line)
-				// 	break;
-				// case "point":
-				// 	if (PINK_DETAILS.isCenter) {
-				// 		let position = worldPointToScreenPoint(new THREE.Vector3(PINK_DETAILS.val.x, PINK_DETAILS.val.y,
-				// 			PINK_DETAILS.val.z), camera);
-				// 		MeasurePink_Triangle.style.display = "block";
-				// 		MeasurePink_Triangle.style.top = (position.y - 5) + "px";
-				// 		MeasurePink_Triangle.style.left = (position.x - 5) + "px";
-				// 	} else {
-				// 		let position = worldPointToScreenPoint(new THREE.Vector3(PINK_DETAILS.val.x, PINK_DETAILS.val.y,
-				// 			PINK_DETAILS.val.z), camera);
-				// 		MeasurePink_Quadrangle.style.top = (position.y) + "px";
-				// 		MeasurePink_Quadrangle.style.left = (position.x) + "px";
-				// 		MeasurePink_Quadrangle.style.width = "10px";
-				// 		MeasurePink_Quadrangle.style.height = "10px";
-				// 		MeasurePink_Quadrangle.style.transform = "translate(-50%,-50%)";
-				// 		MeasurePink_Quadrangle.style.display = "block";
-				// 	}
-				// 	break;
 		}
+	}
+	//获取射线选择的点
+	function GetRayWorldPoint(mouse) {
+		let rayCaster = new THREE.Raycaster();
+		rayCaster.setFromCamera(mouse, bimEngine.scene.camera);
+		let intersects = (rayCaster.intersectObjects(_D3Measure.GetCurrentWorkPlane(), true));
+		if (intersects.length > 0) {
+			let pp = intersects[0].point.clone();
+			return pp;
+		}
+	}
+	//获取射线在平面上选择的点
+	function GetRayWorldPointPlane(mouse) {
+		let plane = _D3Measure.GetCurrentWorkPlane();
+		let rayCaster = new THREE.Raycaster();
+		rayCaster.setFromCamera(mouse, bimEngine.scene.camera);
+		var startPickPoint = rayCaster.ray.intersectPlane(plane);
+		return startPickPoint;
+	}
+
+	function guid() {
+		return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+			var r = Math.random() * 16 | 0,
+				v = c == 'x' ? r : (r & 0x3 | 0x8);
+			return v.toString(16);
+		});
 	}
 	return _D3Measure;
 }
