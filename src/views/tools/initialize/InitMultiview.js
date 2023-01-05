@@ -1,5 +1,5 @@
 const THREE = require('three')
-import "../style/multiview.css"
+import "../style/multiview.scss"
 //多视口平铺
 /*
 【视图分类】

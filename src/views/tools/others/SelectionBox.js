@@ -1,7 +1,7 @@
 const THREE = require('three')
 import '@/three/interactive/SelectionBox.js';
 import '@/three/interactive/SelectionHelper.js';
-import "../style/selectBox.css"
+import "../style/selectBox.scss"
 export function selectBox(bimengine) {
 	var _selectBox = new Object();
 	var scene = bimengine.scene;

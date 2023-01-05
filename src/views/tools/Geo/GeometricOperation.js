@@ -72,7 +72,7 @@ export function GeometricOperation() {
 	}
 	//1.1 点到延长线的距离
 	var PointDistanceLineExtend = function(point, start, end) {
-		
+
 		let dir = end.clone().sub(start.clone()).setLength(10000);
 		let newStart = start.clone().sub(dir);
 		let newEnd = end.clone().add(dir);
@@ -115,6 +115,12 @@ export function GeometricOperation() {
 		}
 		return false;
 	}
+	//5. 点到向量的距离
+	var PointDistanceToVector = function(point, start, dir) {
+		let end = start.clone().add(dir);
+		return PointDistanceLineExtend(point, start, end);
+	}
+
 	//点与面
 	//1. 点到面的距离
 	var PointDistanceFace = function(point, plane) {

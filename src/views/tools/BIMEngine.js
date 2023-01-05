@@ -93,10 +93,6 @@ export function BIMEngine(domid, options, GLTFLoader) {
 	_bimEngine.PointRoam = new PointRoam();//定点漫游
 	_bimEngine.scene = null;
 	_bimEngine.GLTFLoader = GLTFLoader;
-	_bimEngine.Measure = {
-		PointMeasure: [],
-		SimpleLineMeasure: []
-	}
 	_bimEngine.StopClick = false //是否禁用单击
 	_bimEngine.RightClickActive = true //是否显示鼠标右键列表
 	window.THREE = THREE;

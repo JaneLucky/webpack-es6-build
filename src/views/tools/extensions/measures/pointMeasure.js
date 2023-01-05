@@ -148,7 +148,7 @@ export function pointMeasure(bimengine) {
 		}
 		switch (PINK_DETAILS.type) {
 			case "area":
-				if (intersects.length) {
+				if (intersects.length && PINK_DETAILS.val) {
 					// drawCircle(bimengine.scene, intersects[0].point, intersects[0].face.normal)
 					//新增
 					let areaPoints = PINK_DETAILS.val.map(item=>{

@@ -1,5 +1,5 @@
 const THREE = require('three')
-import "../style/minMap.css"
+import "../style/minMap.scss"
 //小地图
 
 //点击瞬移

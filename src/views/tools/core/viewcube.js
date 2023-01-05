@@ -9,7 +9,7 @@ import {
 	InitRenender,
 	InitOthers
 } from "../initialize/InitThreejsSence.js"
-import "../style/mainstyle.css"
+import "../style/mainstyle.scss"
 import "three/"
 import {
 	GetBoundingBox
