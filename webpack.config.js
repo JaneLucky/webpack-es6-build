@@ -1,6 +1,9 @@
 let path = require('path');
+const webpack = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const CompressionPlugin = require('compression-webpack-plugin');
 
 module.exports = {
   mode: "production", // 告诉webpack使用production模式的内置优化,
@@ -47,12 +50,18 @@ module.exports = {
         }]
       },
       { 
-        test: /\.css$/, 
-        use: [{ loader: 'style-loader' }, { loader: 'css-loader' }] 
+        test: /\.css$/,
+        use: ExtractTextPlugin.extract({
+          fallback: "style-loader",
+          use: "css-loader"
+        })
       },
       { 
         test: /\.scss$/, 
-        use: [{ loader: 'style-loader' }, { loader: 'css-loader' }, { loader: 'sass-loader' }] 
+        use: ExtractTextPlugin.extract({
+          fallback: "style-loader",
+          use: ["css-loader", "sass-loader"]
+        })
       }
     ]
   },
@@ -68,7 +77,18 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new UglifyJsPlugin()
+    new UglifyJsPlugin(),
+    new ExtractTextPlugin("css/bundle.css"),
+    new CompressionPlugin({ 
+      filename: '[path].gz[query]',//使得多个.gz文件合并成一个文件，这种方式压缩后的文件少，建议使用
+      algorithm: 'gzip',//算法
+      test:  /\.js$|\.css$|\.html$/,
+      threshold: 10240,//只处理比这个值大的资源。按字节计算
+      minRatio: 0.8,//只有压缩率比这个值小的资源才会被处理
+      //是否删除原有静态资源文件，即只保留压缩后的.gz文件，建议这个置为false，还保留源文件。以防：
+      // 假如出现访问.gz文件访问不到的时候，还可以访问源文件双重保障
+      deleteOriginalAssets: false
+    })
   ],
   resolve: {
     alias: {
