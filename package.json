@@ -27,7 +27,8 @@
     "uglifyjs-webpack-plugin": "^2.2.0",
     "url-loader": "^4.1.1",
     "webpack": "^4.44.2",
-    "webpack-cli": "^3.3.12"
+    "webpack-cli": "^3.3.12",
+    "svg-sprite-loader": "^6.0.11"
   },
   "dependencies": {
     "@babel/runtime": "^7.12.5",
