@@ -84,7 +84,6 @@ import { PointRoam } from "./others/PointRoam.js"
 // BIM引擎封装
 export function BIMEngine(domid, options, GLTFLoader) {
 	var _bimEngine = new Object();
-	_bimEngine.Render = new Render(_bimEngine);
 	_bimEngine.RenderSAO = new RenderSAO(_bimEngine);
 	_bimEngine.DisPlayModel = new disPlayModel(_bimEngine);
 	_bimEngine.ModelSelection = new ModelSelection(_bimEngine);
@@ -124,6 +123,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		_bimEngine.ViewCube = new ViewCube(scene, domid); //相机视图对象
 		_bimEngine.ViewCube.init();
 		_bimEngine.MultiView = new Multiview(_bimEngine, camera); //多视图对象
+		_bimEngine.Render = new Render(_bimEngine);//渲染对象
 
 		//监听相机
 		var myEvent = new CustomEvent('bimengine:camerachange', {

@@ -2,6 +2,7 @@ import {
 	FirstPersonCameraControl
 } from '@/three/controls/firstPersonCameraControl.js';
 import "../style/FirstPersonRoaming.scss"
+import "../style/FormStyle.scss"
 export function firstPersonControls(bimengine) {
 	var _firstPersonControls = new Object();
 	let AnimationFrame;
@@ -168,9 +169,9 @@ export function firstPersonControls(bimengine) {
 		let input_item_3 = document.createElement("input")
 		input_item_3.className = "inputtext"
 		input_item_3.type = "number"
-		input_item_3.min = "1"
-		input_item_3.man = "100"
-		input_item_3.step = "1"
+		input_item_3.min = 1
+		input_item_3.max = 100
+		input_item_3.step = 1
 		input_item_3.value = 2
 		input_item_3.onchange = (e)=>{
 			bimengine.FirstPersonControls.controls.moveSpeed = e.target.value/100
