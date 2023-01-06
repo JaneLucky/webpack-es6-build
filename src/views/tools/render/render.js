@@ -94,6 +94,8 @@ export function Render(bimengine) {
 	_render.DisActive = function() {
 		_render.isActive = false
 		render_set_dialog.style.display = "none";//关闭弹框UI
+		render_set_dialog.style.left = "0px";
+		render_set_dialog.style.top = "0px";
 		render_set_dialog.removeEventListener("mousedown",_onMouseDown);
 	}
 
