@@ -12,7 +12,7 @@ import "./../style/FormStyle.scss"
 
 export function Render(bimengine) {
 	var _render = new Object();
-	_render.isActive = false
+	_render.isActive = false;
 	let render_set_dialog;
 	let _container = bimengine.scene.renderer.domElement.parentElement;
 	let bgColorList = [
@@ -163,7 +163,9 @@ export function Render(bimengine) {
 		header_close.className = "Close-Btn";
 		header_close.innerText = "×"
 		header_close.onclick = ()=>{
-			_render.DisActive()
+			// _render.DisActive()
+			let item = bimengine.TopMenu.MenuList.filter(item=>item.label === "引擎设置")[0]
+			item.domEl.click()
 		}
 		header_contain.appendChild(header_title)
 		header_contain.appendChild(header_close)

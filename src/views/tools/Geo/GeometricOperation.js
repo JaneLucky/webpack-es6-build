@@ -90,7 +90,7 @@ export function GeometricOperation() {
 		}
 		return false;
 	}
-	//3. 点投影到线的位置  目标点,线的起点，线的终点
+	//3. 点投影到线的位置  目标点，线的起点，线的终点
 	var PointProjectLine = function(point, start, end) {
 		const egdeV1 = end.clone().sub(start.clone());
 		const egdeV2 = point.clone().sub(start.clone());
@@ -104,7 +104,7 @@ export function GeometricOperation() {
 		//获取投影点
 		var projectPoint = start.clone().add(v1Norm.clone().setLength(distance));
 		return projectPoint;
-	}
+	} 
 	//4. 点是否在线上
 	var IsPointInLine = function(point, start, end) {
 		let dis1 = point.distanceTo(start);

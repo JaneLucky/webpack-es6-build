@@ -95,7 +95,9 @@ export function firstPersonControls(bimengine) {
 		header_close.className = "Header_Close Btn"
 		header_close.innerText = "×"
 		header_close.onclick = ()=>{
-			bimengine.FirstPersonControls.DisActive()
+			// bimengine.FirstPersonControls.DisActive()
+			let item = bimengine.TopMenu.MenuList.filter(item=>item.label === "漫游")[0]
+			item.domEl.click()
 		}
 		header_btns.appendChild(header_close);
 		

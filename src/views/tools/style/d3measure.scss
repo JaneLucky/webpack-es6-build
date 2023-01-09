@@ -1,13 +1,83 @@
 /* 视图操纵手柄 */
+.ViewControlRoot {
+	position: absolute;
+	top: 500px;
+	left: 400px;
+	z-index: 100;
+	width: 400px;
+	height: 50px;
+	border: 1px solid #000;
+	box-sizing: border-box;
+	transform-origin: center;
+	transform: rotate(60deg);
+}
+
 .ViewControl_Top {
-	
+	position: absolute;
+	z-index: 100;
+	pointer-events: all;
+	cursor: move;
+	width: 40px;
+	text-align: center;
+	left: 50%;
+	top: 0;
+	transform: translate(-50%,-50%) rotate(90deg);
 }
+
 .ViewControl_Botton {
-	
+	position: absolute;
+	z-index: 100;
+	cursor: move;
+	width: 40px;
+	text-align: center;
+	transform-origin: center;
+	/* transform: translate(-50%,-50%);
+	transform-origin: center; */
 }
+
 .ViewControl_Left {
-	
+	position: absolute;
+	z-index: 100;
+	cursor: move;
+	width: 40px;
+	text-align: center;
+	top: 50%;
+	left: 0;
+	transform: translate(-50%,-50%);
 }
+
 .ViewControl_Right {
-	
+	position: absolute;
+	z-index: 100;
+	cursor: move;
+	width: 40px;
+	text-align: center;
+	top: 50%;
+	right: 0;
+	transform: translate(50%,-50%);
+}
+
+.ViewText {
+	position: absolute;
+	z-index: 100;
+	cursor: move;
+	width: 100px;
+	/* transform: translate(-50%,-50%); */
+}
+
+.ViewhandleDir {
+	position: absolute;
+	z-index: 100;
+	cursor: pointer;
+	bottom: 0;
+	left: 0;
+	transform: translate(0,100%);
+	pointer-events: auto !important;
+}
+/* 范围框 */
+.ViewhandleRange {
+	position: absolute;
+	z-index: 100;
+	border: 1px dashed royalblue;
+  transform-origin: center; 
 }

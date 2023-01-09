@@ -81,6 +81,8 @@ import {
 
 import { PointRoam } from "./others/PointRoam.js"
 
+import { CreateTopMenu } from "./topMenu/index"
+
 // BIM引擎封装
 export function BIMEngine(domid, options, GLTFLoader) {
 	var _bimEngine = new Object();
@@ -124,6 +126,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		_bimEngine.ViewCube.init();
 		_bimEngine.MultiView = new Multiview(_bimEngine, camera); //多视图对象
 		_bimEngine.Render = new Render(_bimEngine);//渲染对象
+		_bimEngine.TopMenu = new CreateTopMenu(_bimEngine) //顶部menu列表
 
 		//监听相机
 		var myEvent = new CustomEvent('bimengine:camerachange', {

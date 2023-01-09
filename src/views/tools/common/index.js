@@ -86,3 +86,18 @@ export function worldPointToScreenPoint(vector3, camera) {
     y: y
   }
 }
+
+import "./iconfont.js"
+import "../style/SvgIcon.scss"
+//创建svg图标
+export function CreateSvg(name){
+  let svgns = "http://www.w3.org/2000/svg";
+  let xlinkns = "http://www.w3.org/1999/xlink";
+  let icon = document.createElementNS(svgns, "svg");
+  icon.setAttribute("aria-hidden", true);
+  icon.setAttribute("class", 'Svg-Icon');
+  let use = document.createElementNS(svgns, "use");
+  use.setAttributeNS(xlinkns, "href", "#"+name);
+  icon.appendChild(use);
+  return icon
+}
