@@ -126,7 +126,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		_bimEngine.ViewCube.init();
 		_bimEngine.MultiView = new Multiview(_bimEngine, camera); //多视图对象
 		_bimEngine.Render = new Render(_bimEngine);//渲染对象
-		_bimEngine.TopMenu = new CreateTopMenu(_bimEngine) //顶部menu列表
+		_bimEngine.TopMenu = new CreateTopMenu(_bimEngine); //顶部menu列表
 
 		//监听相机
 		var myEvent = new CustomEvent('bimengine:camerachange', {

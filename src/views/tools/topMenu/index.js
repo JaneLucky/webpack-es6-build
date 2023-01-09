@@ -63,13 +63,13 @@ export function CreateTopMenu(bimengine){
       icon: 'icon-setting',
       status: false
     },
-    {
-      pId: '0',
-      value: '5',
-      label: '视图',
-      icon: 'icon-guanlishitu',
-      status: false
-    },
+    // {
+    //   pId: '0',
+    //   value: '5',
+    //   label: '视图',
+    //   icon: 'icon-guanlishitu',
+    //   status: false
+    // },
     {
       pId: '0',
       value: '6',
@@ -231,8 +231,6 @@ export function CreateTopMenu(bimengine){
   }
 
   function handelEvent() {
-    console.log(beforeBtn)
-    console.log(currentBtn)
     if(beforeBtn !== currentBtn){
       switch (beforeBtn) {
         case '1': //漫游
