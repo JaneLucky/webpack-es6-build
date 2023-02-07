@@ -38,19 +38,20 @@ export function Multiview(bimEngine, camera) {
 			if (camera.IsVisibility == true && camera.IsActive == false) {
 				if (res.clientX > minx && res.clientX < maxx) {
 					if (res.clientY > miny && res.clientY < maxy) {
-						camera.IsActive = true; 
+						camera.IsActive = true;
 						bimEngine.scene.controls.dispose();
-						bimEngine.scene.camera = camera;
-						let target = camera.target == null ? bimEngine.scene.controls.target.clone() : camera.target.clone();
-						console.log(camera.target)
-						bimEngine.scene.controls = new THREE.OrbitControls(camera, bimEngine.scene.renderer.domElement);
+						multiview.ReplaceView(bimEngine, camera);
+						let target = camera.target == null ? bimEngine.scene.controls.target.clone() : camera
+							.target.clone();
+						bimEngine.scene.controls = new THREE.OrbitControls(camera, bimEngine.scene.renderer
+							.domElement);
 						bimEngine.scene.controls.target = target;
 						bimEngine.scene.controls.update();
 						if (camera.ControlType == "D3") {
-							window.bimEngine.scene.controls.enableRotate = true; 
+							window.bimEngine.scene.controls.enableRotate = true;
 							document.getElementsByClassName("ViewCube")[0].style.visibility = "visible"
 						} else if (camera.ControlType == "Plane") {
-							window.bimEngine.scene.controls.enableRotate = false; 
+							window.bimEngine.scene.controls.enableRotate = false;
 							document.getElementsByClassName("ViewCube")[0].style.visibility = "hidden"
 						}
 						//把原来的变成false
@@ -59,17 +60,18 @@ export function Multiview(bimEngine, camera) {
 						for (var c of cs) {
 							c.IsActive = false
 						}
+
 						break;
 					}
 				}
-			} 
+			}
 		}
 	})
 	//刷新视图
-	multiview.updaterender = function() {  
+	multiview.updaterender = function() {
 		const HEIGHT = (window.innerHeight) * window.devicePixelRatio;
 		for (let i = 0; i < bimEngine.ArrayCamera.cameras.length; i++) {
-			var camera = bimEngine.ArrayCamera.cameras[i]; 
+			var camera = bimEngine.ArrayCamera.cameras[i];
 			if (camera.IsVisibility) {
 				bimEngine.scene.renderer.setScissorTest(true);
 				bimEngine.scene.renderer.setViewport(camera.viewport.x, HEIGHT - camera.viewport.y - camera
@@ -81,13 +83,13 @@ export function Multiview(bimEngine, camera) {
 				// bimEngine.scene.renderer.setScissorTest(true);
 				bimEngine.scene.renderer.render(bimEngine.scene, camera);
 				//更新相机
-				if(camera.IsActive){ 
+				if (camera.IsActive) {
 					camera.target = bimEngine.scene.controls.target.clone();
 				}
-			} 
+			}
 		}
 	}
-	 
+
 
 
 
@@ -121,7 +123,7 @@ export function Multiview(bimEngine, camera) {
 			}
 		}
 		bimEngine.scene.controls.dispose();
-		bimEngine.scene.camera = camera;
+		multiview.ReplaceView(bimEngine, camera);
 		let target = camera.target == null ? bimEngine.scene.controls.target : camera.target.clone();
 		bimEngine.scene.controls = new THREE.OrbitControls(camera, bimEngine.scene.renderer
 			.domElement);
@@ -153,7 +155,7 @@ export function Multiview(bimEngine, camera) {
 			camera.name = viewdata.label;
 			camera.Id = viewdata.Id;
 			camera.ControlType = "D3";
-			bimEngine.ArrayCamera.cameras.splice(0,0,camera);
+			bimEngine.ArrayCamera.cameras.splice(0, 0, camera);
 			multiview.SwitchView(bimEngine, camera);
 			//跳转至最佳位置 
 			bimEngine.ViewCube.cameraGoHome()
@@ -176,7 +178,7 @@ export function Multiview(bimEngine, camera) {
 			camera.name = viewdata.label;
 			camera.Id = viewdata.Id;
 			camera.ControlType = "D3";
-			bimEngine.ArrayCamera.cameras.splice(0,0,camera);
+			bimEngine.ArrayCamera.cameras.splice(0, 0, camera);
 			multiview.SwitchView(bimEngine, camera);
 			bimEngine.ViewCube.cameraGoHome();
 			//跳转至最佳位置
@@ -194,11 +196,11 @@ export function Multiview(bimEngine, camera) {
 			var height = window.innerHeight; //窗口高度
 			var k = width / height; //窗口宽高比 
 			var s = 100; //三维场景显示范围控制系数，系数越大，显示的范围越大
-			var camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 0.01, 1000000);
+			var camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 0.001, 1000000);
 			camera.name = viewdata.label;
 			camera.Id = viewdata.Id;
 			camera.ControlType = "Plane";
-			bimEngine.ArrayCamera.cameras.splice(0,0,camera);
+			bimEngine.ArrayCamera.cameras.splice(0, 0, camera);
 			//跳转至最佳位置  
 			var box = bimEngine.ViewCube.getBoundingBox();
 			var min = box.min;
@@ -230,20 +232,37 @@ export function Multiview(bimEngine, camera) {
 			camera.name = viewdata.label;
 			camera.Id = viewdata.Id;
 			camera.ControlType = "Plane";
-			bimEngine.ArrayCamera.cameras.splice(0,0,camera);
+			bimEngine.ArrayCamera.cameras.splice(0, 0, camera);
 			//跳转至最佳位置  
-			let position = new THREE.Vector3(viewdata.ViewData.Origin.X * 0.3048, viewdata.ViewData.Origin.Z *
-				0.3048, viewdata
-				.ViewData.Origin.Y * 0.3048);
-			let ViewDirection = new THREE.Vector3(viewdata.ViewData.ViewDirection.X, viewdata.ViewData.ViewDirection
-				.Z, viewdata.ViewData
-				.ViewDirection.Y);
-			let target = position.clone().add(ViewDirection);
+			if (viewdata.ViewData.Origin.X == null) {
+				let position = new THREE.Vector3(viewdata.ViewData.Origin.x, viewdata.ViewData.Origin.y, viewdata
+					.ViewData.Origin.z);
+				let ViewDirection = new THREE.Vector3(viewdata.ViewData.ViewDirection.x, viewdata.ViewData
+					.ViewDirection
+					.y, viewdata.ViewData
+					.ViewDirection.z);
+				let target = position.clone().add(ViewDirection);
 
-			bimEngine.ViewCube.animateCamera(bimEngine.scene.camera.position, position, bimEngine.scene.controls
-				.target
-				.clone(), target)
-			multiview.SwitchView(bimEngine, camera);
+				bimEngine.ViewCube.animateCamera(bimEngine.scene.camera.position, position, bimEngine.scene.controls
+					.target
+					.clone(), target)
+				multiview.SwitchView(bimEngine, camera);
+			} else {
+				let position = new THREE.Vector3(viewdata.ViewData.Origin.X * 0.3048, viewdata.ViewData.Origin.Z *
+					0.3048, viewdata
+					.ViewData.Origin.Y * 0.3048);
+				let ViewDirection = new THREE.Vector3(viewdata.ViewData.ViewDirection.X, viewdata.ViewData
+					.ViewDirection
+					.Z, viewdata.ViewData
+					.ViewDirection.Y);
+				let target = position.clone().add(ViewDirection);
+
+				bimEngine.ViewCube.animateCamera(bimEngine.scene.camera.position, position, bimEngine.scene.controls
+					.target
+					.clone(), target)
+				multiview.SwitchView(bimEngine, camera);
+			}
+
 		} else {
 			multiview.SwitchView(bimEngine, bimEngine.ArrayCamera.cameras[index]);
 		}
@@ -251,18 +270,53 @@ export function Multiview(bimEngine, camera) {
 		document.getElementsByClassName("ViewCube")[0].style.visibility = "hidden"
 	}
 
+
+
 	//获得三维正交视图数据
-	multiview.Get3DOrthogonalData = function () {
-		let data = window.bimEngine.D3Measure.ViewList.filter(item=>item.ViewType == "3DOrthogonal")
-		let item = data && data.length?data[0]:{}
+	multiview.Get3DOrthogonalData = function() {
+		let data = window.bimEngine.D3Measure.ViewList.filter(item => item.ViewType == "3DOrthogonal")
+		let item = data && data.length ? data[0] : {}
 		return item
 	}
 	//获得三维透视视图数据
-	multiview.Get3DPerspectiveData = function () {
-		let data = window.bimEngine.D3Measure.ViewList.filter(item=>item.ViewType == "3DPerspective")
-		let item = data && data.length?data[0]:{}
+	multiview.Get3DPerspectiveData = function() {
+		let data = window.bimEngine.D3Measure.ViewList.filter(item => item.ViewType == "3DPerspective")
+		let item = data && data.length ? data[0] : {}
 		return item
-	}  
+	}
+
+	multiview.ReplaceView = function (bimEngine, camera) {
+		let beforeCamera = bimEngine.scene.camera
+		bimEngine.scene.camera = camera;
+		if(bimEngine.scene.camera.Id !== beforeCamera.Id){
+			console.log('相机切换')
+			//测量点
+			let MeasurePointContainer = document.getElementById("MeasurePoint")
+			if(MeasurePointContainer){
+				let MeasureList = MeasurePointContainer.getElementsByClassName("PointItem")
+				for(let i=0;i<MeasureList.length;i++){
+					if(MeasureList[i].dataset.cameraId === camera.type+"_"+camera.Id){
+						MeasureList[i].style.display = "block"
+					}else{
+						MeasureList[i].style.display = "none"
+					}
+				}
+			}
+			//测量线
+			let MeasureLineContainer = document.getElementById("MeasureLine")
+			if(MeasureLineContainer){
+				let MeasureList = MeasureLineContainer.getElementsByClassName("LineItem")
+				for(let i=0;i<MeasureList.length;i++){
+					if(MeasureList[i].dataset.cameraId === camera.type+"_"+camera.Id){
+						MeasureList[i].style.display = "block"
+					}else{
+						MeasureList[i].style.display = "none"
+					}
+				}
+			}
+		}
+	}
+
 
 	return multiview;
 }
@@ -318,13 +372,11 @@ export function TileView(bimEngine) {
 	}
 	//最多4个视图的平铺
 	if (viewCount == 1) {
-		//一个视图 
-		{
-			const subcamera = cameraArray[0];
-			subcamera.viewport = new THREE.Vector4(0, 0, Math.ceil(WIDTH), Math.ceil(HEIGHT));
-			Resize(subcamera);
-			CreatorViewUI(bimEngine, subcamera);
-		}
+		//一个视图  
+		const subcamera = cameraArray[0];
+		subcamera.viewport = new THREE.Vector4(0, 0, Math.ceil(WIDTH), Math.ceil(HEIGHT));
+		Resize(subcamera);
+		CreatorViewUI(bimEngine, subcamera);
 	}
 	if (viewCount == 2) {
 		//两个视图
@@ -433,7 +485,7 @@ export function CreatorViewUI(bimengine, camera) {
 	dom.style.left = left + "px";
 	dom.style.width = width + "px";
 	dom.style.height = height + "px";
-	dom.style.outline = "1px solid rgb(10,10,10,0.2)"; 
+	dom.style.outline = "1px solid rgb(10,10,10,0.2)";
 
 
 	var htmls = [
@@ -455,7 +507,7 @@ export function CreatorViewUI(bimengine, camera) {
 			bimengine.ArrayCamera.cameras.splice(index, 1);
 		}
 		if (bimengine.ArrayCamera.cameras.findIndex(x => x.uuid == bimengine.scene.camera.uuid) == -1) {
-			bimengine.scene.camera = bimengine.ArrayCamera.cameras[0];
+			multiview.ReplaceView(bimEngine, bimengine.ArrayCamera.cameras[0]);
 		}
 		TileView(bimengine);
 	})
@@ -484,7 +536,7 @@ export function CreatorViewUI(bimengine, camera) {
 			}
 			camera_.IsActive = true;
 			camera_.IsVisibility = true;
-			bimengine.scene.camera = camera_;
+			multiview.ReplaceView(bimEngine, camera_);
 			TileView(bimengine);
 		}
 	})

@@ -201,6 +201,7 @@ export function selectBox(bimengine) {
 						}
 					}
 					bimEngine.Selection = BeforeSelection
+					bimEngine.ResetSelectedModels("loaded", BeforeSelection)
 				}
 			}
 		}

@@ -1,5 +1,7 @@
+import { GetTwoCharCenterStr } from "@/utils/regex.js"
+
 // 获得模型构建的包围矩形
-export function GetBoundingBox(list){
+export function GetBoundingBox(list, isRequireModel = false){
   var rootmodels = window.bimEngine.scene.children.filter(o => o.name == "rootModel");
   var allPointsX = [];
   var allPointsY = [];
@@ -10,7 +12,14 @@ export function GetBoundingBox(list){
         if (rootmodel && rootmodel.material.length) {
           let hasSet = false
           for (let model of rootmodel.ElementInfos) {
-            if(model.name === select){
+            if(!isRequireModel && model.name === select){
+              let point = model.center.clone()
+              allPointsX.push(point.x);
+              allPointsY.push(point.y);
+              allPointsZ.push(point.z);
+              hasSet = true
+              break
+            }else if(isRequireModel && GetTwoCharCenterStr(model.name)[0] === select){
               let point = model.center.clone()
               allPointsX.push(point.x);
               allPointsY.push(point.y);
@@ -77,13 +86,22 @@ export function GetBoundingBox(list){
 //世界坐标转屏幕坐标
 export function worldPointToScreenPoint(vector3, camera) {
   const stdVector = vector3.project(camera);
-  const a = window.innerWidth / 2;
-  const b = window.innerHeight / 2;
+  let width = window.innerWidth,height = window.innerHeight;
+  let  basex = 0, basey = 0;
+  if(camera.viewport){
+    width = camera.viewport.z
+    height = camera.viewport.w
+		const HEIGHT = (window.innerHeight) * window.devicePixelRatio;
+		basex = camera.viewport.x;
+		basey = camera.viewport.y;
+  }
+  const a = width / 2;
+  const b = height / 2;
   const x = Math.round(stdVector.x * a + a);
   const y = Math.round(-stdVector.y * b + b);
   return {
-    x: x,
-    y: y
+    x: basex + x,
+    y: basey+ y
   }
 }
 

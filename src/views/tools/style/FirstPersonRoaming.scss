@@ -7,6 +7,7 @@
 	height: fit-content;
 	border: 1px solid #656565;
 	box-sizing: border-box;
+	user-select: none;
 	.Header_Contain{
 		display: flex;
 		width: 100%;
@@ -61,8 +62,21 @@
 		background: rgb(226, 227, 224);
 		.Form_Item{
 			display: flex;
+			align-items: center;
 			.Form_Item_Label{
 				padding-right: 5px;
+			}
+			.Btn_Contain{
+				border: 1px solid #aaaaaa;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 2px;
+				border-radius: 4px;
+			}
+			.Speed_Text{
+				text-align: center;
+				width: 50px;
 			}
 		}
 	}

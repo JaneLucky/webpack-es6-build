@@ -3,34 +3,38 @@ import {
 } from '@/three/controls/firstPersonCameraControl.js';
 import "../style/FirstPersonRoaming.scss"
 import "../style/FormStyle.scss"
+import { CreateSvg } from "@/views/tools/common/index.js"
 export function firstPersonControls(bimengine) {
 	var _firstPersonControls = new Object();
 	let AnimationFrame;
 	let roam_dialog, header_max, header_min, header_main;
 	let _container = bimengine.scene.renderer.domElement.parentElement;
+	let speed = 1;
 	_firstPersonControls.isActive = false
 	//激活
 	_firstPersonControls.Active = function() {
 		bimengine.scene.controls && (bimengine.scene.controls.enabled = false)
-		_firstPersonControls.controls = new FirstPersonCameraControl(bimengine.scene.camera, bimengine.scene.renderer.domElement,bimengine.GetAllVisibilityModel());
-		_firstPersonControls.controls.name = "FirstPersonControls"
+		if(!_firstPersonControls.controls){
+			_firstPersonControls.controls = new FirstPersonCameraControl(bimengine.scene.camera, bimengine.scene.renderer.domElement,bimengine.GetAllVisibilityModel());
+			_firstPersonControls.controls.name = "FirstPersonControls"
+			/* 属性参数默认 */
+			let settings = {
+				firstPerson: true,
+				gravity: false,
+				collision: false,
+				positionEasing: true,
+				speed:0.02
+			}; 
+			_firstPersonControls.controls.enabled = settings.firstPerson;
+			_firstPersonControls.controls.applyGravity = settings.gravity;
+			_firstPersonControls.controls.applyCollision = settings.collision;
+			_firstPersonControls.controls.positionEasing = settings.positionEasing; 
+			_firstPersonControls.controls.moveSpeed = settings.speed; 
+		}
+		_firstPersonControls.controls.enabled = true;
 		_firstPersonControls.isActive = true
-		
 		bimengine.MinMap.show();//打开小地图
 		CreatorRoamDialog() //创建弹框UI
-		/* 属性参数默认 */
-		let settings = {
-			firstPerson: true,
-			gravity: false,
-			collision: false,
-			positionEasing: true,
-			speed:0.02
-		}; 
-		_firstPersonControls.controls.enabled = settings.firstPerson;
-		_firstPersonControls.controls.applyGravity = settings.gravity;
-		_firstPersonControls.controls.applyCollision = settings.collision;
-		_firstPersonControls.controls.positionEasing = settings.positionEasing; 
-		_firstPersonControls.controls.moveSpeed = settings.speed; 
 		window.addEventListener('resize', onWindowResize, false);
 		render();
 	}
@@ -39,13 +43,14 @@ export function firstPersonControls(bimengine) {
 		bimengine.scene.controls && (bimengine.scene.controls.enabled = true)
 		window.removeEventListener('resize', onWindowResize)
 		cancelAnimationFrame(AnimationFrame) //清除动画
-		_firstPersonControls.isActive = false
-		
+		_firstPersonControls.isActive = false 
 		roam_dialog.style.display = "none";//关闭弹框UI
 		header_max.style.display = "none";
 		header_min.style.display = "block";
 		header_main.style.display = "block";
-		bimengine.MinMap.close();//关闭小地图
+		bimengine.MinMap.close();//关闭小地图ss
+		_firstPersonControls.controls.enabled = false;
+		_firstPersonControls.controls._isEnabled = false;
 	}
 
 	function CreatorRoamDialog(){
@@ -120,7 +125,6 @@ export function firstPersonControls(bimengine) {
 		input_item_0.type = "checkbox"
 		input_item_0.checked = true
 		input_item_0.onchange = (e)=>{
-			console.log(e.target.checked)
 			if(e.target.checked){
 				bimengine.MinMap.show();//打开小地图
 			}else{
@@ -168,18 +172,39 @@ export function firstPersonControls(bimengine) {
 		form_item_label_3.className = "Form_Item_Label"
 		form_item_label_3.innerText = "速度"
 		form_item_3.appendChild(form_item_label_3);
-		let input_item_3 = document.createElement("input")
-		input_item_3.className = "inputtext"
-		input_item_3.type = "number"
-		input_item_3.min = 1
-		input_item_3.max = 100
-		input_item_3.step = 1
-		input_item_3.value = 2
-		input_item_3.onchange = (e)=>{
-			bimengine.FirstPersonControls.controls.moveSpeed = e.target.value/100
+
+
+		let btn_sub_contain = document.createElement("div");
+		btn_sub_contain.className = "Btn_Contain"
+		let btn_sub_icon = CreateSvg("icon-jianhao")
+		btn_sub_contain.appendChild(btn_sub_icon)
+		btn_sub_contain.onclick = (e)=>{
+			if(speed>1){
+				speed = speed/2
+				input_item_3.innerText = speed+"X"
+				bimengine.FirstPersonControls.controls.moveSpeed = 0.02 * speed
+			}
+
 		}
+		form_item_3.appendChild(btn_sub_contain);
+
+		let input_item_3 = document.createElement("div")
+		input_item_3.className = "Speed_Text"
+		input_item_3.innerText = speed+"X"
 		form_item_3.appendChild(input_item_3);
-	
+
+		let btn_add_contain = document.createElement("div");
+		btn_add_contain.className = "Btn_Contain"
+		let btn_add_icon = CreateSvg("icon-jiahao")
+		btn_add_contain.appendChild(btn_add_icon)
+		btn_add_contain.onclick = (e)=>{
+			if(speed<16){
+				speed = speed*2
+				input_item_3.innerText = speed+"X"
+				bimengine.FirstPersonControls.controls.moveSpeed = 0.02 * speed
+			}
+		}
+		form_item_3.appendChild(btn_add_contain);
 		_container.appendChild(roam_dialog);
 	}
 	

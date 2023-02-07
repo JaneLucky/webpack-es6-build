@@ -73,10 +73,10 @@ export function renderMeasurePink(domName,type) {
   var root = getRootDom(domName)
   let NS_SVG = 'http://www.w3.org/2000/svg'
   let Triangle = document.createElementNS(NS_SVG, 'svg')
-  Triangle.setAttribute('style', 'position:absolute;width:20px;height:20px;display:none;')
+  Triangle.setAttribute('style', 'position:absolute;width:20px;height:20px;display:none;pointer-events:none;')
   let polygon = document.createElementNS(NS_SVG, "polygon")
   polygon.setAttribute('points', '5,0 10,10 0,10')
-  polygon.setAttribute('style', 'fill:rgba(0,255,0,0.2);stroke:rgba(0,255,0,1);stroke-width:2;')
+  polygon.setAttribute('style', 'fill:rgba(0,255,0,0.2);stroke:rgba(0,255,0,1);stroke-width:2;pointer-events:none;')
   Triangle.appendChild(polygon);
   root.appendChild(Triangle);
 
@@ -89,7 +89,7 @@ export function renderMeasurePink(domName,type) {
   Area.setAttribute('style', 'position:absolute;width:100vw;height:100vh;display:none;pointer-events: none;')
   let AreaPolygon = document.createElementNS(NS_SVG, "polygon")
   AreaPolygon.setAttribute('points', '0,0 10,0 10,10 0,10')
-  AreaPolygon.setAttribute('style', 'fill:rgba(0,255,0,0.2);stroke:rgba(0,255,0,1);stroke-width:2;')
+  AreaPolygon.setAttribute('style', 'fill:rgba(0,255,0,0.2);stroke:rgba(0,255,0,1);stroke-width:2;pointer-events:none;')
   Area.appendChild(AreaPolygon);
   root.appendChild(Area);
 

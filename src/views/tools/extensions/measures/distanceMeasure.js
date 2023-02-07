@@ -3,16 +3,20 @@ export function distanceMeasure(bimengine) {
 	var _distanceMeasure = new Object();
 	var _container = bimengine.scene.renderer.domElement.parentElement;
 	var camera = bimengine.scene.camera;
+	var drag = true;
 	_distanceMeasure.Active = function() {
 		//启动
 		_container.addEventListener('pointerdown', onMouseDown);
 		_container.addEventListener('pointermove', onMouseMove);
+		_container.addEventListener('pointerup', onMouseUp)
 		_distanceMeasure.models = bimengine.GetAllVisibilityModel();
+		bimengine.Measures.SimpleMeasure.UpdateRender()
 	}
 	_distanceMeasure.DisActive = function() {
 		//不启动
 		_container.removeEventListener('pointerdown', onMouseDown);
 		_container.removeEventListener('pointermove', onMouseMove);
+		_container.removeEventListener('pointerup', onMouseUp)
 		bimengine.Measures.SimpleMeasure.DisActive();
 	}
 
@@ -22,22 +26,25 @@ export function distanceMeasure(bimengine) {
 	function onMouseMove(evt) {
 		let rayCaster = new THREE.Raycaster();
 		let mouse = new THREE.Vector2();
-		mouse.x = ((evt.clientX - document.body.getBoundingClientRect().left) / document.body.offsetWidth) * 2 - 1;
-		mouse.y = -((evt.clientY - document.body.getBoundingClientRect().top) / document.body.offsetHeight) * 2 + 1;
+		mouse.x = ((evt.clientX - bimengine.scene.camera.viewport.x) / bimengine.scene.camera.viewport.z) * 2 - 1;
+		mouse.y = -((evt.clientY - bimengine.scene.camera.viewport.y) / bimengine.scene.camera.viewport.w) * 2 + 1;
 		//这里为什么是-号，没有就无法点中
 		rayCaster.setFromCamera(mouse, camera);
 		let intersects = rayCaster.intersectObjects(_distanceMeasure.models, true);
-		if (intersects.length < 1) {
-			bimengine.Measures.SimpleMeasure.currentMeasure = null;
-			bimengine.Measures.SimpleMeasure.cameraRefresh();
-			return;
-		}
+		// if (intersects.length < 1) {
+		// 	bimengine.Measures.SimpleMeasure.currentMeasure = null;
+		// 	bimengine.Measures.SimpleMeasure.cameraRefresh();
+		// 	return;
+		// }
+
+
 		//第一次绘制:渲染一个点
 		let point = intersects.length ? {
 			x: evt.clientX - 4,
 			y: evt.clientY - 4
 		} : null;
-		bimengine.Measures.SimpleMeasure.MeasurePointPinkOnMouseMove(point);
+
+		// bimengine.Measures.SimpleMeasure.MeasurePointPinkOnMouseMove(point);
 		if (State == 0) {
 
 		} else if (State == 1) {
@@ -55,8 +62,8 @@ export function distanceMeasure(bimengine) {
 				};
 				bimengine.Measures.SimpleMeasure.cameraRefresh();
 			} else {
-				bimengine.Measures.SimpleMeasure.currentMeasure = null;
-				bimengine.Measures.SimpleMeasure.cameraRefresh();
+				// bimengine.Measures.SimpleMeasure.currentMeasure = null;
+				// bimengine.Measures.SimpleMeasure.cameraRefresh();
 			}
 		}
 	}
@@ -75,21 +82,36 @@ export function distanceMeasure(bimengine) {
 		if (evt.button != 0) {
 			return;
 		}
-		if (State == 0) {
-			//第一次绘制
-			State = State + 1;
-		} else if (State == 1) {
-			//第二次绘制
-			var val = JSON.parse(JSON.stringify(bimengine.Measures.SimpleMeasure.currentMeasure));
-			if (val == null) {
-				return;
-			}
-			val.id = guid();
-			bimengine.Measures.SimpleMeasure.TotalMeasures.push(val);
-			bimengine.Measures.SimpleMeasure.currentMeasure = {};
-			bimengine.Measures.SimpleMeasure.cameraRefresh();
-			State = 0;
+		drag = false
+		setTimeout(function() {
+			drag = true
+		}, 100)
+	}
+	//鼠标谈起
+	function onMouseUp(evt) {
+		if (evt.button != 0) {
+			return;
 		}
+		if (drag == true) {
+			return;
+		}
+		setTimeout(function() {
+			if (State == 0) {
+				//第一次绘制
+				State = State + 1;
+			} else if (State == 1) {
+				//第二次绘制
+				var val = JSON.parse(JSON.stringify(bimengine.Measures.SimpleMeasure.currentMeasure));
+				if (val == null) {
+					return;
+				}
+				val.id = guid();
+				bimengine.Measures.SimpleMeasure.TotalMeasures.push(val);
+				bimengine.Measures.SimpleMeasure.currentMeasure = {};
+				bimengine.Measures.SimpleMeasure.cameraRefresh();
+				State = 0;
+			}
+		}, 100);
 	}
 	//生成随机字符串id
 	function guid() {

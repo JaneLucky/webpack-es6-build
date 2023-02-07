@@ -19,17 +19,15 @@ export function RenderSAO(bimengine) {
 		var scene = bimengine.scene;
 		var renderer = scene.renderer;
 		var camera = scene.camera;
-
+		if (enable == false) {
+			bimengine.RenderSAO.saoPass.enabled=false
+			return;
+		}
 		var composer = new EffectComposer(renderer);
 		var renderPass = new RenderPass(scene, camera);
 		composer.addPass(renderPass);
 		var saoPass = new SAOPass(scene, camera, false, true);
-
-
-
 		_renderSAO.saoPass = saoPass;
-
-
 		composer.addPass(saoPass);
 		_renderSAO.composer = composer;
 		window.addEventListener('resize', onWindowResize);

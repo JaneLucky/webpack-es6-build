@@ -98,13 +98,12 @@ export function setEventsMouse(bimEngine, callBack) {
 				//获取与射线相交的对象数组， 其中的元素按照距离排序，越近的越靠前。
 				//+true，是对其后代进行查找，这个在这里必须加，因为模型是由很多部分组成的，后代非常多。
 				let intersects = (rayCaster.intersectObjects(bimEngine.GetAllVisibilityModel(), true));
-				let BeforeSelection = bimEngine.Selection ? JSON.parse(JSON.stringify(bimEngine.Selection)) :
-				[] //选中的构建列表
+				let BeforeSelection = JSON.parse(JSON.stringify(bimEngine.SelectedModels.loadedModels)) //选中的构建列表
 				let BEFORE_SELECT = bimEngine.CurrentSelect ? bimEngine.CurrentSelect : {
 					dbid: null,
 					name: null,
 					glb: null,
-					TypeName: null
+					TypeName: null,
 				} //当前选中的构建位置信息，用于记录上一次选中的模型，也用于模型属性查询
 				//存储选中构建
 				// console.log(intersects)
@@ -131,7 +130,8 @@ export function setEventsMouse(bimEngine, callBack) {
 												dbid: clickObj.dbid,
 												name: clickObj.name,
 												glb: intersect.object.url,
-												TypeName: intersect.object.TypeName
+												TypeName: intersect.object.TypeName,
+												basePath:clickObj.basePath
 											}
 											BeforeSelection.push(GroupModel)
 
@@ -143,7 +143,8 @@ export function setEventsMouse(bimEngine, callBack) {
 													dbid: clickObj.dbid,
 													name: clickObj.name,
 													glb: intersect.object.url,
-													TypeName: intersect.object.TypeName
+													TypeName: intersect.object.TypeName,
+													basePath:clickObj.basePath
 												}
 												BeforeSelection[GroupIndex].children.push(clickObj.name)
 											} else { //存在
@@ -237,11 +238,13 @@ export function setEventsMouse(bimEngine, callBack) {
 											TypeName: intersect.object.TypeName,
 											children: [clickObj.name]
 										}
+										 
 										BEFORE_SELECT = {
 											dbid: clickObj.dbid,
 											name: clickObj.name,
 											glb: intersect.object.url,
-											TypeName: intersect.object.TypeName
+											TypeName: intersect.object.TypeName,
+											basePath:clickObj.basePath
 										}
 										BeforeSelection.push(currentModel) //给选中数据赋值
 										break;
@@ -254,12 +257,14 @@ export function setEventsMouse(bimEngine, callBack) {
 											instanceId: intersect.instanceId,
 											name: intersect.object.MeshId
 										}]
-									}
+									} 
+									 
 									BEFORE_SELECT = {
 										dbid: intersect.instanceId,
 										name: intersect.object.MeshId,
 										glb: intersect.object.url,
-										TypeName: intersect.object.TypeName
+										TypeName: intersect.object.TypeName,
+										basePath:intersect.object.ElementInfos[0].basePath
 									}
 									BeforeSelection.push(currentModel) //给选中数据赋值
 									break;
@@ -275,25 +280,10 @@ export function setEventsMouse(bimEngine, callBack) {
 						}
 						break;
 				}
-				//恢复之前选中的构建
-				if (bimEngine.Selection && bimEngine.Selection.length) {
-					HandleModelSelect(bimEngine.Selection, [{
-						key: 'material'
-					}])
-				}
-				// 针对现在选中的构建改变材质
-				if (BeforeSelection && BeforeSelection.length) {
-					let material = new THREE.MeshStandardMaterial({
-						color: new THREE.Color(0.375, 0.63, 1),
-						side: THREE.DoubleSide
-					});
-					HandleModelSelect(BeforeSelection, [{
-						key: 'material',
-						val: material
-					}])
-				}
+
 				bimEngine.CurrentSelect = BEFORE_SELECT
 				bimEngine.Selection = BeforeSelection
+				bimEngine.ResetSelectedModels("loaded", BeforeSelection)
 				sessionStorage.setItem('SelectedSingleModelInfo',JSON.stringify(BEFORE_SELECT))
 				//回调
 				callBack({
@@ -383,7 +373,7 @@ export function setEventsMouse(bimEngine, callBack) {
 		right_click_menu_container && (right_click_menu_container.style.left = event.x+'px');//关闭弹框UI
 		for(let i=0;i<menuList.length;i++){
 			if(menuList[i].value !== '5' && menuList[i].value !== '6' ){
-				menuList[i].domItem.style.display = window.bimEngine.Selection && window.bimEngine.Selection.length ?"block":"none"
+				menuList[i].domItem.style.display = window.bimEngine.SelectedModels.loadedModels.length ?"block":"none"
 			}
 		}
 	}
@@ -452,7 +442,7 @@ export function setEventsMouse(bimEngine, callBack) {
 			}
 			menu_item.dataset.value = menuList[i].value
 			menu_item.onclick = (e)=>{
-				console.log(e.target.dataset.value)
+				// console.log(e.target.dataset.value)
 				handleMenuClickChange(e.target.dataset.value)
 			}
 			right_click_menu_container.appendChild(menu_item)
@@ -469,16 +459,16 @@ export function setEventsMouse(bimEngine, callBack) {
 				
 				break;
 			case '3'://隔离
-				if(window.bimEngine.Selection && window.bimEngine.Selection.length){
+				if(window.bimEngine.SelectedModels.loadedModels.length){
 					//隐藏所有
 					HandleModelSelect(null,[{key:'visible',val:false}])
 					//显示选中的
-					HandleModelSelect(window.bimEngine.Selection,[{key:'visible',val:true}])
+					HandleModelSelect(window.bimEngine.SelectedModels.loadedModels,[{key:'visible',val:true}])
 				}
 				break;
 			case '4'://隐藏
-				if(window.bimEngine.Selection && window.bimEngine.Selection.length){
-					HandleModelSelect(window.bimEngine.Selection,[{key:'visible',val:false}])
+				if(window.bimEngine.SelectedModels.loadedModels.length){
+					HandleModelSelect(window.bimEngine.SelectedModels.loadedModels,[{key:'visible',val:false}])
 				}
 				break;
 			case '5'://显示全部
@@ -498,7 +488,7 @@ export function setEventsMouse(bimEngine, callBack) {
 //定义键盘按键事件
 export function setKeyEvents() {
 	window.addEventListener('keydown', function(e) {
-		console.log(e);
+		// console.log(e);
 	});
 }
 

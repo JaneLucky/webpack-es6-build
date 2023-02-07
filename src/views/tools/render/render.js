@@ -216,7 +216,7 @@ export function Render(bimengine) {
 		input_item_1.type = "checkbox"
 		input_item_1.checked = false
 		input_item_1.onchange = (e)=>{
-			// console.log(e.target.checked)
+			bimengine.RenderSAO.enableRenderSAO(e.target.checked)
 		}
 		form_item_1.appendChild(input_item_1);
 	

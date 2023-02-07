@@ -4,32 +4,43 @@ export function heightMeasure(bimengine) {
 	var _heightMeasure = new Object();
 	var _container = bimengine.scene.renderer.domElement.parentElement;
 	var camera = bimengine.scene.camera;
-
+	var drag = true;
 	//激活功能
 	_heightMeasure.Active = function() {
 		CreateUI(_container);
 		_container.addEventListener('pointerdown', onMouseDown);
 		_container.addEventListener('pointermove', onMouseMove);
+		_container.addEventListener('pointerup', onMouseUp);
 		_heightMeasure.models = bimengine.GetAllVisibilityModel();
+		bimengine.Measures.SimpleMeasure.UpdateRender()
 	}
 	//取消功能
 	_heightMeasure.DisActive = function() {
 		_container.removeEventListener('pointerdown', onMouseDown);
 		_container.removeEventListener('pointermove', onMouseMove);
+		_container.removeEventListener('pointerup', onMouseUp);
 		bimengine.Measures.SimpleMeasure.DisActive();
+		let doms = document.getElementsByClassName("HeightMeasuePanel");
+		for (; doms.length >= 1;) {
+			doms[0].remove();
+		}
 	}
-	//按下
-	function onMouseDown(evt) {
+	//鼠标弹起
+	function onMouseUp(evt) {
 		if (evt.button != 0) {
 			return;
 		}
+		if (drag == true) {
+			return;
+		}
 		setTimeout(function() {
-			var pickobject = bimEngine.Selection;
-			if (pickobject == null || pickobject.PickObject == null) {
+			var pickobject = bimEngine.CurrentSelect;
+			if (pickobject == null) {
 				return;
 			}
 			//获取模型的box数据
-			var item = pickobject.PickObject.model.ElementInfos[pickobject.PickObject.dbid];
+			var item = bimengine.scene.children.filter(x => x.url == pickobject.glb)[0].ElementInfos[pickobject
+				.dbid];
 			var setting = GetMeasureSettingType();
 			var ray_result = rayCameraResult(evt);
 			if (ray_result == null) {
@@ -71,20 +82,28 @@ export function heightMeasure(bimengine) {
 			}
 			//接下来就是获取碰撞
 			var results = rayDirectResult(ray_point, ray_dir);
-			//遍历，找到不在包围盒范围内的数据
-
+			//遍历，找到不在包围盒范围内的数据 
 			for (let i = 0; i < results.length; i++) {
 				let picker = results[i].point;
 				if (picker.x >= item.min.x && picker.y >= item.min.y && picker.z >= item.min.z &&
 					picker.x <= item.max.x && picker.y <= item.max.y && picker.z <= item.max.z) {
 					continue;
 				}
-				//接下来就是绘制两点了
-				console.log(ray_point.distanceTo(picker), ray_point, picker);
+				//接下来就是绘制两点了  
 				bimengine.Measures.SimpleMeasure.SetMeasureLine(ray_point, picker);
 				break
 			}
 		}, 100);
+	}
+	//按下
+	function onMouseDown(evt) {
+		if (evt.button != 0) {
+			return;
+		}
+		drag = false
+		setTimeout(function() {
+			drag = true
+		}, 100)
 	}
 	//移动
 	function onMouseMove() {

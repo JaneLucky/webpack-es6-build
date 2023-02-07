@@ -60,6 +60,17 @@ export function GeometricOperation() {
 	var PointPointDis = function(point1, point2) {
 		return point1.distanceTo(point2);
 	}
+	//3. 点与点到向量的投影.. 向量 
+	var PointProjectPointDirDis = function(dir, point1, point2) {
+		let p1 = point1.clone().add(dir.clone().multiplyScalar(100000));
+		let p2 = point1.clone().add(dir.clone().multiplyScalar(-100000));
+
+		let result = PointProjectLine(point2, p1, p2);
+		let dis = result.clone().distanceTo(point1.clone());
+		return dis;
+	}
+
+
 	//点与线
 	//1. 点到线的距离  目标点,线的起点，线的终点
 	var PointDistanceLine = function(point, start, end) {
@@ -104,7 +115,7 @@ export function GeometricOperation() {
 		//获取投影点
 		var projectPoint = start.clone().add(v1Norm.clone().setLength(distance));
 		return projectPoint;
-	} 
+	}
 	//4. 点是否在线上
 	var IsPointInLine = function(point, start, end) {
 		let dis1 = point.distanceTo(start);
@@ -128,7 +139,7 @@ export function GeometricOperation() {
 		var rayCast = new THREE.Raycaster();
 		var rayDir = defaultDir.clone().setLength(20000000);
 		var rayDir_ = defaultDir.clone().setLength(-10000000);
-		rayCast.set(p.clone().add(rayDir_.clone()), rayDir);
+		rayCast.set(point.clone().add(rayDir_.clone()), rayDir);
 		var startPickPoint = rayCast.ray.intersectPlane(plane);
 		return startPickPoint;
 	}
@@ -140,10 +151,13 @@ export function GeometricOperation() {
 	//3. 点投影到面的位置
 	var PointProjectFace = function(point, plane) {
 		var rayCast = new THREE.Raycaster();
-		var rayDir = defaultDir.clone().setLength(20000000);
-		var rayDir_ = defaultDir.clone().setLength(-10000000);
-		rayCast.set(p.clone().add(rayDir_.clone()), rayDir);
-		var startPickPoint = rayCast.ray.intersectPlane(defaultPlane);
+		let nomal = new THREE.Vector3(plane.normal.x, plane.normal.y, plane.normal.z)
+		var rayDir = nomal.clone().setLength(20000000);
+		var rayDir_ = nomal.clone().setLength(-10000000);
+		rayCast.set(point.clone().add(rayDir_.clone()), rayDir);
+		let plane_ = new THREE.Plane(nomal.clone().multiplyScalar(1), plane.constant);
+		var startPickPoint = rayCast.ray.intersectPlane(plane_);
+		console.log(startPickPoint,plane_)
 		return startPickPoint;
 	}
 	//4. 点是否在面上
@@ -196,7 +210,9 @@ export function GeometricOperation() {
 		PointProjectFace,
 		IsPointProjectFace,
 		PointDistanceFace,
-		IsPointInLine
+		IsPointInLine,
+		PointProjectPointDirDis,
+		PointDistanceToVector
 	}
 }
 

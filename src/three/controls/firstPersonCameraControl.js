@@ -50,12 +50,14 @@ export class FirstPersonCameraControl {
 	 * @param {boolean} isEnabled set if this camera control is enabled
 	 */
 	set enabled(isEnabled) {
-		if (this._isEnabled != isEnabled) {
-			this._isEnabled = isEnabled;
-			this._euler.setFromQuaternion(this.camera.quaternion);
-			if (isEnabled) this.addEvents();
-			else this.removeEvents();
-		}
+		this._isEnabled = isEnabled;
+		this._euler.setFromQuaternion(this.camera.quaternion);
+		if (isEnabled) this.addEvents();
+		else this.removeEvents();
+		// if (this._isEnabled != isEnabled) {
+		// 	this._isEnabled = isEnabled;
+			
+		// }
 	}
 
 	/**
@@ -66,11 +68,7 @@ export class FirstPersonCameraControl {
 	}
 
 	addEvents() {
-		this.domElement.addEventListener(
-			"pointerdown",
-			this.bindmousedown,
-			false
-		);
+		this.domElement.addEventListener("pointerdown", this.bindmousedown, false);
 		this.domElement.addEventListener("pointerup", this.bindmouseup, false);
 		document.body.addEventListener("keydown", this.bindonKeyDown, false);
 		document.body.addEventListener("keyup", this.bindonKeyUp, false);
@@ -90,10 +88,14 @@ export class FirstPersonCameraControl {
 			false
 		);
 		this._prevMouseX = event.screenX;
-		this._prevMouseY = event.screenY; 
+		this._prevMouseY = event.screenY;
 	}
 
 	onMouseMove(event) {
+		console.log(this._isEnabled)
+		if (this._isEnabled == false) {
+			return;
+		}
 		let movementX = this._prevMouseX ? event.screenX - this._prevMouseX : 0;
 		let movementY = this._prevMouseY ? event.screenY - this._prevMouseY : 0;
 		// euler旋转顺序 y z x
@@ -107,7 +109,7 @@ export class FirstPersonCameraControl {
 	}
 
 	onMouseUp(event) {
-		this.domElement.removeEventListener("pointermove", this.bindmousemove); 
+		this.domElement.removeEventListener("pointermove", this.bindmousemove);
 	}
 
 	onKeyDown(event) {

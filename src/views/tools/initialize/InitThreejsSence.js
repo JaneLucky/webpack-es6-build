@@ -1,4 +1,5 @@
 const THREE = require('three')
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 //初始化场景
  export function InitScene(){
   let scene = new THREE.Scene();//创建场景
@@ -100,6 +101,17 @@ export function InitRenender(dom){
   renderer.localClippingEnabled = true;
  
   return renderer
+}
+
+//初始背景图场景
+export function InitBackgroundScene(scene){
+  new RGBELoader()
+  .setPath( 'static/img/' )
+  .load( 'quarry_01_1k.hdr', function ( texture ) {
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    // scene.background = texture; //背景图
+    scene.environment = texture; //环境图
+  } );
 }
 
 //其他内容初始化

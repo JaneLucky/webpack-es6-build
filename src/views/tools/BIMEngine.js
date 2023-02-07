@@ -7,8 +7,9 @@ import {
 	InitCamera,
 	InitPerCamera,
 	InitRenender,
-	InitOthers
-} from "./initialize/InitThreejsSence.js" //threejs场景加载
+	InitOthers,
+	InitBackgroundScene
+} from "./initialize/initThreejsSence.js" //threejs场景加载
 import {
 	setEventsMouse,
 	setControl,
@@ -82,6 +83,12 @@ import {
 import { PointRoam } from "./others/PointRoam.js"
 
 import { CreateTopMenu } from "./topMenu/index"
+import {
+	HandleModelSelect, HandleRequestModelSelect
+} from "@/views/tools/handleModels/index.js"
+
+import { CaptureMark } from "./extensions/measures/captureMark.js"
+
 
 // BIM引擎封装
 export function BIMEngine(domid, options, GLTFLoader) {
@@ -96,7 +103,13 @@ export function BIMEngine(domid, options, GLTFLoader) {
 	_bimEngine.GLTFLoader = GLTFLoader;
 	_bimEngine.StopClick = false //是否禁用单击
 	_bimEngine.RightClickActive = true //是否显示鼠标右键列表
+	_bimEngine.ModelPaths = []//所有模型加载的路径
+	_bimEngine.SelectedModels = {
+		loadedModels:[], //通过加载方式获得模型构建
+		requiredModels:[], //通过接口查询返回的模型构建
+	}
 	window.THREE = THREE;
+	sessionStorage.removeItem('SelectedSingleModelInfo') //刷新清空当前选中构建
 	//初始化
 	_bimEngine.init = function() {
 		_bimEngine.scene = InitScene();
@@ -111,6 +124,8 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		// renderer.setClearColor(new THREE.Color(0.9, 0.9, 0.9))
 		InitOthers(domid, renderer)
 		let point = InitLight(scene)
+		// 加载背景图-用于反射
+		InitBackgroundScene(scene)
 		//鼠标操作3D模型
 		var controls = setControl(domid, camera, renderer)
 		scene.controls = controls;
@@ -159,6 +174,10 @@ export function BIMEngine(domid, options, GLTFLoader) {
 			_bimEngine.MinMap.renderUpdata();
 		}
 		render();
+
+		//创建捕捉对象
+		_bimEngine.CaptureMark = new CaptureMark(_bimEngine);
+		
 		//测量模块
 		_bimEngine.Measures = {};
 		_bimEngine.Measures.SimpleMeasure = new simpleMeasure(_bimEngine);
@@ -197,6 +216,9 @@ export function BIMEngine(domid, options, GLTFLoader) {
 				callback();
 			})
 		} else if (type == "glbjson") {
+			var list=url.split("/");
+			list.shift();
+			_bimEngine.ModelPaths.push("/"+list.join("/"));
 			_bimEngine.D3Measure.UpdateViewList(url)//更新视图数据
 			LoadGlbJsonList(scene, url, option); //加载模型
 		}
@@ -238,6 +260,41 @@ export function BIMEngine(domid, options, GLTFLoader) {
 	_bimEngine.GetAllVisibilityModel = function() {
 		var rootmodels = window.bimEngine.scene.children.filter(o => o.name == "rootModel");
 		return rootmodels;
+	}
+
+	//重置选中模型构建
+	_bimEngine.ResetSelectedModels = function(key , list){
+		//恢复接口查询返回的模型构建-选中样式
+		_bimEngine.SelectedModels.requiredModels.length && HandleRequestModelSelect(_bimEngine.SelectedModels.requiredModels,[{ key:'material' }])
+		_bimEngine.SelectedModels.requiredModels = []
+		//恢复加载方式获得模型构建-选中样式
+		_bimEngine.SelectedModels.loadedModels.length && HandleModelSelect(_bimEngine.SelectedModels.loadedModels, [{ key: 'material' }])
+		_bimEngine.SelectedModels.loadedModels =  []
+		switch (key) {
+			case "loaded":
+				//设置加载方式获得模型构建-选中样式
+				if(list.length){
+					let material = new THREE.MeshStandardMaterial({
+						color: new THREE.Color(0.375, 0.63, 1),
+						side: THREE.DoubleSide
+					});
+					HandleModelSelect(list, [{ key: 'material', val: material }])
+				}
+				_bimEngine.SelectedModels.loadedModels = list
+				break;
+			case "required":
+				//设置接口查询返回的模型构建-选中样式
+				if(list.length){
+					let material = new THREE.MeshStandardMaterial({
+						color: new THREE.Color(0.375, 0.63, 1),
+						side: THREE.DoubleSide,
+					})
+					HandleRequestModelSelect(list,[{ key:'material',val: material}])
+				}
+				_bimEngine.SelectedModels.requiredModels =list
+				break;
+		}
+		console.log(_bimEngine.SelectedModels)
 	}
 	return _bimEngine;
 }

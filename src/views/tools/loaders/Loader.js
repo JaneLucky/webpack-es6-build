@@ -2,7 +2,7 @@ const THREE = require('three')
 import LoadJSON from "@/utils/LoadJSON.js"
 import * as BufferGeometryUtils from "@/three/utils/BufferGeometryUtils.js"
 
-export function LoadGLB(GroupBox, path, option, callback) {
+export function LoadGLB(GroupBox, basePath, path, option, callback) {
 	window.bimEngine.GLTFLoader.load(path, (gltf) => {
 		gltf.scene.scale.set(1, 1, 1) //  设置模型大小缩放
 		var models = gltf.scene.children;
@@ -87,32 +87,6 @@ export function LoadGLB(GroupBox, path, option, callback) {
 							let max = new THREE.Vector3(Math.max(_min.x, _max.x), Math.max(_min.y, _max.y), Math
 								.max(_min.z, _max.z));
 							let center = min.clone().add(max.clone()).multiplyScalar(0.5);
-
-							//计算边线-并存储，用于测量捕捉
-							var edges = new THREE.EdgesGeometry(allMeshs[i].geometry, 89); //大于89度才添加线条 
-							var ps = edges.attributes.position.array;
-							let positions = []
-							for (var ii = 0; ii < ps.length; ii = ii + 3) {
-								let point = new THREE.Vector3(ps[ii],ps[ii+1],ps[ii+2]);
-								let newpoint = point.clone().applyMatrix4(matrix.clone());
-								positions.push(newpoint.x);
-								positions.push(newpoint.y);
-								positions.push(newpoint.z);
-							}
-							// 绘制边线
-							// let geometry = new THREE.BufferGeometry()
-							// geometry.setAttribute(
-							// 	'position',
-							// 	new THREE.Float32BufferAttribute(positions, 3)
-							// )
-							// const bufferline = new THREE.LineSegments(
-							// 	geometry,
-							// 	new THREE.LineBasicMaterial({
-							// 		color: '#000000'
-							// 	})
-							// )
-							// GroupBox.add(bufferline);
-
 							ElementInfoArray.push({
 								name: child.name,
 								min: min,
@@ -124,14 +98,18 @@ export function LoadGLB(GroupBox, path, option, callback) {
 								MergeCount: allMeshs[i].MergeCount,
 								MergeName: allMeshs[i].MergeName,
 								url: path,
-								EdgeList:positions
+								EdgeList:[],
+								matrix:matrix,
+								basePath:basePath
 							});
 						}
 						_childs.ElementInfos = ElementInfoArray;
 						_childs.name = "rootModel";
 						_childs.TypeName = "InstancedMesh";
 						_childs.MeshId = item.meshId;
-						_childs.cloneMaterialArray = allMeshs[i].material.clone;
+						_childs.cloneMaterialArray = allMeshs[i].material.clone();
+						_childs.basePath = basePath;
+						_childs.meshs = allMeshs[i];
 						_childs.url = path;
 						GroupBox.add(_childs);
 						// instanceMeshs.push(_childs)
@@ -159,6 +137,46 @@ export function LoadGLB(GroupBox, path, option, callback) {
 			if (o.geometry != null && o.matrix != null) {
 				let matrixWorldGeometry = o.geometry.clone().applyMatrix4(o.matrix.clone());
 				o.material.side = THREE.DoubleSide;
+				
+				// o.material.transparent = true //是否透明
+				// o.material.opacity = 1 //透明度
+				// o.material.side = THREE.DoubleSide //渲染面
+				// o.material.color = new THREE.Color("rgb(255,255,255)") //颜色
+				// o.material.emissive = new THREE.Color("rgb(0,0,0)") //自发光
+				// o.material.roughness = 0 //粗糙度 
+				// o.material.metalness = 0 //金属度 
+				// o.material.reflectivity = 0 //反射率 
+				// o.material.clearcoat = 0 //清漆/透明图层
+				// o.material.clearcoatRoughness = 0 //清漆粗糙度 
+				// o.material.flatShading = false //平面着色
+				// o.material.vertexColors = false //顶点颜色
+	
+				// o.material.envMap = new THREE.TextureLoader().load(this.materialForm.envMap.url, (texture)=>{
+				// 	texture.wrapS = THREE.RepeatWrapping
+				// 	texture.wrapT = THREE.RepeatWrapping
+				// 	//表示在x、y上的重复次数
+				// 	texture.repeat.set(this.materialForm.envMap.repeat.u, this.materialForm.envMap.repeat.v);
+				// 	//表示在x、y上的偏移
+				// 	texture.offset.set(this.materialForm.envMap.offset.u, this.materialForm.envMap.offset.v);
+				// }) //环境贴图
+				// o.material.map = new THREE.TextureLoader().load("/tietu/Image/material/20230201_390284751371502853.jpg", (texture)=>{
+				// 	texture.wrapS = THREE.RepeatWrapping
+				// 	texture.wrapT = THREE.RepeatWrapping
+				// 	//表示在x、y上的重复次数
+				// 	texture.repeat.set(1, 1);
+				// 	//表示在x、y上的偏移
+				// 	texture.offset.set(0, 0);
+				// })//纹理贴图
+				// o.material.normalMap = new THREE.TextureLoader().load("/tietu/Image/material/20230201_390370401605125381.png", (texture)=>{
+				// 	texture.wrapS = THREE.RepeatWrapping
+				// 	texture.wrapT = THREE.RepeatWrapping
+				// 	//表示在x、y上的重复次数
+				// 	texture.repeat.set(1, 1);
+				// 	//表示在x、y上的偏移
+				// 	texture.offset.set(0, 0);
+				// })//法线贴图
+
+
 				geometryArray.push(matrixWorldGeometry);
 				materialArray.push(o.material)
 				cloneMaterialArray.push(o.material.clone());
@@ -169,34 +187,9 @@ export function LoadGLB(GroupBox, path, option, callback) {
 				let max = new THREE.Vector3(Math.max(_min.x, _max.x), Math.max(_min.y, _max.y), Math
 					.max(_min.z, _max.z));
 				let center = min.clone().add(max.clone()).multiplyScalar(0.5);
-
-				//计算边线-并存储，用于测量捕捉
-				var edges = new THREE.EdgesGeometry(o.geometry, 89); //大于89度才添加线条 
-				var ps = edges.attributes.position.array;
-				let positions = []
-				for (var i = 0; i < ps.length; i = i + 3) {
-					let point = new THREE.Vector3(ps[i],ps[i+1],ps[i+2]);
-					let newpoint = point.clone().applyMatrix4(o.matrix.clone());
-					positions.push(newpoint.x);
-					positions.push(newpoint.y);
-					positions.push(newpoint.z);
-				}
-				// 绘制边线
-				// let geometry = new THREE.BufferGeometry()
-				// geometry.setAttribute(
-				// 	'position',
-				// 	new THREE.Float32BufferAttribute(positions, 3)
-				// )
-				// const bufferline = new THREE.LineSegments(
-				// 	geometry,
-				// 	new THREE.LineBasicMaterial({
-				// 		color: '#000000'
-				// 	})
-				// )
-				// GroupBox.add(bufferline);
-
+ 
 				ElementInfoArray.push({
-					name: o.name,
+					name: o.userData.name,
 					min: min,
 					max: max,
 					center: center,
@@ -205,7 +198,8 @@ export function LoadGLB(GroupBox, path, option, callback) {
 					MergeIndex: o.MergeIndex,
 					MergeCount: o.MergeCount,
 					MergeName: o.MergeName,
-					EdgeList:positions
+					EdgeList:[], 
+					basePath:basePath
 				});
 			}
 		}
@@ -219,6 +213,7 @@ export function LoadGLB(GroupBox, path, option, callback) {
 		singleMergeMesh.TypeName = "Mesh";
 		singleMergeMesh.meshs = meshs;
 		singleMergeMesh.url = path;
+		singleMergeMesh.basePath = basePath;
 		GroupBox.add(singleMergeMesh);
 	}
 }
@@ -255,7 +250,7 @@ export function mergeModel(GroupBox) {
 			min: min,
 			max: max,
 			center: center,
-			dbid: ElementInfoArray.length
+			dbid: ElementInfoArray.length, 
 		});
 	}
 	//加载模型
@@ -267,11 +262,12 @@ export function mergeModel(GroupBox) {
 	singleMergeMesh.name = "rootModel";
 	singleMergeMesh.meshs = meshs;
 	GroupBox.add(singleMergeMesh);
-	console.log("加载完成")
+	// console.log("加载完成")
 }
 
 //批量加载glb模型，json - 大量相同模型合并
 export function LoadGlbJsonList(GroupBox, path = "/file/gis/fl/bim/100004", option, callback) {
+	let loadCompleteSize = 0
 	LoadJSON(path + '/modelList.json', res => {
 		let glbList = JSON.parse(res)
 		// 根据category重复去重
@@ -286,7 +282,7 @@ export function LoadGlbJsonList(GroupBox, path = "/file/gis/fl/bim/100004", opti
 				return new Promise((resolve, reject) => {
 					option.Point = item.Point;
 					option.Rotate = item.angle_a;
-					LoadGLB(GroupBox, item.fullPath, {
+					LoadGLB(GroupBox, path, item.fullPath, {
 						name: 'modelList',
 						position: option
 					}, gltf => {
@@ -296,8 +292,9 @@ export function LoadGlbJsonList(GroupBox, path = "/file/gis/fl/bim/100004", opti
 						}
 						//全部加载完成，然后去合并模型
 						if (currentIndex == glbList.length) {
-							// mergeModel(GroupBox);
-							// window.bimEngine.ViewCube.cameraGoHome();
+							loadCompleteSize = loadCompleteSize+1
+							// console.log('1111111111111')
+							AllModelLoadComplated()
 						}
 
 						resolve(gltf);
@@ -319,7 +316,7 @@ export function LoadGlbJsonList(GroupBox, path = "/file/gis/fl/bim/100004", opti
 		let loadsAll = async () => {
 			let getGLB = item => {
 				return new Promise((resolve, reject) => {
-					LoadGLB(GroupBox, item.fullPath, {
+					LoadGLB(GroupBox, path, item.fullPath, {
 						name: 'instanceList',
 						children: item.children
 					}, gltf => {
@@ -329,8 +326,9 @@ export function LoadGlbJsonList(GroupBox, path = "/file/gis/fl/bim/100004", opti
 						}
 						//全部加载完成，然后去合并模型
 						if (currentIndex == glbList.length) {
-							// mergeModel(GroupBox);
-							// window.bimEngine.ViewCube.cameraGoHome();
+							loadCompleteSize = loadCompleteSize+1
+							// console.log('222222222222222')
+							AllModelLoadComplated()
 						}
 
 						resolve(gltf);
@@ -345,4 +343,46 @@ export function LoadGlbJsonList(GroupBox, path = "/file/gis/fl/bim/100004", opti
 		};
 		loadsAll()
 	})
+
+	function AllModelLoadComplated() {
+		//同一个目录下的模型加载完成
+		if(loadCompleteSize == 2){
+			let rootmodels = window.bimEngine.scene.children.filter(o => o.name == "rootModel" && o.basePath == path);
+			for(let i=0; i<rootmodels.length;i++){
+				if(rootmodels[i].TypeName == "Mesh"){
+					for(let j=0;j<rootmodels[i].ElementInfos.length;j++){
+						//计算边线-并存储，用于测量捕捉
+						var edges = new THREE.EdgesGeometry(rootmodels[i].meshs[j].geometry, 89); //大于89度才添加线条 
+						var ps = edges.attributes.position.array;
+						let positions = []
+						for (var ii = 0; ii < ps.length; ii = ii + 3) {
+							let point = new THREE.Vector3(ps[ii],ps[ii+1],ps[ii+2]);
+							let newpoint = point.clone().applyMatrix4(rootmodels[i].meshs[j].matrix.clone());
+							positions.push(newpoint.x);
+							positions.push(newpoint.y);
+							positions.push(newpoint.z);
+						}
+						rootmodels[i].ElementInfos[j].EdgeList = positions
+					}
+				}else if(rootmodels[i].TypeName == "InstancedMesh"){
+					for(let j=0;j<rootmodels[i].ElementInfos.length;j++){
+						//计算边线-并存储，用于测量捕捉
+						var edges = new THREE.EdgesGeometry(rootmodels[i].meshs.geometry, 89); //大于89度才添加线条 
+						var ps = edges.attributes.position.array;
+						let positions = []
+						for (var ii = 0; ii < ps.length; ii = ii + 3) {
+							let point = new THREE.Vector3(ps[ii],ps[ii+1],ps[ii+2]);
+							let newpoint = point.clone().applyMatrix4(rootmodels[i].ElementInfos[j].matrix.clone());
+							positions.push(newpoint.x);
+							positions.push(newpoint.y);
+							positions.push(newpoint.z);
+						}
+						rootmodels[i].ElementInfos[j].EdgeList = positions
+					}
+				}
+				
+			}
+		}
+	}
+
 }

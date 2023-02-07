@@ -5,7 +5,7 @@ export function CreatorPipe(scene, url, infos) {
 	
 	LoadJSON(url + '/sysmodelList.json', res => {
 		let sysmodelList = JSON.parse(res)
-		console.log("管道模型",sysmodelList)
+		// console.log("管道模型",sysmodelList)
 		let circularMepsList = sysmodelList.circularMeps //圆形管道
 		let rectMepsList = sysmodelList.rectMeps.filter(item => item.type === "风管") //矩形风管
 		let bridgeMepsList = sysmodelList.rectMeps.filter(item => item.type === "桥架") //矩形桥架
@@ -70,8 +70,8 @@ export function CreatorPipe(scene, url, infos) {
 			meshList.push(mesh)
 		}
 
-		console.log(meshList)
-		meshList && meshList.length && mergeBufferModel(scene, meshList, url + '/sysmodelList.json')
+		// console.log(meshList)
+		meshList && meshList.length && mergeBufferModel(scene, meshList, url + '/sysmodelList.json', url)
 
 	})
 
@@ -192,7 +192,7 @@ function DrawPipes(type, param, scene) {
 
 
 //合并模型 
-function mergeBufferModel(scene, meshs, path) {
+function mergeBufferModel(scene, meshs, path, basePath) {
 	let geometryArray = []; // 将你的要合并的多个geometry放入到该数组
 	let materialArray = []; // 将你的要赋值的多个material放入到该数组
 	let cloneMaterialArray = []; // 将你的要赋值的多个material放入到该数组
@@ -260,7 +260,8 @@ function mergeBufferModel(scene, meshs, path) {
 				MergeIndex: o.MergeIndex,
 				MergeCount: o.MergeCount,
 				MergeName: o.MergeName,
-				EdgeList: positions
+				EdgeList: positions,
+				basePath: basePath
 			});
 		}
 	}
@@ -274,6 +275,7 @@ function mergeBufferModel(scene, meshs, path) {
 	singleMergeMesh.TypeName = "PipeMesh";
 	singleMergeMesh.meshs = meshs;
 	singleMergeMesh.url = path;
-	console.log(singleMergeMesh)
+	singleMergeMesh.basePath = basePath
+	// console.log(singleMergeMesh)
 	scene.add(singleMergeMesh);
 }

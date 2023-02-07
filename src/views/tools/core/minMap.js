@@ -46,13 +46,13 @@ export function MinMap(bimEngine) {
 		_minMap.visible = true;
 		document.getElementById("minimap").addEventListener("click", function(res) {
 			let sceneCamera = bimEngine.scene.camera;
-			console.log(res);
-			//res.offsetX  res.offsetY
 			let point = getRayPoint({
 				x: res.offsetX,
 				y: res.offsetY
 			});
-			sceneCamera.position.set(point.x, sceneCamera.position.y, point.z);
+			if(point){
+				sceneCamera.position.set(point.x, sceneCamera.position.y, point.z);
+			}
 		})
 	}
 	//隐藏
@@ -147,8 +147,9 @@ export function MinMap(bimEngine) {
 		//+true，是对其后代进行查找，这个在这里必须加，因为模型是由很多部分组成的，后代非常多。
 		let intersects = (rayCaster.intersectObjects(bimEngine.GetAllVisibilityModel(), true));
 		if (intersects.length > 0) {
-			 
 			return intersects[0].point;
+		}else{
+			return null;
 		}
 	}
 
