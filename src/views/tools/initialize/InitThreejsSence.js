@@ -1,5 +1,5 @@
 const THREE = require('@/three/three.js')
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
+import { RGBELoader } from "@/three/loaders/RGBELoader.js";
 //初始化场景
  export function InitScene(){
   let scene = new THREE.Scene();//创建场景
