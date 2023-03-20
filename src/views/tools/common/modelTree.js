@@ -1,9 +1,9 @@
 import {
 	LoadZipJson
 } from "@/utils/LoadJSON.js"
-import {
-	GetModelNameWithUrl
-} from "@/api/ModelShare.js"
+// import {
+// 	GetModelNameWithUrl
+// } from "@/api/ModelShare.js"
 export function ModelTree(bimEngine) {
 	let paths = bimEngine.ModelPaths;
 	let key = 0;
@@ -60,16 +60,16 @@ export function ModelTree(bimEngine) {
 			bimEngine.treeData.push(treedata);
  
 
-			GetModelNameWithUrl(path).then(res => {
+			// GetModelNameWithUrl(path).then(res => {
 				 
-				let index = bimEngine.treeData.findIndex(o => o.Name == path);
-				if (index != -1) {
-					bimEngine.treeData[index].Name = res.data.list[0];
-				}
-				// if (treedata.Name == null || treedata.Name == "") {
-				// 	treedata.Name = path;
-				// }
-			})
+			// 	let index = bimEngine.treeData.findIndex(o => o.Name == path);
+			// 	if (index != -1) {
+			// 		bimEngine.treeData[index].Name = res.data.list[0];
+			// 	}
+			// 	// if (treedata.Name == null || treedata.Name == "") {
+			// 	// 	treedata.Name = path;
+			// 	// }
+			// })
 			worker(data);
 			//去匹配名字 
 		})

@@ -125,9 +125,9 @@ import {
 	ModelOctree,
 	ModelOctrees
 } from "@/views/tools/common/modelOctree.js"
-// import {
-// 	ModelTree
-// } from "@/views/tools/common/modelTree.js"
+import {
+	ModelTree
+} from "@/views/tools/common/modelTree.js"
 import {
 	CreatorInstancePipe
 } from "./modelCreator/PipeInstanceModel.js" //模型管道、桥梁等
@@ -174,6 +174,14 @@ export function BIMEngine(domid, options, GLTFLoader) {
 	sessionStorage.setItem("ShowAllModel",'true')
 	//初始化
 	_bimEngine.init = function() {
+		// 适配PC端和移动端样式
+		let rootDom = document.getElementById(domid)
+		if(_bimEngine.DeviceType === "PC"){
+			rootDom.parentElement.className = rootDom.parentElement.className + " PCView-page-container"
+		}else if((_bimEngine.DeviceType === "Mobile")){
+			rootDom.parentElement.className = rootDom.parentElement.className + " MobileView-page-container"
+		}
+
 		_bimEngine.scene = InitScene();
 		window.bimEngine = _bimEngine;
 		// 创建辅助坐标轴
@@ -390,19 +398,19 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		if (!_bimEngine.handleLoadDoneFunOnce) {
 			_bimEngine.handleLoadDoneFunOnce = true
 			_bimEngine.FPS = 60
-			// _bimEngine.EngineRay = new EngineRay();
-			// _bimEngine.LoadModelTree();
-			// _bimEngine.ModelOctree()
-			// GetModelEdges()
+			_bimEngine.EngineRay = new EngineRay();
+			_bimEngine.LoadModelTree();
+			_bimEngine.ModelOctree()
+			GetModelEdges()
 
 		}
 	}
 	_bimEngine.ModelOctree = function() {
 		ModelOctrees(_bimEngine)
 	}
-	// _bimEngine.LoadModelTree = function() {
-	// 	ModelTree(_bimEngine)
-	// }
+	_bimEngine.LoadModelTree = function() {
+		ModelTree(_bimEngine)
+	}
 	//注册事件
 	//事件枚举，回调
 	_bimEngine.addEventListener = function(callback) {
