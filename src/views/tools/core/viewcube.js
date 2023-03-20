@@ -1,4 +1,4 @@
-const THREE = require('three')
+const THREE = require('@/three/three.js')
 import TWEEN from "@tweenjs/tween.js";
 
 import {
@@ -9,38 +9,36 @@ import {
 	InitRenender,
 	InitOthers
 } from "../initialize/InitThreejsSence.js"
-import "../style/mainstyle.scss"
+import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
 import "three/"
 import {
 	GetBoundingBox
 } from "@/views/tools/common/index.js"
+import { getScreenAspect } from "@/views/tools/common/screenReset.js"
 // import {
 // 	push
 // } from "core-js/library/core/array";
 export function ViewCube(scene, domid) {
+  require('@/views/tools/style/'+SetDeviceStyle()+'/mainstyle.scss')
 	var _ViewCube = new Object();
 	_ViewCube.scene = scene;
 	_ViewCube.init = function() {
 		var dom = document.createElement("div");
 		dom.id = "viewCube";
 		dom.className = "ViewCube";
-		dom.style.position = "absolute";
-		dom.style.height = '150px';
-		dom.style.width = '150px';
-		dom.style.top = '0px';
-		dom.style.right = '0px';
 		document.getElementById(domid).appendChild(dom);
 		var home = document.createElement("div");
 		home.className = "homeViewWrapper";
 		home.addEventListener("click", function() {
 			console.log("回归");
 			_ViewCube.cameraGoHome();
+			window.bimEngine.loadedDoneFun()
 		})
 		dom.appendChild(home);
 
 		var sceneOrtho = InitScene();
-		var aspect = window.innerWidth / window.innerHeight;
-		var frustumSize = 200;
+		var aspect = getScreenAspect();//窗口宽高比 
+		var frustumSize = 200; //三维场景显示范围控制系数，系数越大，显示的范围越大
 		_ViewCube.cameraOrtho = new THREE.OrthographicCamera(frustumSize * aspect / -2, frustumSize * aspect / 2,
 			2 * frustumSize / 2,
 			1.4 * frustumSize / -2, 0, 10000);

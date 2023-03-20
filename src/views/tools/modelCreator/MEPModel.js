@@ -1,8 +1,8 @@
-const THREE = require('three')
-import LoadJSON from "@/utils/LoadJSON.js"
+const THREE = require('@/three/three.js')
+import LoadJSON from "@/utils/LoadJSON.js" 
 //绘制管道
 export function CreatorPipe(scene, url, infos) {
-	
+
 	LoadJSON(url + '/sysmodelList.json', res => {
 		let sysmodelList = JSON.parse(res)
 		// console.log("管道模型",sysmodelList)
@@ -70,9 +70,12 @@ export function CreatorPipe(scene, url, infos) {
 			meshList.push(mesh)
 		}
 
-		// console.log(meshList)
-		meshList && meshList.length && mergeBufferModel(scene, meshList, url + '/sysmodelList.json', url)
-
+		if(meshList && meshList.length){
+			mergeBufferModel(scene, meshList, url + '/sysmodelList.json', url)
+		}else{
+			window.bimEngine.loadedDone('pipeModelsLoadedNum')
+		}
+		
 	})
 
 }
@@ -121,14 +124,14 @@ function DrawPipes(type, param, scene) {
 	};
 	return addShape(Shape, extrudeSettings, param.color, param.position, param.rotation, param.scale);
 
-	
+
 
 
 	function addShape(shape, extrudeSettings, color, position, rotation, scale) {
 		let geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
 		let mat = null;
 		// mesh.name = "rootModel";
-		 
+
 		let matIndex = mats.findIndex(x => x.color.r == color.r && x.color.b == color.b && x.color.g == color.g);
 		if (matIndex == -1) {
 			mat = new THREE.MeshPhongMaterial({
@@ -138,7 +141,7 @@ function DrawPipes(type, param, scene) {
 		} else {
 			mat = mats[matIndex];
 		}
-		 
+
 		let mesh = new THREE.Mesh(geometry, mat);
 		let start = new THREE.Vector3(param.startPoint.X, 0, -param.startPoint.Y);
 		let end = new THREE.Vector3(param.endPoint.X, 0, -param.endPoint.Y);
@@ -185,6 +188,7 @@ function DrawPipes(type, param, scene) {
 		mesh.MergeName = param.name;
 		mesh.startPoint = param.startPoint;
 		mesh.endPoint = param.endPoint;
+		// mesh.extrudeParam = param;
 		// scene.add(mesh);
 		return mesh
 	}
@@ -224,18 +228,18 @@ function mergeBufferModel(scene, meshs, path, basePath) {
 			let max = new THREE.Vector3(Math.max(_min.x, _max.x), Math.max(_min.y, _max.y), Math
 				.max(_min.z, _max.z));
 			let center = min.clone().add(max.clone()).multiplyScalar(0.5);
-			
+
 			//计算边线-并存储，用于测量捕捉
-			var edges = new THREE.EdgesGeometry(o.geometry, 89); //大于89度才添加线条 
-			var ps = edges.attributes.position.array;
-			let positions = []
-			for (var ii = 0; ii < ps.length; ii = ii + 3) {
-				let point = new THREE.Vector3(ps[ii],ps[ii+1],ps[ii+2]);
-				let newpoint = point.clone().applyMatrix4(matrix.clone());
-				positions.push(newpoint.x);
-				positions.push(newpoint.y);
-				positions.push(newpoint.z);
-			}
+			// var edges = new THREE.EdgesGeometry(o.geometry, 89); //大于89度才添加线条 
+			// var ps = edges.attributes.position.array;
+			// let positions = []
+			// for (var ii = 0; ii < ps.length; ii = ii + 3) {
+			// 	let point = new THREE.Vector3(ps[ii], ps[ii + 1], ps[ii + 2]);
+			// 	let newpoint = point.clone().applyMatrix4(matrix.clone());
+			// 	positions.push(newpoint.x);
+			// 	positions.push(newpoint.y);
+			// 	positions.push(newpoint.z);
+			// }
 			// 绘制边线
 			// let geometry = new THREE.BufferGeometry()
 			// geometry.setAttribute(
@@ -260,7 +264,7 @@ function mergeBufferModel(scene, meshs, path, basePath) {
 				MergeIndex: o.MergeIndex,
 				MergeCount: o.MergeCount,
 				MergeName: o.MergeName,
-				EdgeList: positions,
+				EdgeList: [],
 				basePath: basePath
 			});
 		}
@@ -278,4 +282,53 @@ function mergeBufferModel(scene, meshs, path, basePath) {
 	singleMergeMesh.basePath = basePath
 	// console.log(singleMergeMesh)
 	scene.add(singleMergeMesh);
+	window.bimEngine.doneModels.push(path);
+	window.bimEngine.loadedDone('pipeModelsLoadedNum')
+	console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
+
+
+	let rootmodels = window.bimEngine.scene.children.filter(o => o.name == "rootModel" && o.TypeName == "PipeMesh");
+	console.log(rootmodels)
+	if(rootmodels && rootmodels.length){
+		let modelsList = []
+		for (let i = 0; i < rootmodels.length; i++) {
+			let model = {
+				TypeName: rootmodels[i].TypeName,
+				ElementInfos: []
+			}
+			for (let j = 0; j < rootmodels[i].ElementInfos.length; j++) {
+				let ele = {
+					geometry: [...rootmodels[i].meshs[j].geometry.attributes.position.array],
+					matrix: [...rootmodels[i].meshs[j].matrix.elements],
+					position: rootmodels[i].meshs[j].position.clone(),
+					rotation: rootmodels[i].meshs[j].rotation.clone(),
+					// extrudeParam:rootmodels[i].meshs[j].extrudeParam,
+				}
+				model.ElementInfos.push(ele)
+			}
+			modelsList.push(model)
+		}
+		console.log(modelsList)
+		console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
+		// return
+		//计算边线-并存储，用于测量捕捉
+		var worker = new Worker('static/js/filePipe.worker.js');
+		worker.postMessage(modelsList); //将复杂计算交给子线程,可以理解为给参数让子线程去操作。
+		worker.onmessage = function(e) {
+			// console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
+			let backList = e.data
+			for (let i = 0; i < backList.length; i++) {
+				for (let j = 0; j < backList[i].ElementInfos.length; j++) {
+					rootmodels[i].ElementInfos[j].EdgeList = backList[i].ElementInfos[j].EdgeList
+				}
+			}
+			console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
+			worker.terminate()
+		}
+		worker.onerror = function(event) {
+			worker.terminate()
+		}
+
+	}
+
 }

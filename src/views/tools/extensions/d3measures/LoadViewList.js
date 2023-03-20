@@ -1,9 +1,12 @@
-import LoadJSON from "@/utils/LoadJSON.js"
-const THREE = require('three');
+import {
+	LoadZipJson,
+	LoadJSON
+} from "@/utils/LoadJSON.js" 
+const THREE = require('@/three/three.js')
 export function LoadViewList(bimEngine, path){
 	//加载视图清单 
 	LoadJSON(path + "/viewlist.json", res => {
-		if(!(res.indexOf("</html>") !== -1 && res.indexOf("</body>") !== -1)){
+		if(res){
 			var viewList = JSON.parse(res).viewList;
 			var _viewList1 = viewList.CeilingPlans.concat(viewList.FloorPlans);
 			var _viewList2 = viewList.Elevations.concat(viewList.Sections);

@@ -12,11 +12,19 @@ module.exports = {
     compress:true,
 		open: true,
 		proxy: {
+			// "/file": {
+			// 	target: "http://localhost:8011/",
+			// 	changeOrigin: true,
+			// 	pathRewrite: {
+			// 		'^/file': '/'
+			// 	}
+			// },
 			"/file": {
-				target: "http://localhost:8011/",
+				// target: "http://119.91.39.51:9000/",//线上服务器
+				target: "http://10.168.1.125:9000/",//徐振本地服务器
 				changeOrigin: true,
 				pathRewrite: {
-					'^/file': '/'
+					'^/file': ''
 				}
 			},
 

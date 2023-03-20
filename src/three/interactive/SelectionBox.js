@@ -1,7 +1,7 @@
 /**
  * This is a class to check whether objects are in a selection area in 3D space
  */
-const THREE = require('three')
+const THREE = require('../three.js')
 THREE.SelectionBox = ( function () {
 
 	var frustum = new THREE.Frustum();

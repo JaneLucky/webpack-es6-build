@@ -1,0 +1,13 @@
+.Svg-Icon{
+  fill: currentColor;
+  width: 20px;
+  height: 20px;
+}
+
+@media screen and (orientation: landscape) { /*横屏 css*/ 
+  .Svg-Icon{
+    fill: currentColor;
+    width: 20px;
+    height: 20px;
+  }
+}

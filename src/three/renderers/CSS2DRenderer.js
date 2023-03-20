@@ -2,7 +2,7 @@ import {
 	Matrix4,
 	Object3D,
 	Vector3
-} from 'three/build/three.module'
+} from '../three'
 var CSS2DObject = function ( element ) {
 
 	Object3D.call( this );

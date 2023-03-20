@@ -1,4 +1,4 @@
-const THREE = require('three')
+const THREE = require('../three.js')
 THREE.OBJLoader = ( function () {
 
 	// o object_name | g group_name

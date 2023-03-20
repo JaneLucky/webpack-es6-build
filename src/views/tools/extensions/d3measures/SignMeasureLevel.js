@@ -1,7 +1,7 @@
 import {
 	GeometricOperation
 } from "@/views/tools/Geo/GeometricOperation.js"
-import "@/views/tools/style/d3measure.scss"
+import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
 import {
 	worldPointToScreenPoint
 } from "@/views/tools/common/index.js"
@@ -14,6 +14,7 @@ import {
 	IncludeElement
 } from "../measures/MeasurePink"
 export function SignMeasureLevel(bimEngine) {
+  require('@/views/tools/style/'+SetDeviceStyle()+'/d3measure.scss')
 	var _signMeasureLevel = new Object();
 	_signMeasureLevel.MouseType = "none";
 	_signMeasureLevel.Measures = [];
@@ -372,6 +373,9 @@ export function SignMeasureLevel(bimEngine) {
 		if (bimEngine.scene == null) {
 			return;
 		}
+		if(bimEngine.scene.camera.viewport == null){
+			return;
+		}
 		let basex = bimEngine.scene.camera.viewport.x;
 		let basey = bimEngine.scene.camera.viewport.y;
 		let maxx = basex + bimEngine.scene.camera.viewport.z;
@@ -500,7 +504,7 @@ export function SignMeasureLevel(bimEngine) {
 					let EdgeList = intersect.object.ElementInfos[clickObj.dbid].EdgeList
 					PINK_DETAILS = getPinkType(bimEngine.scene, intersect, EdgeList)
 				}
-			} else if (intersects[0].object.TypeName == "InstancedMesh") {
+			} else if (intersects[0].object.TypeName == "InstancedMesh" || intersects[0].object.TypeName == "InstancedMesh-Pipe") {
 				let EdgeList = intersect.object.ElementInfos[intersect.instanceId].EdgeList
 				PINK_DETAILS = getPinkType(bimEngine.scene, intersect, EdgeList)
 			}

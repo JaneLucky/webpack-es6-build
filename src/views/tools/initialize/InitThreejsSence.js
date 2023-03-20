@@ -1,4 +1,4 @@
-const THREE = require('three')
+const THREE = require('@/three/three.js')
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 //初始化场景
  export function InitScene(){
@@ -15,15 +15,24 @@ export function InitAxesHelper(scene){
 
 //初始化光线
 export function InitLight(scene){
-  var point = new THREE.PointLight(0xffffff,0.5);
-  point.position.set(400, 200, 300); //点光源位置
-  point.castShadow = true;
+	
+	// let hemisphereLight = new THREE.HemisphereLight( 0.3);
+	// hemisphereLight.position.set(0, 500, 0);
+	// scene.add(hemisphereLight);
+  var point = new THREE.PointLight(0xffffff,0.3);
+  point.position.set(0, 200, 0); //点光源位置
+  // point.castShadow = true;
   scene.add(point); //点光源添加到场景中
+  
+  var point1 = new THREE.PointLight(0xffffff,0.3);
+  point1.position.set(0, -200, 0); //点光源位置
+  // point1.castShadow = true;
+  scene.add(point1); //点光源添加到场景中
   //环境光
-  var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  var ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
   scene.add(ambientLight);
   scene.ambientLight = ambientLight
-  return point
+  // return point
 }
 
 //初始化相机
@@ -90,6 +99,7 @@ export function InitRenender(dom){
   var width = document.getElementById(dom).clientWidth; //窗口宽度
   var height = document.getElementById(dom).clientHeight; //窗口高度
   var renderer = new THREE.WebGLRenderer({
+    // powerPreference:'high-performance',
     alpha : true,
     antialias:true,
     preserveDrawingBuffer: true //保留图形缓冲区

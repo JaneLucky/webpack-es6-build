@@ -1,0 +1,123 @@
+.PCView-page-container{
+  .Render-Set-Dialog{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 330px;
+    height: fit-content;
+    background: #ffffff;
+    box-sizing: border-box;
+    display: block;
+    z-index: 1;
+    border: 1px solid #dddddd;
+    .Feader-Contain{
+      width: 100%;
+      height: 34px;
+      padding: 10px;
+      border-bottom: 1px solid #dddddd;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .Title{
+        font-size: 16px;
+        font-weight: 600;
+        padding-right: 50px;
+      }
+      .Close-Btn{
+        cursor: pointer;
+        font-size: 20px;
+      }
+    }
+    .Main-Contain{
+      height: 540px;
+      padding: 5px 15px 15px;
+      box-sizing: border-box;
+      .Module-Header{
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin-top: 10px;
+        .Icon{
+          width: 4px;
+          height: 16px;
+          background: #409EFF;
+          margin-right: 8px;
+        }
+        .Title{
+          font-size: 16px;
+          font-weight: 600;
+          line-height: 32px;
+        }
+      }
+      .Form_Item{
+        display: flex;
+        padding: 5px 0 5px 15px;
+      }
+      .Form_Item_Label{
+        padding-right: 10px;
+      }
+
+
+      .Bg-Color-List{
+        display: flex;
+        align-items: center;
+        height: 40px;
+        align-items: center;
+        padding: 5px 0 5px 15px;
+        box-sizing: border-box;
+        .Item{
+          width: fit-content;
+          width: 40px;
+          height: 28px;
+          box-sizing: border-box;
+          border: 2px solid #dddddd;
+          cursor: pointer;
+        }
+        .Actived{
+          border: 3px solid #409EFF;
+        }
+      }
+      .Light-Color-List{
+        display: flex;
+        padding: 5px 0 5px 15px;
+        box-sizing: border-box;
+        .Item-Contain{
+          flex: 1;
+          .Item-Inside-Contain{
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            .Item{
+              width: 50%;
+              display: flex;
+              margin-bottom: 10px;
+              cursor: pointer;
+              .Legened{
+                width: 40px;
+                height: 28px;
+                box-sizing: border-box;
+                border-radius: 4px;
+                pointer-events: none;
+              }
+              .Title{
+                line-height: 28px;
+                padding-left: 10px;
+                pointer-events: none;
+              }
+            }
+            .Actived{
+              .Legened{
+                border: 2px solid #409EFF;
+              }
+              .Title{
+                color: #409EFF;
+              }
+            }
+          }
+        }
+      }
+
+    }
+  }
+}

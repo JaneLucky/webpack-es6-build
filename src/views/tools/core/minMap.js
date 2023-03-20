@@ -1,5 +1,5 @@
-const THREE = require('three')
-import "../style/minMap.scss"
+const THREE = require('@/three/three.js')
+import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
 //小地图
 
 //点击瞬移
@@ -7,6 +7,7 @@ import "../style/minMap.scss"
 
 
 export function MinMap(bimEngine) {
+  require('@/views/tools/style/'+SetDeviceStyle()+'/minMap.scss')
 	var _minMap = new Object();
 	_minMap.visible = false;
 	const HEIGHT = (window.innerHeight) * window.devicePixelRatio;
@@ -59,14 +60,20 @@ export function MinMap(bimEngine) {
 	_minMap.close = function() {
 		_minMap.visible = false;
 		_minMap.camera = null;
-		document.getElementById("miniMapRoot").remove()
+		document.getElementById("miniMapRoot") && document.getElementById("miniMapRoot").remove()
 	}
 
 
 	//初始化相机
 	function initCamera() {
 		let domDiv = document.createElement("div");
-		domDiv.className = "miniMap";
+
+		//适配移动端
+		if(bimEngine.DeviceType === "Mobile"){
+			domDiv.className = "miniMap-Mobile";
+		}else{
+			domDiv.className = "miniMap";
+		}
 		domDiv.id = "miniMapRoot";
 		document.body.appendChild(domDiv);
 		var htmls = [
@@ -79,12 +86,52 @@ export function MinMap(bimEngine) {
 
 		let renderer = new THREE.WebGLRenderer();
 		renderer.setPixelRatio(window.devicePixelRatio);
-		renderer.setSize(200, 200);
+		renderer.setSize(domDiv.clientWidth, domDiv.clientHeight);
 		renderer.domElement.id = "minimap";
 		renderer.setClearColor('rgb(200,200,200)', 1.0)
 		_minMap.renderer = renderer;
 		domDiv.appendChild(renderer.domElement)
 
+
+		domDiv.addEventListener("pointerdown", _onMouseDown);
+		let _container = bimEngine.scene.renderer.domElement.parentElement;
+
+		function _onMouseDown(e) {
+			var left = domDiv.offsetLeft;
+			var top = domDiv.offsetTop;
+			//计算出鼠标的位置与元素位置的差值。
+			var cleft = e.clientX - left;
+			var ctop = e.clientY - top;
+			domDiv.style.cursor = "move";
+			document.addEventListener('pointermove',handelPosition)
+			document.addEventListener('pointerup',()=>{
+				domDiv.style.cursor = "auto";
+				document.removeEventListener("pointermove",handelPosition)
+
+			})
+			function handelPosition(doc){
+				//计算出移动后的坐标。
+				var moveLeft = doc.clientX - cleft;
+				var moveTop = doc.clientY - ctop;
+				let maxWidth = (_container.offsetWidth - domDiv.offsetWidth)
+				let maxHeight = (_container.offsetHeight - domDiv.offsetHeight)
+				if (moveLeft < 0) {
+					moveLeft = 0
+				}
+				if (moveTop < 0) {
+					moveTop = 0
+				}
+				if (moveLeft > maxWidth) {
+					moveLeft = maxWidth
+				}
+				if (moveTop > maxHeight) {
+					moveTop = maxHeight
+				}
+				//当移动位置在范围内时，元素跟随鼠标移动。
+				domDiv.style.left = moveLeft + "px";
+				domDiv.style.top = moveTop + "px";
+			}
+		}
 
 		//获取到dom元素
 		var dom = renderer.domElement;

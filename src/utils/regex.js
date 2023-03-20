@@ -8,15 +8,19 @@
  * @param {*} hasEnd 是否包含结尾字符
  */
 export function GetTwoCharCenterStr(str, hasStart = false, hasEnd = false) {
-  let matchReg  = /(?<=\]\[).*?(?=\])/g
-  if(hasStart && hasEnd){
-    matchReg = /\]\[.*?\]/g
-  }else if(hasStart && !hasEnd){
-    matchReg = /\]\[.*?(?=\])/g
-  }else if(!hasStart && hasEnd){
-    matchReg = /(?<=\]\[).*?\]/g
-  }
-  return str.match(matchReg)
+	// if(str==null){
+	// 	return "";
+	// }
+  // let matchReg  = /(?<=\]\[).*?(?=\])/g
+  // if(hasStart && hasEnd){
+  //   matchReg = /\]\[.*?\]/g
+  // }else if(hasStart && !hasEnd){
+  //   matchReg = /\]\[.*?(?=\])/g
+  // }else if(!hasStart && hasEnd){
+  //   matchReg = /(?<=\]\[).*?\]/g
+  // }
+  // return str.match(matchReg)
+  return (str.split("][")[1]).split("]")[0]
 }
 
 /**

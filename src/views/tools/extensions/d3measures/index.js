@@ -1,5 +1,4 @@
-const THREE = require('three');
-import "@/views/tools/style/d3measure.scss"
+const THREE = require('@/three/three.js')
 import LoadJSON from "@/utils/LoadJSON.js"
 import {
 	worldPointToScreenPoint
@@ -7,6 +6,7 @@ import {
 import {
 	GeometricOperation
 } from "@/views/tools/Geo/GeometricOperation.js"
+import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
 
 import {
 	drawCircle,
@@ -39,6 +39,7 @@ import {
 } from "./SectionMask.js"
 //3D测量
 export function D3Measure(bimEngine) {
+  require('@/views/tools/style/'+SetDeviceStyle()+'/d3measure.scss')
 	var _D3Measure = new Object();
 	_D3Measure.SignMeasure = new SignMeasure(bimEngine);
 	_D3Measure.SignLineText = new SignLineText(bimEngine);
@@ -964,7 +965,7 @@ export function D3Measure(bimEngine) {
 					let EdgeList = intersect.object.ElementInfos[clickObj.dbid].EdgeList
 					PINK_DETAILS = getPinkType(bimEngine.scene, intersect, EdgeList)
 				}
-			} else if (intersects[0].object.TypeName == "InstancedMesh") {
+			} else if (intersects[0].object.TypeName == "InstancedMesh" || intersects[0].object.TypeName == "InstancedMesh-Pipe") {
 				let EdgeList = intersect.object.ElementInfos[intersect.instanceId].EdgeList
 				PINK_DETAILS = getPinkType(bimEngine.scene, intersect, EdgeList)
 			}

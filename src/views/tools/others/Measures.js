@@ -1,4 +1,4 @@
-const THREE = require('three')
+const THREE = require('@/three/three.js')
 export function MeasurePoint(scene, camera, GroupBox) {
   
   

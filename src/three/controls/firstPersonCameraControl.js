@@ -4,7 +4,7 @@
  * @LastEditTime: 2020-07-07 15:13:31
  */
 
-const THREE = require('three')
+const THREE = require('../three.js')
 export class FirstPersonCameraControl {
 	constructor(camera, domElement, rayCastObjects) {
 		this.camera = camera;
@@ -37,6 +37,10 @@ export class FirstPersonCameraControl {
 		this.bindmousemove = this.onMouseMove.bind(this);
 		this.bindonKeyDown = this.onKeyDown.bind(this);
 		this.bindonKeyUp = this.onKeyUp.bind(this);
+		this.bindMousewheel = this.onMousewheel.bind(this);
+		this.moveWheelRun = true;
+    this.moveWheelStop = false;
+		this.wheelClock;
 	}
 
 	/**
@@ -72,6 +76,11 @@ export class FirstPersonCameraControl {
 		this.domElement.addEventListener("pointerup", this.bindmouseup, false);
 		document.body.addEventListener("keydown", this.bindonKeyDown, false);
 		document.body.addEventListener("keyup", this.bindonKeyUp, false);
+		
+		if (document.addEventListener) {
+			document.addEventListener('DOMMouseScroll', this.bindMousewheel, false);
+		} //Firefox
+		document.body.addEventListener("mousewheel", this.bindMousewheel, false); //IE/Opera/Chrome/Safari
 	}
 
 	removeEvents() {
@@ -79,6 +88,59 @@ export class FirstPersonCameraControl {
 		this.domElement.removeEventListener("pointerup", this.bindmouseup);
 		document.body.removeEventListener("keydown", this.bindonKeyDown);
 		document.body.removeEventListener("keyup", this.bindonKeyUp);
+		
+		if (document.addEventListener) {
+			document.removeEventListener('DOMMouseScroll', this.bindMousewheel);
+		} //Firefox
+		document.body.removeEventListener("mousewheel", this.bindMousewheel); //IE/Opera/Chrome/Safari
+	}
+
+	onMousewheel(event){
+		let direction
+		if (event.wheelDelta) { //IE Chrome Opera Safari       
+			if (event.wheelDelta > 0) {
+				direction = "up"
+			}  
+			if (event.wheelDelta < 0) {
+				direction = "down"
+			}  
+		} else if (event.detail) {//Firefox
+			if (event.detail < 0) {
+				direction = "up"
+			}  
+			if (event.detail > 0) {
+				direction = "down"
+			}  
+		}
+		switch (direction) {
+			case "up":
+				this._camerLocalDirection.z = 1;
+				break;
+			case "down":
+				this._camerLocalDirection.z = -1;
+				break;
+		}
+		if(this.moveWheelRun==true){
+			//这里写开始滚动时调用的方法
+			this.moveWheelRun = false;
+			this.moveWheelStop = true;
+			this.wheelClock = setTimeout(()=>{
+				if(this.moveWheelStop == true){
+					this.moveWheelStop = false;
+					this.moveWheelRun = true;
+					this._camerLocalDirection.z = 0;
+				}
+			},200);
+		}else {
+			clearTimeout(this.wheelClock);
+			this.wheelClock = setTimeout(()=>{
+				if(this.moveWheelStop == true){
+					this.moveWheelStop = false;
+					this.moveWheelRun = true;
+					this._camerLocalDirection.z = 0;
+				}
+			},150);
+		}
 	}
 
 	onMouseDown(event) {
@@ -91,8 +153,7 @@ export class FirstPersonCameraControl {
 		this._prevMouseY = event.screenY;
 	}
 
-	onMouseMove(event) {
-		console.log(this._isEnabled)
+	onMouseMove(event) { 
 		if (this._isEnabled == false) {
 			return;
 		}
@@ -106,6 +167,11 @@ export class FirstPersonCameraControl {
 		this.camera.quaternion.setFromEuler(this._euler);
 		this._prevMouseX = event.screenX;
 		this._prevMouseY = event.screenY;
+		 
+		var myEvent = new CustomEvent('bimengine:camerachange', {
+			detail: ""
+		});
+		window.dispatchEvent(myEvent); 
 	}
 
 	onMouseUp(event) {
@@ -113,14 +179,19 @@ export class FirstPersonCameraControl {
 	}
 
 	onKeyDown(event) {
+		var myEvent = new CustomEvent('bimengine:camerachange', {
+			detail: ""
+		});
+		window.dispatchEvent(myEvent);  
 		switch (event.keyCode) {
+			
 			case 38: // up
 				this.rotateY(-1);
 				break;
 			case 81: // q
 				this._camerLocalDirection.y = 1;
 				break;
-			case 69: // s
+			case 69: // e
 				this._camerLocalDirection.y = -1;
 				break;
 			case 87: // w
@@ -149,6 +220,7 @@ export class FirstPersonCameraControl {
 				this._camerLocalDirection.x = 1;
 
 				break;
+				
 		}
 	}
 

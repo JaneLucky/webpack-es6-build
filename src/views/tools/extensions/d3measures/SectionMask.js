@@ -1,4 +1,4 @@
-const THREE = require('three');
+const THREE = require('@/three/three.js')
 import {
 	worldPointToScreenPoint
 } from "@/views/tools/common/index.js"

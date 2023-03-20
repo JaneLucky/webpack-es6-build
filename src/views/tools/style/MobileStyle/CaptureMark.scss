@@ -1,0 +1,72 @@
+#CaptureMarkContain{
+	position: absolute;
+	top: 0;
+	left: 0;
+	pointer-events: auto;
+  .CapturePointMark{
+    position: absolute;
+    box-sizing: border-box;
+    z-index: 2;
+    width: 20px;
+    height: 20px;
+    border-width: 3px;
+    border-style: solid;
+    border-color: rgb(0, 255, 0);
+    display: none;
+    pointer-events: none;
+    transform: translate(-50%,-50%);
+    transform-origin: center center;
+    background: rgba($color: rgb(0, 255, 0), $alpha: 0.2)
+  }
+  .CaptureChuiDianPointMark{
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    box-sizing: border-box;
+    background-color: #ffff00;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #fff;
+    border-radius: 100%;
+    display: none;
+  }
+}
+
+
+
+@media screen and (orientation: landscape) { /*横屏 css*/ 
+  #CaptureMarkContain{
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: auto;
+    .CapturePointMark{
+      position: absolute;
+      box-sizing: border-box;
+      z-index: 2;
+      width: 20px;
+      height: 20px;
+      border-width: 3px;
+      border-style: solid;
+      border-color: rgb(0, 255, 0);
+      display: none;
+      pointer-events: none;
+      transform: translate(-50%,-50%);
+      transform-origin: center center;
+      background: rgba($color: rgb(0, 255, 0), $alpha: 0.2)
+    }
+    .CaptureChuiDianPointMark{
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      box-sizing: border-box;
+      background-color: #ffff00;
+      border-style: solid;
+      border-width: 2px;
+      border-color: #fff;
+      border-radius: 100%;
+      display: none;
+    }
+  }
+  
+}

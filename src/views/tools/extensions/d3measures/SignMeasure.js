@@ -1,7 +1,7 @@
 import {
 	GeometricOperation
 } from "@/views/tools/Geo/GeometricOperation.js"
-import "@/views/tools/style/d3measure.scss"
+import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
 import {
 	worldPointToScreenPoint
 } from "@/views/tools/common/index.js"
@@ -15,6 +15,7 @@ import {
 } from "../measures/MeasurePink"
 //三维测量标记
 export function SignMeasure(bimEngine) {
+  require('@/views/tools/style/'+SetDeviceStyle()+'/d3measure.scss')
 	var _signMeasure = new Object();
 	_signMeasure.MouseType = "none";
 	_signMeasure.Measures = [];
@@ -27,8 +28,8 @@ export function SignMeasure(bimEngine) {
 	let AnimationFrame = null;
 
 	function render() {
-		AnimationFrame = requestAnimationFrame(render);
-		CameraUpdate();
+		// AnimationFrame = requestAnimationFrame(render);
+		// CameraUpdate();
 	}
 	render() //开启动画
 	//获取标记数据
@@ -538,7 +539,7 @@ export function SignMeasure(bimEngine) {
 					let EdgeList = intersect.object.ElementInfos[clickObj.dbid].EdgeList
 					_signMeasure.PINK_DETAILS = getPinkType(bimEngine.scene, intersect, EdgeList)
 				}
-			} else if (intersects[0].object.TypeName == "InstancedMesh") {
+			} else if (intersects[0].object.TypeName == "InstancedMesh" || intersects[0].object.TypeName == "InstancedMesh-Pipe") {
 				let EdgeList = intersect.object.ElementInfos[intersect.instanceId].EdgeList
 				_signMeasure.PINK_DETAILS = getPinkType(bimEngine.scene, intersect, EdgeList)
 			}

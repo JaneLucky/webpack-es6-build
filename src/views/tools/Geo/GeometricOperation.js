@@ -1,4 +1,4 @@
-const THREE = require('three')
+const THREE = require('@/three/three.js')
 
 //几何运算
 export function GeometricOperation() {

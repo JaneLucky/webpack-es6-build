@@ -1,4 +1,4 @@
-const THREE = require('three')
+const THREE = require('../three.js')
 THREE.BufferGeometryUtils = {
 
 	computeTangents: function ( geometry ) {

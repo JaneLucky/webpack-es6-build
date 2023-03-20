@@ -1,4 +1,4 @@
-const THREE = require('three')
+const THREE = require('@/three/three.js')
 import '@/three/controls/TransformControls.js';
 //模型单面剖切
 export function ClippingSingleSide(scene, status, type) {
@@ -27,6 +27,7 @@ export function ClippingSingleSide(scene, status, type) {
 	clearClippingMesh() //删除之前创建的ClippingMesh剖切辅助对象，并还原所有构建
 
 	status && init() // 根据状态初始化
+	window.bimEngine.UpdateRender();
 	function init() {
 		let BoundingBox = getClippingMeshSizeAndPosition() //获得辅助对象的宽高和位置
 		plane = new THREE.Plane(BoundingBox.plane.vector, 0) //创建二维切割平面
@@ -82,6 +83,7 @@ export function ClippingSingleSide(scene, status, type) {
 			}else{
 				mesh.visible = true
 			}
+			window.bimEngine.UpdateRender();
 		});
 		setModelClippingPlanes(plane) //设置所有构建的clippingPlanes
 	}
@@ -98,6 +100,7 @@ export function ClippingSingleSide(scene, status, type) {
 				plane.constant = res.target.worldPosition.z - 0
 				break;
 		}
+		window.bimEngine.UpdateRender();
 	}
 
 	//获得辅助对象的宽高和位置
@@ -146,21 +149,24 @@ export function ClippingSingleSide(scene, status, type) {
 	//设置所有构建的clippingPlanes
 	function setModelClippingPlanes(plane) {
 		let models = window.bimEngine.scene.children;
+		let planes = plane ? [plane] : null
 		models.forEach(item => {
 			if (item.name === "rootModel") {
 				if(item.material instanceof Array){
 					item.material.forEach(ii => {
-						ii.clippingPlanes = plane ? [plane] : null
+						ii.clippingPlanes = planes
 					})
 					item.cloneMaterialArray.forEach(ii => {
-						ii.clippingPlanes = plane ? [plane] : null
+						ii.clippingPlanes = planes
 					})
 				} else{
-					item.material.clippingPlanes = plane ? [plane] : null
-					item.cloneMaterialArray.clippingPlanes = plane ? [plane] : null
+					item.material.clippingPlanes = planes
+					item.cloneMaterialArray.clippingPlanes = planes
 				}
 			}
 		})
+		setHighlightModelClippingPlanes(planes)
+		setModelEdgesClippingPlanes(planes)
 	}
 
 	//删除之前创建的ClippingMesh剖切辅助对象，并还原所有构建
@@ -198,6 +204,7 @@ export function ClippingMultiSide(scene, status) {
 	clearClippingMesh(); //删除之前创建的ClippingMesh剖切辅助对象，并还原所有构建
 
 	status && init() // 根据状态初始化
+	window.bimEngine.UpdateRender();
 	function init() {
 		drawClippingBox(size,center,true);
 		const material = new THREE.MeshBasicMaterial({
@@ -307,6 +314,7 @@ export function ClippingMultiSide(scene, status) {
 				}else{
 					mesh.visible = true
 				}
+				window.bimEngine.UpdateRender();
 			});
 			
 			//实时修改plane.constant，以实现模型剖切
@@ -331,6 +339,7 @@ export function ClippingMultiSide(scene, status) {
 						plane.constant = -res.target.worldPosition.z - 0
 						break;
 				} 
+				window.bimEngine.UpdateRender();
 			}
 		}
 		setModelClippingPlanes(planes) //设置所有构建的clippingPlanes
@@ -494,6 +503,8 @@ export function ClippingMultiSide(scene, status) {
 				}
 			}
 		})
+		setHighlightModelClippingPlanes(planes)
+		setModelEdgesClippingPlanes(planes)
 	}
 
 	//删除之前创建的ClippingMesh剖切辅助对象，并还原所有构建
@@ -608,6 +619,25 @@ export function ClippingMultiSide(scene, status) {
 	}
 }
 
+// 设置高亮模型剖切
+function setHighlightModelClippingPlanes(planes) {
+	let HighLightGroupList = window.bimEngine.scene.children.filter(o => o.name == "HighLightGroup");
+	let HighLightGroup = HighLightGroupList[0];
+	for (const group of HighLightGroup.children) {
+		group.children.map(item=>{
+			item.material.clippingPlanes = planes ? planes : null
+		})
+	}
+}
+
+// 设置边线模型剖切
+function setModelEdgesClippingPlanes(planes) {
+	let ModelEdgesList = window.bimEngine.scene.children.filter(o => o.TypeName == "ModelEdges");
+	for (const ModelEdge of ModelEdgesList) {
+		ModelEdge.material.clippingPlanes = planes ? planes : null
+	}
+}
+	
 // 剖切对象
 export function Clipping(scene) {
 	var _clippingObject = new Object();

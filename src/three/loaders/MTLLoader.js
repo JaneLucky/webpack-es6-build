@@ -1,7 +1,7 @@
 /**
  * Loads a Wavefront .mtl file specifying materials
  */
-const THREE = require('three')
+const THREE = require('../three.js')
 THREE.MTLLoader = function ( manager ) {
 
 	THREE.Loader.call( this, manager );

@@ -1,4 +1,4 @@
-const THREE = require('three')
+const THREE = require('@/three/three.js')
 //模型选择
 export function ModelSelection() {
 	var _modelSelection = new Object();

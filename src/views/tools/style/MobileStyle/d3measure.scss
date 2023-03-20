@@ -1,0 +1,252 @@
+/* 三维标记 */
+.MeasureText {
+	position: absolute;
+	// transform-origin: center;
+	background: white;
+	padding: 5px;
+	font-size: 12px; 
+	cursor: move;
+	user-select:none;
+	border-radius: 10%;
+	transform: translate(-50%,-50%);
+}
+.MeasureLevelText{
+	position: absolute;
+	// transform-origin: center;
+	padding: 5px;
+	font-size: 12px; 
+	cursor: move;
+	user-select:none;
+	border-radius: 10%;
+	transform: translate(-50%,-100%);
+}
+
+
+/* 视图操纵手柄 */
+.ViewControlRoot {
+	position: absolute;
+	top: 500px;
+	left: 400px;
+	
+	width: 400px;
+	height: 50px;
+	border: 1px dashed royalblue;
+	pointer-events: none;
+	box-sizing: border-box;
+	transform-origin: center;
+	transform: rotate(60deg);
+}
+
+.ViewControl_Top {
+	position: absolute;
+	
+	pointer-events: all;
+	cursor: move;
+	width: 40px;
+	text-align: center;
+	left: 50%;
+	top: 0;
+	user-select:none;
+	transform: translate(-50%,-50%) rotate(90deg);
+}
+
+.ViewControl_Botton {
+	position: absolute;
+	
+	pointer-events: all;
+	cursor: move;
+	width: 40px;
+	text-align: center;
+	transform-origin: center;
+	user-select:none;
+	/* transform: translate(-50%,-50%);
+	transform-origin: center; */
+}
+
+.ViewControl_Left {
+	position: absolute;
+	
+	pointer-events: all;
+	cursor: move;
+	width: 40px;
+	text-align: center;
+	top: 50%;
+	left: 0;
+	user-select:none;
+	transform: translate(-50%,-50%);
+}
+
+.ViewControl_Right {
+	position: absolute;
+	
+	cursor: move;
+	pointer-events: all;
+	width: 40px;
+	text-align: center;
+	top: 50%;
+	right: 0;
+	user-select:none;
+	transform: translate(50%,-50%);
+}
+
+.ViewText {
+	position: absolute;
+	pointer-events: all;
+	cursor: pointer;
+	width: 100px;
+	bottom: 0;
+	user-select:none;
+	/* transform: translate(-50%,-50%); */
+}
+
+.ViewhandleDir {
+	position: absolute;
+	
+	cursor: pointer;
+	bottom: 0;
+	left: 0;
+	transform: translate(0,100%);
+	pointer-events: auto !important;
+	user-select:none;
+}
+/* 范围框 */
+.ViewhandleRange {
+	position: absolute;
+	
+	height: 5px;
+	width: 100%;
+	cursor: move;
+	pointer-events: all;
+	bottom: 0;
+	transform: translate(0,50%); 
+	user-select:none;
+	background: transparent; 
+}
+
+
+@media screen and (orientation: landscape) { /*横屏 css*/ 
+	/* 三维标记 */
+	.MeasureText {
+		position: absolute;
+		// transform-origin: center;
+		background: white;
+		padding: 5px;
+		font-size: 12px; 
+		cursor: move;
+		user-select:none;
+		border-radius: 10%;
+		transform: translate(-50%,-50%);
+	}
+	.MeasureLevelText{
+		position: absolute;
+		// transform-origin: center;
+		padding: 5px;
+		font-size: 12px; 
+		cursor: move;
+		user-select:none;
+		border-radius: 10%;
+		transform: translate(-50%,-100%);
+	}
+
+
+	/* 视图操纵手柄 */
+	.ViewControlRoot {
+		position: absolute;
+		top: 500px;
+		left: 400px;
+		
+		width: 400px;
+		height: 50px;
+		border: 1px dashed royalblue;
+		pointer-events: none;
+		box-sizing: border-box;
+		transform-origin: center;
+		transform: rotate(60deg);
+	}
+
+	.ViewControl_Top {
+		position: absolute;
+		
+		pointer-events: all;
+		cursor: move;
+		width: 40px;
+		text-align: center;
+		left: 50%;
+		top: 0;
+		user-select:none;
+		transform: translate(-50%,-50%) rotate(90deg);
+	}
+
+	.ViewControl_Botton {
+		position: absolute;
+		
+		pointer-events: all;
+		cursor: move;
+		width: 40px;
+		text-align: center;
+		transform-origin: center;
+		user-select:none;
+		/* transform: translate(-50%,-50%);
+		transform-origin: center; */
+	}
+
+	.ViewControl_Left {
+		position: absolute;
+		
+		pointer-events: all;
+		cursor: move;
+		width: 40px;
+		text-align: center;
+		top: 50%;
+		left: 0;
+		user-select:none;
+		transform: translate(-50%,-50%);
+	}
+
+	.ViewControl_Right {
+		position: absolute;
+		
+		cursor: move;
+		pointer-events: all;
+		width: 40px;
+		text-align: center;
+		top: 50%;
+		right: 0;
+		user-select:none;
+		transform: translate(50%,-50%);
+	}
+
+	.ViewText {
+		position: absolute;
+		pointer-events: all;
+		cursor: pointer;
+		width: 100px;
+		bottom: 0;
+		user-select:none;
+		/* transform: translate(-50%,-50%); */
+	}
+
+	.ViewhandleDir {
+		position: absolute;
+		
+		cursor: pointer;
+		bottom: 0;
+		left: 0;
+		transform: translate(0,100%);
+		pointer-events: auto !important;
+		user-select:none;
+	}
+	/* 范围框 */
+	.ViewhandleRange {
+		position: absolute;
+		
+		height: 5px;
+		width: 100%;
+		cursor: move;
+		pointer-events: all;
+		bottom: 0;
+		transform: translate(0,50%); 
+		user-select:none;
+		background: transparent; 
+	}
+}

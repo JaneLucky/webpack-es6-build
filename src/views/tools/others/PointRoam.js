@@ -1,4 +1,4 @@
-const THREE = require('three')
+const THREE = require('@/three/three.js')
 export function PointRoam() { // 点的坐标数据
 	var _pointRoam = new Object();
   _pointRoam.curveCamera = null //相机位置曲线

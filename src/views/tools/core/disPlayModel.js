@@ -1,4 +1,4 @@
-const THREE = require('three')
+const THREE = require('@/three/three.js')
 export function disPlayModel() {
 	var _disPlayModel = new Object();
 	//删除填充颜色

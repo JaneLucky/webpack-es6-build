@@ -1,5 +1,8 @@
-const THREE = require('three')
-import "../style/multiview.scss"
+const THREE = require('@/three/three.js')
+import "@/three/controls/OrbitControls"
+import {
+	SetDeviceStyle
+} from "@/views/tools/style/deviceStyleSet.js"
 //多视口平铺
 /*
 【视图分类】
@@ -12,6 +15,7 @@ import "../style/multiview.scss"
 2. 三维视图：所有三维交互
 */
 export function Multiview(bimEngine, camera) {
+	require('@/views/tools/style/' + SetDeviceStyle() + '/multiview.scss')
 	var multiview = new Object();
 
 	if (bimEngine.ArrayCamera == null) {
@@ -20,9 +24,10 @@ export function Multiview(bimEngine, camera) {
 		camera.IsVisibility = true;
 		camera.Id = "a";
 		camera.ControlType = "D3";
-		const WIDTH = (window.innerWidth) * window.devicePixelRatio;
-		const HEIGHT = (window.innerHeight) * window.devicePixelRatio;
-		const ASPECT_RATIO = window.innerWidth / window.innerHeight;
+		const WIDTH = (window.bimEngine.scene.renderer.domElement.width)// * window.devicePixelRatio;
+		const HEIGHT = (window.bimEngine.scene.renderer.domElement.height)// * window.devicePixelRatio;
+		const ASPECT_RATIO = window.bimEngine.scene.renderer.domElement.width / window.bimEngine.scene.renderer.domElement.height;
+		
 		camera.viewport = new THREE.Vector4(0, 0, Math.ceil(WIDTH), Math.ceil(HEIGHT));
 		bimEngine.ArrayCamera = arraycamera;
 		TileView(bimEngine);
@@ -60,7 +65,13 @@ export function Multiview(bimEngine, camera) {
 						for (var c of cs) {
 							c.IsActive = false
 						}
-
+						var myEvent = new CustomEvent('bimengine:camerachange', {
+							detail: ""
+						});
+						bimEngine.scene.controls.addEventListener('change', function() {
+							bimEngine.move = true;
+							window.dispatchEvent(myEvent);
+						});
 						break;
 					}
 				}
@@ -69,7 +80,7 @@ export function Multiview(bimEngine, camera) {
 	})
 	//刷新视图
 	multiview.updaterender = function() {
-		const HEIGHT = (window.innerHeight) * window.devicePixelRatio;
+		const HEIGHT = (window.innerHeight);// * window.devicePixelRatio;
 		for (let i = 0; i < bimEngine.ArrayCamera.cameras.length; i++) {
 			var camera = bimEngine.ArrayCamera.cameras[i];
 			if (camera.IsVisibility) {
@@ -139,7 +150,15 @@ export function Multiview(bimEngine, camera) {
 			window.bimEngine.Render.DisplayEdge(true);
 		}
 		TileView(bimEngine);
-
+		multiview.updaterender();
+		var myEvent = new CustomEvent('bimengine:camerachange', {
+			detail: ""
+		});
+		bimEngine.scene.controls.addEventListener('change', function() {
+			bimEngine.move = true;
+			window.dispatchEvent(myEvent);
+		});
+		bimEngine.RenderUpdata()
 	}
 	//创建三维正交视图
 	multiview.New3DOrthogonal = function(bimEngine) {
@@ -154,6 +173,7 @@ export function Multiview(bimEngine, camera) {
 			var camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 1, 1000);
 			camera.name = viewdata.label;
 			camera.Id = viewdata.Id;
+			camera.viewport = new THREE.Vector4(0, 0, width, height);
 			camera.ControlType = "D3";
 			bimEngine.ArrayCamera.cameras.splice(0, 0, camera);
 			multiview.SwitchView(bimEngine, camera);
@@ -170,13 +190,14 @@ export function Multiview(bimEngine, camera) {
 		//判断一下有没有吧
 		let index = bimEngine.ArrayCamera.cameras.findIndex(x => x.Id == viewdata.Id);
 		if (index == -1) {
-			var width = window.innerWidth; //窗口宽度
-			var height = window.innerHeight; //窗口高度
+			var width = window.bimEngine.scene.renderer.domElement.width; //窗口宽度
+			var height = window.bimEngine.scene.renderer.domElement.height; //窗口高度
 			var k = width / height; //窗口宽高比  
-			var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01,
+			var camera = new THREE.PerspectiveCamera(50, window.bimEngine.scene.renderer.domElement.width / window.bimEngine.scene.renderer.domElement.height, 0.01,
 				30000) //透视相机 
 			camera.name = viewdata.label;
 			camera.Id = viewdata.Id;
+			camera.viewport = new THREE.Vector4(0, 0, width, height);
 			camera.ControlType = "D3";
 			bimEngine.ArrayCamera.cameras.splice(0, 0, camera);
 			multiview.SwitchView(bimEngine, camera);
@@ -192,13 +213,14 @@ export function Multiview(bimEngine, camera) {
 	multiview.NewPlaneView = function(bimEngine, viewdata) {
 		let index = bimEngine.ArrayCamera.cameras.findIndex(x => x.Id == viewdata.Id);
 		if (index == -1) {
-			var width = window.innerWidth; //窗口宽度
-			var height = window.innerHeight; //窗口高度
+			var width = window.bimEngine.scene.renderer.domElement.width; //窗口宽度
+			var height = window.bimEngine.scene.renderer.domElement.height; //窗口高度
 			var k = width / height; //窗口宽高比 
 			var s = 100; //三维场景显示范围控制系数，系数越大，显示的范围越大
 			var camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 0.001, 1000000);
 			camera.name = viewdata.label;
 			camera.Id = viewdata.Id;
+			camera.viewport = new THREE.Vector4(0, 0, width, height);
 			camera.ControlType = "Plane";
 			bimEngine.ArrayCamera.cameras.splice(0, 0, camera);
 			//跳转至最佳位置  
@@ -224,14 +246,15 @@ export function Multiview(bimEngine, camera) {
 	multiview.NewElevationView = function(bimEngine, viewdata) {
 		let index = bimEngine.ArrayCamera.cameras.findIndex(x => x.Id == viewdata.Id);
 		if (index == -1) {
-			var width = window.innerWidth; //窗口宽度
-			var height = window.innerHeight; //窗口高度
+			var width = window.bimEngine.scene.renderer.domElement.width; //窗口宽度
+			var height = window.bimEngine.scene.renderer.domElement.height; //窗口高度
 			var k = width / height; //窗口宽高比 
 			var s = 100; //三维场景显示范围控制系数，系数越大，显示的范围越大
 			var camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 1, 1000);
 			camera.name = viewdata.label;
 			camera.Id = viewdata.Id;
 			camera.ControlType = "Plane";
+			camera.viewport = new THREE.Vector4(0, 0, width, height);
 			bimEngine.ArrayCamera.cameras.splice(0, 0, camera);
 			//跳转至最佳位置  
 			if (viewdata.ViewData.Origin.X == null) {
@@ -285,31 +308,31 @@ export function Multiview(bimEngine, camera) {
 		return item
 	}
 
-	multiview.ReplaceView = function (bimEngine, camera) {
+	multiview.ReplaceView = function(bimEngine, camera) {
 		let beforeCamera = bimEngine.scene.camera
 		bimEngine.scene.camera = camera;
-		if(bimEngine.scene.camera.Id !== beforeCamera.Id){
+		if (bimEngine.scene.camera.Id !== beforeCamera.Id) {
 			console.log('相机切换')
 			//测量点
 			let MeasurePointContainer = document.getElementById("MeasurePoint")
-			if(MeasurePointContainer){
+			if (MeasurePointContainer) {
 				let MeasureList = MeasurePointContainer.getElementsByClassName("PointItem")
-				for(let i=0;i<MeasureList.length;i++){
-					if(MeasureList[i].dataset.cameraId === camera.type+"_"+camera.Id){
+				for (let i = 0; i < MeasureList.length; i++) {
+					if (MeasureList[i].dataset.cameraId === camera.type + "_" + camera.Id) {
 						MeasureList[i].style.display = "block"
-					}else{
+					} else {
 						MeasureList[i].style.display = "none"
 					}
 				}
 			}
 			//测量线
 			let MeasureLineContainer = document.getElementById("MeasureLine")
-			if(MeasureLineContainer){
+			if (MeasureLineContainer) {
 				let MeasureList = MeasureLineContainer.getElementsByClassName("LineItem")
-				for(let i=0;i<MeasureList.length;i++){
-					if(MeasureList[i].dataset.cameraId === camera.type+"_"+camera.Id){
+				for (let i = 0; i < MeasureList.length; i++) {
+					if (MeasureList[i].dataset.cameraId === camera.type + "_" + camera.Id) {
 						MeasureList[i].style.display = "block"
-					}else{
+					} else {
 						MeasureList[i].style.display = "none"
 					}
 				}
@@ -330,7 +353,7 @@ export function CreatorView(bimEngine, option) {
 	
 	
 	*/
-	const ASPECT_RATIO = window.innerWidth / window.innerHeight;
+	const ASPECT_RATIO = window.bimEngine.scene.renderer.domElement.width / window.bimEngine.scene.renderer.domElement.height;
 	const subcamera = new THREE.PerspectiveCamera(40, ASPECT_RATIO, 0.1, 10);
 	subcamera.viewport = new THREE.Vector4(1, 2, 2, 2);
 	subcamera.IsActive = false;
@@ -355,6 +378,15 @@ export function ClearViews(bimEngine) {
 	window.bimEngine.ArrayCamera.cameras = [];
 	window.bimEngine.ArrayCamera.cameras.push(bimEngine.scene.camera);
 	TileView(bimEngine)
+	ClearHandleBtns()
+	bimEngine.RenderUpdata()
+}
+
+export function ClearHandleBtns(){
+	var doms = document.getElementsByClassName("ViewControlPanel");
+	if(doms.length === 1){
+		doms[0].childNodes[0].style.display = 'none'
+	}
 }
 
 //平铺视图
@@ -362,9 +394,9 @@ export function TileView(bimEngine) {
 	let cameraArray = bimEngine.ArrayCamera.cameras.filter(x => x.IsVisibility == true);
 	let viewCount = cameraArray.length;
 
-	const WIDTH = (window.innerWidth) * window.devicePixelRatio;
-	const HEIGHT = (window.innerHeight) * window.devicePixelRatio;
-	const ASPECT_RATIO = window.innerWidth / window.innerHeight;
+	const WIDTH = (window.bimEngine.scene.renderer.domElement.width);// * window.devicePixelRatio;
+	const HEIGHT = (window.bimEngine.scene.renderer.domElement.height);// * window.devicePixelRatio;
+	const ASPECT_RATIO = window.bimEngine.scene.renderer.domElement.width / window.bimEngine.scene.renderer.domElement.height;
 
 	var doms = document.getElementsByClassName("ViewControlPanel");
 	for (; doms.length > 0;) {
@@ -376,7 +408,7 @@ export function TileView(bimEngine) {
 		const subcamera = cameraArray[0];
 		subcamera.viewport = new THREE.Vector4(0, 0, Math.ceil(WIDTH), Math.ceil(HEIGHT));
 		Resize(subcamera);
-		CreatorViewUI(bimEngine, subcamera);
+		CreatorViewUI(bimEngine, subcamera, viewCount);
 	}
 	if (viewCount == 2) {
 		//两个视图
@@ -449,6 +481,8 @@ export function TileView(bimEngine) {
 			CreatorViewUI(bimEngine, subcamera);
 		}
 	}
+	viewCount>1 && bimEngine.RenderUpdata()
+	// window.bimEngine.multiview.updaterender();
 }
 //更新相机画布
 export function Resize(camera) {
@@ -473,7 +507,7 @@ export function Resize(camera) {
 	}
 }
 //创建视图UI
-export function CreatorViewUI(bimengine, camera) {
+export function CreatorViewUI(bimengine, camera, size) {
 	let left = camera.viewport.x;
 	let top = camera.viewport.y;
 	let width = camera.viewport.z;
@@ -487,13 +521,16 @@ export function CreatorViewUI(bimengine, camera) {
 	dom.style.height = height + "px";
 	dom.style.outline = "1px solid rgb(10,10,10,0.2)";
 
-
+	let show = "block"
+	if(size===1){
+		show="none"
+	}
 	var htmls = [
-		'<div >',
-		'<div id="' + camera.uuid + 'closeButton" class="ViewControlClose">×</div>',
-		'<div id="' + camera.uuid + 'maxButton" class="ViewControlMax">▣</div>',
-		'<div id="' + camera.uuid + 'minButton" class="ViewControlMin">─</div>',
-		'</div>'
+		"<div style='display:"+show+"'>",
+		"<div id='" + camera.uuid + "closeButton' class='ViewControlClose'>×</div>",
+		"<div id='" + camera.uuid + "maxButton' class='ViewControlMax'>▣</div>",
+		"<div id='" + camera.uuid + "minButton' class='ViewControlMin'>─</div>",
+		"</div>"
 	].join('');
 	dom.innerHTML = htmls;
 	var _container = bimengine.scene.renderer.domElement.parentElement;
@@ -501,18 +538,25 @@ export function CreatorViewUI(bimengine, camera) {
 	// debugger
 	document.getElementById(camera.uuid + "closeButton").addEventListener("click", function(res) {
 		//关闭窗口,直接清掉
+		if(bimengine.ArrayCamera.cameras.length==1){
+			return;
+		}
 		let index = bimengine.ArrayCamera.cameras.findIndex(x => x.uuid == res.target.id.replace("closeButton",
 			""));
 		if (index != -1) {
 			bimengine.ArrayCamera.cameras.splice(index, 1);
 		}
 		if (bimengine.ArrayCamera.cameras.findIndex(x => x.uuid == bimengine.scene.camera.uuid) == -1) {
-			multiview.ReplaceView(bimEngine, bimengine.ArrayCamera.cameras[0]);
+			bimengine.MultiView.ReplaceView(bimengine, bimengine.ArrayCamera.cameras[0]);
 		}
 		TileView(bimengine);
+		bimEngine.RenderUpdata()
 	})
 	document.getElementById(camera.uuid + "minButton").addEventListener("click", function(res) {
 		//最小化窗口
+		if(bimengine.ArrayCamera.cameras.length==1){
+			return;
+		}
 		let uuid = res.target.id.replace("minButton", "");
 		let index = bimengine.ArrayCamera.cameras.findIndex(x => x.uuid == uuid);
 		if (index != -1) {
@@ -520,9 +564,13 @@ export function CreatorViewUI(bimengine, camera) {
 			camera.IsVisibility = false;
 			TileView(bimengine);
 		}
+		bimEngine.RenderUpdata()
 	})
 	document.getElementById(camera.uuid + "maxButton").addEventListener("click", function(res) {
 		//最大化窗口,除了自己，其他人全部最小化
+		if(bimengine.ArrayCamera.cameras.length==1){
+			return;
+		}
 		let uuid = res.target.id.replace("maxButton", "");
 		let index = bimengine.ArrayCamera.cameras.findIndex(x => x.uuid == uuid);
 		if (index != -1) {
@@ -536,8 +584,9 @@ export function CreatorViewUI(bimengine, camera) {
 			}
 			camera_.IsActive = true;
 			camera_.IsVisibility = true;
-			multiview.ReplaceView(bimEngine, camera_);
+			bimengine.MultiView.ReplaceView(bimengine, camera_);
 			TileView(bimengine);
 		}
+		bimEngine.RenderUpdata()
 	})
 }

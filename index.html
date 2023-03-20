@@ -33,12 +33,13 @@
     
     let bimEngine = new BIMEngine("threejs-sence-container", null,loader);//创建BIM引擎对象
     bimEngine.init();//初始化场景
+    let pathList = ['qq']
     //加载模型
-    bimEngine.start("static/glb/13", "glbjson", {}, res => {
-      //显示边线
-      // bimEngine.render.DisplayEdge(true); 
-    });
-	
+    for (let path of pathList) {
+      bimEngine.start("file", path, "glbjson", {}, res => {
+      });
+    }
+    
   </script>
 </body>
 </html>

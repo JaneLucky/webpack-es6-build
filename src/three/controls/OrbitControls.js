@@ -5,7 +5,9 @@
 //    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
 //    Pan - right mouse, or left mouse + ctrl/meta/shiftKey, or arrow keys / touch: two-finger move
 
-const THREE = require('three')
+const THREE = require('../three.js')
+import { CreateSvg } from "@/views/tools/common/index.js"
+import { worldPointToScreenPoint } from "@/views/tools/common/index.js"
 THREE.OrbitControls = function(object, domElement) {
 
 	if (domElement === undefined) console.warn(
@@ -23,6 +25,11 @@ THREE.OrbitControls = function(object, domElement) {
 	// "target" sets the location of focus, where the object orbits around
 	this.target = new THREE.Vector3();
 	this.origin = new THREE.Vector3(0, 0, 0);
+	this.showOriginIcon = true //旋转时是否显示旋转中心点
+	this.originPosition = { //旋转中心点屏幕位置
+		x:0,
+		y:0
+	}
 	this.auto = false;
 	// How far you can dolly in and out ( PerspectiveCamera only )
 	this.minDistance = 0;
@@ -50,7 +57,7 @@ THREE.OrbitControls = function(object, domElement) {
 	// This option actually enables dollying in and out; left as "zoom" for backwards compatibility.
 	// Set to false to disable zooming
 	this.enableZoom = true;
-	this.zoomSpeed = 1.0;
+	this.zoomSpeed = 1;
 
 	// Set to false to disable rotating
 	this.enableRotate = true;
@@ -295,10 +302,11 @@ THREE.OrbitControls = function(object, domElement) {
 							if (window.bimEngine != null) {
 								let camera = window.bimEngine.scene.camera;
 								// scope.target = camera.position 
-								if(position.distanceTo(scope.target.clone().add(offset))>0.01){
-									position.add(camera.getWorldDirection().multiplyScalar(scope.object.zoomdir*spherical.radius*0.05));
-								} 
-							} 
+								if (position.distanceTo(scope.target.clone().add(offset)) > 0.01) {
+									position.add(camera.getWorldDirection().multiplyScalar(scope.object
+										.zoomdir * spherical.radius * 0.05));
+								}
+							}
 						}
 						// console.log("缩放",offset,scope.target)
 					}
@@ -435,8 +443,8 @@ THREE.OrbitControls = function(object, domElement) {
 	}
 
 	function getZoomScale() {
-
-		return Math.pow(0.95, scope.zoomSpeed);
+		// return scope.zoomSpeed;
+		return Math.pow(0.8, 1/scope.zoomSpeed);
 
 	}
 
@@ -535,11 +543,17 @@ THREE.OrbitControls = function(object, domElement) {
 
 	}();
 
-	function dollyOut(dollyScale) {
+	function dollyOut(dollyScale, isMobile = false) {
 		scope.object.zoomdir = -1;
 		if (scope.object.isPerspectiveCamera) {
 
-			scale /= dollyScale;
+			if(isMobile){
+				scope.object.zoom = Math.max(scope.minZoom, Math.min(scope.maxZoom, scope.object.zoom * dollyScale));
+				scope.object.updateProjectionMatrix();
+				zoomChanged = true;
+			}else{
+				scale *= dollyScale;
+			}
 
 		} else if (scope.object.isOrthographicCamera) {
 
@@ -841,7 +855,7 @@ THREE.OrbitControls = function(object, domElement) {
 
 		dollyDelta.set(0, Math.pow(dollyEnd.y / dollyStart.y, scope.zoomSpeed));
 
-		dollyOut(dollyDelta.y);
+		dollyOut(dollyDelta.y, true);
 
 		dollyStart.copy(dollyEnd);
 
@@ -926,6 +940,23 @@ THREE.OrbitControls = function(object, domElement) {
 
 		// Prevent the browser from scrolling.
 		event.preventDefault();
+
+		// 旋转中心为源点时，设置鼠标点下去打到的第一个元素的位置为源点
+		if(scope.showOriginIcon){
+			if(window.bimEngine && (!window.bimEngine.CurrentSelect || (window.bimEngine.CurrentSelect && !window.bimEngine.CurrentSelect.dbid))){
+				scope.origin = new THREE.Vector3(0, 0, 0);
+				let rayCaster = new THREE.Raycaster();
+				let mouse = new THREE.Vector2();
+				mouse.x = ((event.clientX - window.bimEngine.scene.camera.viewport.x) / window.bimEngine.scene.camera.viewport.z) * 2 - 1;
+				mouse.y = -((event.clientY - window.bimEngine.scene.camera.viewport.y) / window.bimEngine.scene.camera.viewport.w) * 2 + 1;
+				rayCaster.setFromCamera(mouse, window.bimEngine.scene.camera);
+				let intersects = (rayCaster.intersectObjects(window.bimEngine.GetAllVisibilityModel(), true));
+				if (intersects.length > 0) {
+					scope.origin = intersects[0].point
+				}
+			}
+			scope.originPosition = worldPointToScreenPoint(scope.origin.clone(), window.bimEngine.scene.camera)
+		}
 
 		// Manually set the focus since calling preventDefault above
 		// prevents the browser from setting it automatically.
@@ -1044,6 +1075,15 @@ THREE.OrbitControls = function(object, domElement) {
 
 				handleMouseMoveRotate(event);
 
+				if(scope.showOriginIcon){ // 显示旋转中心
+					let icon = getOriginIcon()
+					if(icon){
+						icon.style.top = scope.originPosition.y - icon.clientWidth/2 + "px"
+						icon.style.left = scope.originPosition.x - icon.clientHeight/2 + "px"
+						icon.style.display = "block"
+					}
+				}
+
 				break;
 
 			case STATE.DOLLY:
@@ -1068,6 +1108,16 @@ THREE.OrbitControls = function(object, domElement) {
 
 	function onMouseUp(event) {
 
+
+		if(scope.showOriginIcon){ // 隐藏旋转中心	
+			let icon = getOriginIcon()
+			if(icon){
+				icon.style.top = 0 - icon.clientWidth/2 + "px"
+				icon.style.left = 0 - icon.clientHeight/2 + "px"
+				icon.style.display = "none"
+			}
+		}
+
 		scope.domElement.ownerDocument.removeEventListener('pointermove', onPointerMove);
 		scope.domElement.ownerDocument.removeEventListener('pointerup', onPointerUp);
 
@@ -1079,6 +1129,21 @@ THREE.OrbitControls = function(object, domElement) {
 
 		state = STATE.NONE;
 
+	}
+
+	//创建旋转中心图标
+	function getOriginIcon() {
+		let icon = document.getElementById("Three_OrbitControls_OriginIcon")
+		if(!icon){
+      let icon = CreateSvg("icon-baxin")
+			icon.id = "Three_OrbitControls_OriginIcon"
+			icon.style.display = "none"
+			icon.style.position = "absolute"
+			icon.style.width = "30px"
+			icon.style.height = "30px"
+			scope.domElement.parentElement.appendChild(icon)
+		}
+		return icon
 	}
 
 	function onMouseWheel(event) {

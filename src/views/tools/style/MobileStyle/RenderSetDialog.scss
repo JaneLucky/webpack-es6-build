@@ -1,0 +1,258 @@
+.MobileView-page-container{
+  .Render-Set-Dialog{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: fit-content;
+    height: 100vh;
+    background: #ffffff;
+    box-sizing: border-box;
+    display: block;
+    z-index: 1;
+    border: 1px solid #dddddd;
+    overflow-y: scroll;
+    .Feader-Contain{
+      height: 34px;
+      padding: 10px 5px;
+      border-bottom: 1px solid #dddddd;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .Title{
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .Close-Btn{
+        cursor: pointer;
+        font-size: 20px;
+        display: none;
+      }
+    }
+    .Main-Contain{
+      padding: 5px 15px 5px 5px;
+      box-sizing: border-box;
+      .Module-Header{
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin-top: 10px;
+        .Icon{
+          width: 4px;
+          height: 16px;
+          background: #409EFF;
+          margin-right: 8px;
+        }
+        .Title{
+          font-size: 16px;
+          font-weight: 600;
+          line-height: 32px;
+        }
+      }
+      .Form_Item{
+        display: flex;
+        flex-direction: column;
+        padding-left: 15px;
+      }
+      .Form_Item_Label{
+        padding: 5px 0;
+      }
+  
+  
+      .Bg-Color-List{
+        display: flex;
+        flex-direction: column;
+        padding: 5px 0 5px 15px;
+        box-sizing: border-box;
+        .Item{
+          width: fit-content;
+          width: 62px;
+          height: 28px;
+          box-sizing: border-box;
+          border: 2px solid #dddddd;
+          cursor: pointer;
+        }
+        .Actived{
+          border: 3px solid #409EFF;
+        }
+      }
+      .Light-Color-List{
+        display: flex;
+        flex-direction: column;
+        padding: 5px 0 5px 15px;
+        box-sizing: border-box;
+        .Item-Contain{
+          flex: 1;
+          .Item-Inside-Contain{
+            display: flex;
+            flex-direction: column;
+            .Item{
+              display: flex;
+              margin-bottom: 10px;
+              cursor: pointer;
+              .Legened{
+                width: 28px;
+                height: 28px;
+                box-sizing: border-box;
+                border-radius: 4px;
+                pointer-events: none;
+              }
+              .Title{
+                padding-left: 5px;
+                font-size: 14px;
+                line-height: 28px;
+                pointer-events: none;
+                text-align: center;
+                overflow: hidden; //超出的文本隐藏
+                text-overflow: ellipsis; //溢出用省略号显示
+                display: -webkit-box;
+                -webkit-line-clamp: 1; // 超出多少行
+                -webkit-box-orient: vertical;
+              }
+            }
+            .Actived{
+              .Legened{
+                border: 2px solid #409EFF;
+              }
+              .Title{
+                color: #409EFF;
+              }
+            }
+          }
+        }
+      }
+  
+    }
+  }
+  .Render-Set-Dialog::-webkit-scrollbar {
+    width: 0;
+  }
+  @media screen and (orientation: landscape) { /*横屏 css*/ 
+    .Render-Set-Dialog{
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: fit-content;
+      height: 100vh;
+      background: #ffffff;
+      box-sizing: border-box;
+      display: block;
+      z-index: 1;
+      border: 1px solid #dddddd;
+      overflow-y: scroll;
+      .Feader-Contain{
+        height: 34px;
+        padding: 10px 5px;
+        border-bottom: 1px solid #dddddd;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .Title{
+          font-size: 16px;
+          font-weight: 600;
+        }
+        .Close-Btn{
+          cursor: pointer;
+          font-size: 20px;
+          display: none;
+        }
+      }
+      .Main-Contain{
+        padding: 5px 15px 5px 5px;
+        box-sizing: border-box;
+        .Module-Header{
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
+          margin-top: 10px;
+          .Icon{
+            width: 4px;
+            height: 16px;
+            background: #409EFF;
+            margin-right: 8px;
+          }
+          .Title{
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 32px;
+          }
+        }
+        .Form_Item{
+          display: flex;
+          flex-direction: column;
+          padding-left: 15px;
+        }
+        .Form_Item_Label{
+          padding: 5px 0;
+        }
+  
+  
+        .Bg-Color-List{
+          display: flex;
+          flex-direction: column;
+          padding: 5px 0 5px 15px;
+          box-sizing: border-box;
+          .Item{
+            width: fit-content;
+            width: 62px;
+            height: 28px;
+            box-sizing: border-box;
+            border: 2px solid #dddddd;
+            cursor: pointer;
+          }
+          .Actived{
+            border: 3px solid #409EFF;
+          }
+        }
+        .Light-Color-List{
+          display: flex;
+          flex-direction: column;
+          padding: 5px 0 5px 15px;
+          box-sizing: border-box;
+          .Item-Contain{
+            flex: 1;
+            .Item-Inside-Contain{
+              display: flex;
+              flex-direction: column;
+              .Item{
+                display: flex;
+                margin-bottom: 10px;
+                cursor: pointer;
+                .Legened{
+                  width: 28px;
+                  height: 28px;
+                  box-sizing: border-box;
+                  border-radius: 4px;
+                  pointer-events: none;
+                }
+                .Title{
+                  padding-left: 5px;
+                  font-size: 14px;
+                  line-height: 28px;
+                  pointer-events: none;
+                  text-align: center;
+                  overflow: hidden; //超出的文本隐藏
+                  text-overflow: ellipsis; //溢出用省略号显示
+                  display: -webkit-box;
+                  -webkit-line-clamp: 1; // 超出多少行
+                  -webkit-box-orient: vertical;
+                }
+              }
+              .Actived{
+                .Legened{
+                  border: 2px solid #409EFF;
+                }
+                .Title{
+                  color: #409EFF;
+                }
+              }
+            }
+          }
+        }
+  
+      }
+    }
+  }
+
+}

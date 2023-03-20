@@ -1,9 +1,11 @@
 import {
 	CreateSvg
 } from "@/views/tools/common/index.js"
-import "../style/TopMenu.scss"
+import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
+// import { Message } from 'element-ui'
 
 export function CreateTopMenu(bimengine){
+  require('@/views/tools/style/'+SetDeviceStyle()+'/TopMenu.scss')
 	var _topMenu = new Object();
   _topMenu.ShowMenu = true
 	let _container = bimengine.scene.renderer.domElement.parentElement;
@@ -100,6 +102,12 @@ export function CreateTopMenu(bimengine){
         label: '坐标',
         icon: 'icon-dingwei',
         status: false,
+      }, {
+        pId: '6',
+        value: '65',
+        label: '标高',
+        icon: 'icon-biaogao',
+        status: false,
       }]
     }
   ];
@@ -119,7 +127,12 @@ export function CreateTopMenu(bimengine){
       item_contain.appendChild(icon)
       _topMenu.MenuList[i].domEl = item
       item.onclick = (e)=>{
-        handleChange(_topMenu.MenuList[i],null)
+        if(_topMenu.MenuList[i].label === "漫游" && !bimengine.FirstPersonControls.isActive && closeOtherActive()){
+          // 设置漫游和视点互斥
+          return
+        }else{
+          handleChange(_topMenu.MenuList[i],null)
+        }
       }
       menu_list.appendChild(item)
 
@@ -158,7 +171,11 @@ export function CreateTopMenu(bimengine){
   _topMenu.HideMenu = function(){
     menu_container.style.display = "none"
   }
-
+  _topMenu.ClickItem = function(label){
+    let itemMenu = _topMenu.MenuList.filter(menu=>menu.label === label)
+    itemMenu[0].domEl.click()
+  }
+  
 
   function handleChange(item, parent) {
     // console.log(item)
@@ -268,6 +285,9 @@ export function CreateTopMenu(bimengine){
         case '64': //
           bimengine.Measures && bimengine.Measures.PointMeasure.DisActive()
           break;
+        case '65': //
+          bimengine.Measures && bimengine.Measures.ElevationHeightMeasure.DisActive()
+          break;
         default:
           break;
       }
@@ -308,6 +328,9 @@ export function CreateTopMenu(bimengine){
         case '64': //
           bimengine.Measures && bimengine.Measures.PointMeasure.Active()
           break;
+        case '65': //
+          bimengine.Measures && bimengine.Measures.ElevationHeightMeasure.Active()
+          break;
         default:
           break;
       }
@@ -328,6 +351,19 @@ export function CreateTopMenu(bimengine){
         }
       }
     }
+  }
+  
+  // 设置互斥操做
+  function closeOtherActive(){
+    if(sessionStorage.getItem("RootMenuSelect") === "视点"){
+      // Message({
+      //   message: "请先关闭右侧视点列表！",
+      //   type: "warning",
+      //   duration: 2000
+      // })
+      return true
+    }
+    return false
   }
   
   CreateUI()

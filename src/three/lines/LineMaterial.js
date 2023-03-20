@@ -4,7 +4,7 @@ import {
 	UniformsLib,
 	UniformsUtils,
 	Vector2
-} from 'three/build/three.module'
+} from '../three.js'
 /**
  * parameters = {
  *  color: <hex>,

@@ -1,4 +1,4 @@
-import * as THREE from 'three/build/three.module'
+import * as THREE from '../three.js'
 export default class ResourceTracker {
 	constructor() {
 		this.resources = new Set();

@@ -1,4 +1,4 @@
-const THREE = require('three')
+const THREE = require('@/three/three.js')
 //设置AO阴影
 import {
 	EffectComposer
@@ -31,9 +31,7 @@ export function RenderSAO(bimengine) {
 		composer.addPass(saoPass);
 		_renderSAO.composer = composer;
 		window.addEventListener('resize', onWindowResize);
-
-		saoPass.saoBias = 5;
-		saoPass.saoKernelRadius = 20;
+ 
 
 		function onWindowResize() {
 
@@ -45,12 +43,15 @@ export function RenderSAO(bimengine) {
 			renderer.setSize(width, height);
 
 			composer.setSize(width, height);
+			
+			
+			
 
 
 		}
 	}
 	_renderSAO.render = function() {
-		if (_renderSAO.composer != null) {
+		if (_renderSAO.composer != null) { 
 			_renderSAO.composer.render();
 		}
 	}

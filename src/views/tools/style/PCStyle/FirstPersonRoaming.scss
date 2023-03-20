@@ -1,0 +1,170 @@
+.Roam_Dialog{
+	position: absolute;
+	bottom: 10px;
+	left: 50%;
+	transform: translate(-50%,0);
+	width: 620px;
+	height: fit-content;
+	border: 1px solid #656565;
+	box-sizing: border-box;
+	user-select: none;
+	.Header_Contain{
+		display: flex;
+		width: 100%;
+		background: #656565;
+		border-bottom: 0.0625rem solid rgb(255, 255, 255, 0.5);
+		box-sizing: border-box;
+		height: 36px;
+		line-height: 36px;
+		padding: 0 10px;
+		color: #dddddd;
+		.Header_Title{
+			flex: 1;
+			font-size: 16px;
+			font-weight: 600;
+		}
+		.Header_Btns{
+			display: flex;
+			align-items: center;
+			height: 36px;
+			.Btn{
+				font-size: 25px;
+				cursor: pointer;
+				margin-left: 10px;
+			}
+			.Header_Min{
+				width: 12px;
+				height: 12px;
+				.Header_Min_Inside{
+					width: 12px;
+					height: 3px;
+					background: #dddddd;
+					margin-top: 4.5px;
+				}
+			}
+			.Header_Max{
+				width: 12px;
+				height: 12px;
+				box-sizing: border-box;
+				border: 3px solid #dddddd;
+				border-radius: 2px;
+			}
+		}
+
+	}
+	.Form_Contain{
+		display: flex;
+		font-size: 16px;
+		width: 100%;
+		justify-content: space-around;
+		align-items: center;
+		height: 64px;
+		background: rgb(226, 227, 224);
+		.Form_Item{
+			display: flex;
+			align-items: center;
+			.Form_Item_Label{
+				padding-right: 5px;
+			}
+			.Btn_Contain{
+				border: 1px solid #aaaaaa;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 2px;
+				border-radius: 4px;
+			}
+			.Speed_Text{
+				text-align: center;
+				width: 50px;
+			}
+		}
+	}
+}
+
+//适配移动端
+.Roam_Dialog-Mobile{
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	width: 200px;
+	height: fit-content;
+	border: 1px solid #656565;
+	box-sizing: border-box;
+	user-select: none;
+	.Header_Contain{
+		display: flex;
+		width: 100%;
+		background: #656565;
+		border-bottom: 0.0625rem solid rgb(255, 255, 255, 0.5);
+		box-sizing: border-box;
+		height: 36px;
+		line-height: 36px;
+		padding: 0 10px;
+		color: #dddddd;
+		.Header_Title{
+			flex: 1;
+			font-size: 16px;
+			font-weight: 600;
+		}
+		.Header_Btns{
+			display: flex;
+			align-items: center;
+			height: 36px;
+			.Btn{
+				font-size: 25px;
+				cursor: pointer;
+				margin-left: 10px;
+			}
+			.Header_Min{
+				width: 12px;
+				height: 12px;
+				.Header_Min_Inside{
+					width: 12px;
+					height: 3px;
+					background: #dddddd;
+					margin-top: 4.5px;
+				}
+			}
+			.Header_Max{
+				width: 12px;
+				height: 12px;
+				box-sizing: border-box;
+				border: 3px solid #dddddd;
+				border-radius: 2px;
+			}
+			.Header_Close{
+				display: none;
+			}
+		}
+
+	}
+	.Form_Contain{
+		font-size: 16px;
+		height: fit-content;
+		background: rgb(226, 227, 224);
+		padding: 10px 15px;
+		.Form_Item{
+			display: flex;
+			align-items: center;
+			padding: 5px 0;
+			.Form_Item_Label{
+				padding-right: 15px;
+				width: 50px;
+				text-align: right;
+			}
+			.Btn_Contain{
+				border: 1px solid #aaaaaa;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 2px;
+				border-radius: 4px;
+			}
+			.Speed_Text{
+				text-align: center;
+				width: 50px;
+			}
+		}
+	}
+}

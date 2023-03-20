@@ -1,0 +1,95 @@
+/* 视图操控按钮 */
+.ViewControlPanel {
+	height: 30px;
+	pointer-events: none;
+	position: absolute;
+}
+
+.ViewControl {
+	float: right;
+	z-index: 10000;
+}
+
+/* 最小化 */
+.ViewControlMin {
+	float: right;
+	margin-right: 10px;
+	margin-top: 12px;
+	font-size: 16px;
+	cursor: pointer;
+	pointer-events: all;
+	z-index: 10000;
+}
+
+/* 最大化 */
+.ViewControlMax {
+	float: right;
+	margin-right: 10px;
+	margin-top: 10px;
+	font-size: 20px;
+	cursor: pointer;
+	pointer-events: all;
+	z-index: 10000;
+}
+
+/* 关闭 */
+.ViewControlClose {
+	float: right;
+	margin-right: 20px;
+	margin-top: 10px;
+	font-size: 20px;
+	cursor: pointer;
+	pointer-events: all;
+	z-index: 10000;
+}
+
+
+
+@media screen and (orientation: landscape) { /*横屏 css*/ 
+	/* 视图操控按钮 */
+	.ViewControlPanel {
+		height: 30px;
+		pointer-events: none;
+		position: absolute;
+	}
+
+	.ViewControl {
+		float: right;
+		z-index: 10000;
+	}
+
+	/* 最小化 */
+	.ViewControlMin {
+		float: right;
+		margin-right: 10px;
+		margin-top: 12px;
+		font-size: 16px;
+		cursor: pointer;
+		pointer-events: all;
+		z-index: 10000;
+	}
+
+	/* 最大化 */
+	.ViewControlMax {
+		float: right;
+		margin-right: 10px;
+		margin-top: 10px;
+		font-size: 20px;
+		cursor: pointer;
+		pointer-events: all;
+		z-index: 10000;
+	}
+
+	/* 关闭 */
+	.ViewControlClose {
+		float: right;
+		margin-right: 20px;
+		margin-top: 10px;
+		font-size: 20px;
+		cursor: pointer;
+		pointer-events: all;
+		z-index: 10000;
+	}
+
+
+}
