@@ -1,55 +1,189 @@
-.Top-Menu-Container{
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translate(-50%, 0);
-  z-index: 10;
-
-  .Menu-List {
-    display: flex;
-
-    .Item {
-      position: relative;
-      margin-right: 10px;
-      background: #656565;
-      color: #ffffff;
-      border-radius: 4px;
-      font-size: 20px;
-      cursor: pointer;
-
-      .Icon-Contain {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-      }
-
-      &:hover {
-        color: #409EFF;
-      }
-
-      &:last-child {
-        margin-right: 0;
-      }
-
-      .Child-List {
-        position: absolute;
-        top: 45px;
-
-        .Item {
-          margin-bottom: 5px;
+.MobileView-page-container{
+  .Top-Menu-Container {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translate(-50%, 0);
+  
+    .Menu-List {
+      display: flex;
+  
+      .Item {
+        position: relative;
+        margin-right: 10px;
+        background: #656565;
+        color: #ffffff;
+        border-radius: 4px;
+        font-size: 20px;
+        cursor: pointer;
+  
+        .Icon-Contain {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+        }
+  
+        &:hover {
+          color: #409EFF;
+        }
+  
+        &:last-child {
           margin-right: 0;
-
+        }
+        .Child-List {
+          position: fixed;
+          bottom: 41px;
+          left: 50%;
+          display: none;
+          transform: translate(-50%,0);
+          .Item {
+            margin-right: 10px;
+  
+            &:last-child {
+              margin-right: 0;
+            }
+          }
+        }
+      }
+  
+      .Actived {
+        color: #409EFF;
+        .Child-List {
+          display: flex !important;
+        }
+      }
+    }
+  }
+  .Close-Menu-Btn{
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, 0);
+    z-index: 999;
+    border-radius: 50%;
+    width: auto;
+    width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .Svg-Icon{
+      width: 40px;
+      height: 40px;
+    }
+  }
+  .Hide-Menu-Contain{
+    .Menu-List{
+      display: none;
+    }
+    .Close-Menu-Btn{
+      display: block;
+    }
+  }
+  .Show-Menu-Contain{
+    .Menu-List{
+      display: flex;
+    }
+    .Close-Menu-Btn{
+      display: none;
+    }
+  
+  }
+  @media screen and (orientation: portrait) { /*竖屏 css*/ 
+  }
+  @media screen and (orientation: landscape) { /*横屏 css*/ 
+    .Top-Menu-Container {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translate(-50%, 0);
+    
+      .Menu-List {
+        display: flex;
+    
+        .Item {
+          position: relative;
+          margin-right: 10px;
+          background: #656565;
+          color: #ffffff;
+          border-radius: 4px;
+          font-size: 20px;
+          cursor: pointer;
+    
+          .Icon-Contain {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+          }
+    
+          &:hover {
+            color: #409EFF;
+          }
+    
           &:last-child {
-            margin-bottom: 0;
+            margin-right: 0;
+          }
+          .Child-List {
+            position: fixed;
+            bottom: 41px;
+            left: 50%;
+            display: none;
+            transform: translate(-50%,0);
+            .Item {
+              margin-right: 10px;
+    
+              &:last-child {
+                margin-right: 0;
+              }
+            }
+          }
+        }
+    
+        .Actived {
+          color: #409EFF;
+          .Child-List {
+            display: flex !important;
           }
         }
       }
     }
-
-    .Actived {
-      color: #409EFF;
+    .Close-Menu-Btn{
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translate(-50%, 0);
+      z-index: 999;
+      border-radius: 50%;
+      width: auto;
+      width: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .Svg-Icon{
+        width: 40px;
+        height: 40px;
+      }
     }
   }
+  .Hide-Menu-Contain{
+    .Menu-List{
+      display: none;
+    }
+    .Close-Menu-Btn{
+      display: block;
+    }
+  }
+  .Show-Menu-Contain{
+    .Menu-List{
+      display: flex;
+    }
+    .Close-Menu-Btn{
+      display: none;
+    }
+  
+  }
+
 }

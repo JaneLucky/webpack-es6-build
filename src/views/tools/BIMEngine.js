@@ -169,6 +169,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 	_bimEngine.handleLoadDoneFunOnce = false //模型加载完成需要执行的函数-只能执行一次，是否已经执行
 	_bimEngine.FPS = 1; // 设置渲染频率为1FBS，也就是每秒调用渲染器render方法大约1次
 	_bimEngine.DeviceType = getDeviceType() //显示的设备类型
+	_bimEngine.SetBuild = false //是否用于打包
 	window.THREE = THREE;
 	sessionStorage.removeItem('SelectedSingleModelInfo') //刷新清空当前选中构建
 	sessionStorage.setItem("ShowAllModel",'true')
@@ -215,7 +216,11 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		_bimEngine.MultiView = new Multiview(_bimEngine, camera); //多视图对象
 		SceneResize() // 场景尺寸变化
 		//适配移动端
-		_bimEngine.TopMenu = _bimEngine.DeviceType === "PC" ? new CreateTopMenu(_bimEngine) : null; //顶部menu列表
+		if(_bimEngine.SetBuild){
+			_bimEngine.TopMenu = new CreateTopMenu(_bimEngine)
+		}else{
+			_bimEngine.TopMenu = _bimEngine.DeviceType === "PC" ? new CreateTopMenu(_bimEngine) : null; //顶部menu列表
+		}
 		// _bimEngine.TopMenu = new CreateTopMenu(_bimEngine)
 
 		//监听相机

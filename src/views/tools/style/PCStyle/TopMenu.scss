@@ -1,55 +1,74 @@
-.Top-Menu-Container{
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translate(-50%, 0);
-  z-index: 10;
+.PCView-page-container{
+  .Top-Menu-Container{
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translate(-50%, 0);
+    z-index: 10;
 
-  .Menu-List {
-    display: flex;
+    .Menu-List {
+      display: flex;
 
-    .Item {
-      position: relative;
-      margin-right: 10px;
-      background: #656565;
-      color: #ffffff;
-      border-radius: 4px;
-      font-size: 20px;
-      cursor: pointer;
+      .Item {
+        position: relative;
+        margin-right: 10px;
+        background: #656565;
+        color: #ffffff;
+        border-radius: 4px;
+        font-size: 20px;
+        cursor: pointer;
 
-      .Icon-Contain {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-      }
+        .Icon-Contain {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+        }
 
-      &:hover {
-        color: #409EFF;
-      }
+        &:hover {
+          color: #409EFF;
+        }
 
-      &:last-child {
-        margin-right: 0;
-      }
-
-      .Child-List {
-        position: absolute;
-        top: 45px;
-
-        .Item {
-          margin-bottom: 5px;
+        &:last-child {
           margin-right: 0;
+        }
 
-          &:last-child {
-            margin-bottom: 0;
+        .Child-List {
+          position: absolute;
+          top: 45px;
+
+          .Item {
+            margin-bottom: 5px;
+            margin-right: 0;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
           }
         }
       }
+
+      .Actived {
+        color: #409EFF;
+      }
+    }
+  }
+  .Hide-Menu-Contain{
+    .Menu-List{
+      display: none;
+    }
+    .Close-Menu-Btn{
+      display: block;
+    }
+  }
+  .Show-Menu-Contain{
+    .Menu-List{
+      display: flex;
+    }
+    .Close-Menu-Btn{
+      display: none;
     }
 
-    .Actived {
-      color: #409EFF;
-    }
   }
 }

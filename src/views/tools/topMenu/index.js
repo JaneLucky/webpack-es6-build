@@ -3,28 +3,82 @@ import {
 } from "@/views/tools/common/index.js"
 import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
 // import { Message } from 'element-ui'
+import { getDeviceType } from "@/utils/device"
 
 export function CreateTopMenu(bimengine){
   require('@/views/tools/style/'+SetDeviceStyle()+'/TopMenu.scss')
 	var _topMenu = new Object();
   _topMenu.ShowMenu = true
 	let _container = bimengine.scene.renderer.domElement.parentElement;
-  let menu_container;
+  let menu_container, list_contain;
   let currentMenu = [], currentBtn = null, showChild = null, beforeBtn = null;
-  _topMenu.MenuList = [ //顶部菜单列表
+  let AllMenuList = [ //顶部菜单列表
+    {
+      pId: '0',
+      value: '8',
+      label: '视角',
+      icon: 'icon-View-All',
+      status: false,
+      showType: 'Mobile',
+      children: [{
+        pId: '8',
+        value: '81',
+        label: '俯视图',
+        icon: 'icon-View-Top',
+        status: false,
+        dir: 'top'
+      }, {
+        pId: '8',
+        value: '82',
+        label: '仰视图',
+        icon: 'icon-View-Bottom',
+        status: false,
+        dir: 'down'
+      }, {
+        pId: '8',
+        value: '83',
+        label: '右视图',
+        icon: 'icon-View-East',
+        status: false,
+        dir: 'right'
+      }, {
+        pId: '8',
+        value: '84',
+        label: '前视图',
+        icon: 'icon-View-South',
+        status: false,
+        dir: 'front'
+      }, {
+        pId: '8',
+        value: '85',
+        label: '左视图',
+        icon: 'icon-View-West',
+        status: false,
+        dir: 'left'
+      }, {
+        pId: '8',
+        value: '86',
+        label: '后视图',
+        icon: 'icon-View-North',
+        status: false,
+        dir: 'back'
+      }]
+    },
     {
       pId: '0',
       value: '1',
       label: '漫游',
       icon: 'icon-roam',
-      status: false
+      status: false,
+      showType: 'PC Mobile'
     },
     {
       pId: '0',
       value: '2',
       label: '框选',
       icon: 'icon-kuangxuan',
-      status: false
+      status: false,
+      showType: 'PC'
     },
     {
       pId: '0',
@@ -32,6 +86,7 @@ export function CreateTopMenu(bimengine){
       label: '截面分析',
       icon: 'icon-pouqie',
       status: false,
+      showType: 'PC Mobile',
       children: [{
         pId: '3',
         value: '31',
@@ -60,24 +115,11 @@ export function CreateTopMenu(bimengine){
     },
     {
       pId: '0',
-      value: '4',
-      label: '引擎设置',
-      icon: 'icon-setting',
-      status: false
-    },
-    // {
-    //   pId: '0',
-    //   value: '5',
-    //   label: '视图',
-    //   icon: 'icon-guanlishitu',
-    //   status: false
-    // },
-    {
-      pId: '0',
       value: '6',
       label: '测量',
       icon: 'icon-celianggongju',
       status: false,
+      showType: 'PC Mobile',
       children: [{
         pId: '6',
         value: '61',
@@ -109,11 +151,50 @@ export function CreateTopMenu(bimengine){
         icon: 'icon-biaogao',
         status: false,
       }]
-    }
+    },
+    {
+      pId: '0',
+      value: '4',
+      label: '引擎设置',
+      icon: 'icon-setting',
+      status: false,
+      showType: 'PC Mobile',
+    },
+    {
+      pId: '0',
+      value: '5',
+      label: '锁定视图',
+      icon: 'icon-lock',
+      status: false,
+      showType: 'Mobile',
+    },
   ];
+  let DeviceType = getDeviceType()
+  _topMenu.MenuList = AllMenuList.filter(item=>item.showType.includes(DeviceType))
+
+
   function CreateUI() {
     menu_container = document.createElement("div")
-		menu_container.className = "Top-Menu-Container"
+		menu_container.className = "Top-Menu-Container-Mask Show-Menu-Contain"
+    
+    let close_btn = document.createElement("div")
+		close_btn.className = "Close-Menu-Btn"
+    let close_svg = CreateSvg('icon-close-btn')
+    close_btn.appendChild(close_svg)
+    menu_container.appendChild(close_btn)
+    close_btn.onclick = (e)=>{
+      beforeBtn = currentBtn
+      currentBtn = null
+      currentMenu = []
+      showChild = null
+      clearActived()
+      handelEvent()
+    }
+
+
+
+    list_contain = document.createElement("div")
+		list_contain.className = "Top-Menu-Container"
 
     let menu_list = document.createElement("div")
 		menu_list.className = "Menu-List"
@@ -161,15 +242,16 @@ export function CreateTopMenu(bimengine){
       }
 
     }
-    menu_container.appendChild(menu_list)
+    list_contain.appendChild(menu_list)
+    menu_container.appendChild(list_contain)
 		_container.appendChild(menu_container);
   }
   
   _topMenu.ShowMenu = function(){
-    menu_container.style.display = "block"
+    list_contain.style.display = "block"
   }
   _topMenu.HideMenu = function(){
-    menu_container.style.display = "none"
+    list_contain.style.display = "none"
   }
   _topMenu.ClickItem = function(label){
     let itemMenu = _topMenu.MenuList.filter(menu=>menu.label === label)
@@ -272,6 +354,7 @@ export function CreateTopMenu(bimengine){
           bimengine.Render && bimengine.Render.DisActive()
           break;
         case '5': //
+          bimengine.scene.controls.enabled = !bimengine.scene.controls.enabled
           break;
         case '61': //
           bimengine.Measures && bimengine.Measures.SimpleMeasure.DisActive()
@@ -293,6 +376,24 @@ export function CreateTopMenu(bimengine){
       }
 
       switch (currentBtn) {
+        case '81': //视角- 俯视图
+        bimengine.ViewCube && bimengine.ViewCube.cameraGoToSpecialView('top')
+        break;
+        case '82': //视角- 仰视图
+        bimengine.ViewCube && bimengine.ViewCube.cameraGoToSpecialView('down')
+        break;
+        case '83': //视角- 右视图
+        bimengine.ViewCube && bimengine.ViewCube.cameraGoToSpecialView('right')
+        break;
+        case '84': //视角- 前视图
+        bimengine.ViewCube && bimengine.ViewCube.cameraGoToSpecialView('front')
+        break;
+        case '85': //视角- 左视图
+        bimengine.ViewCube && bimengine.ViewCube.cameraGoToSpecialView('left')
+        break;
+        case '86': //视角- 后视图
+        bimengine.ViewCube && bimengine.ViewCube.cameraGoToSpecialView('back')
+        break;
         case '1': //漫游
           bimengine.FirstPersonControls && bimengine.FirstPersonControls.Active()
           break;
@@ -315,6 +416,7 @@ export function CreateTopMenu(bimengine){
           bimengine.Render && bimengine.Render.Active()
           break;
         case '5': //
+          bimengine.scene.controls.enabled = !bimengine.scene.controls.enabled
           break;
         case '61': //
           bimengine.Measures && bimengine.Measures.SimpleMeasure.Active()
@@ -334,9 +436,15 @@ export function CreateTopMenu(bimengine){
         default:
           break;
       }
+    }
 
-
-
+    let DeviceType = getDeviceType()
+    if(DeviceType === "Mobile"){
+      if(currentBtn && (currentBtn !== '81' && currentBtn !== '82' && currentBtn !== '83' && currentBtn !== '84' && currentBtn !== '85' && currentBtn !== '86')){
+        menu_container.className = "Top-Menu-Container-Mask Hide-Menu-Contain"
+      }else{
+        menu_container.className = "Top-Menu-Container-Mask Show-Menu-Contain"
+      }
     }
   }
 
