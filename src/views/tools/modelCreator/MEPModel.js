@@ -1,5 +1,5 @@
 const THREE = require('@/three/three.js')
-import LoadJSON from "@/utils/LoadJSON.js" 
+import { LoadJSON } from "@/utils/LoadJSON.js" 
 //绘制管道
 export function CreatorPipe(scene, url, infos) {
 

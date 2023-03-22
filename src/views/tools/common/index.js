@@ -4,9 +4,9 @@ import {
 import {
 	SetDeviceStyle
 } from "@/views/tools/style/deviceStyleSet.js"
-import {
-	HandleModelSelect_
-} from "@/views/tools/handleModels/index.js"
+// import {
+// 	HandleModelSelect_
+// } from "@/views/tools/handleModels/index.js"
 //模型交互***************************************************************************************
 //显示全部模型
 export function ShowAllModels() {
@@ -19,7 +19,7 @@ export function ShowAllModels() {
 			}
 		}
 	}
-	HandleModelSelect_(models, true);
+	// HandleModelSelect_(models, true);
 }
 //隐藏全部模型
 export function HideAllModels() {
@@ -32,7 +32,7 @@ export function HideAllModels() {
 			}
 		}
 	}
-	HandleModelSelect_(models, false);
+	// HandleModelSelect_(models, false);
 }
 //隐藏模型
 export function HideModels() {

@@ -164,7 +164,7 @@ export function CreateTopMenu(bimengine){
       pId: '0',
       value: '5',
       label: '锁定视图',
-      icon: 'icon-lock',
+      icon: 'icon-lock-screen',
       status: false,
       showType: 'Mobile',
     },
