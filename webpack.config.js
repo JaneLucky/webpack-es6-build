@@ -50,7 +50,7 @@ module.exports = {
 					// a. 被处理图片大小 大于该阀值，就通过物理文件重新生成该图片
 					// b. 被处理图片大小 小于等于该阀值，就把图片变为字符串(嵌入到应用文档中，好处是节省一个http资 源)
 					  limit: 8196,
-					  // 做配置，使得生成的物理图片被存储在dist/image里边
+					  // 做配置，使得生成的物理图片被存储在build/image里边
 					  outputPath: "image",
 					  //通过在url-loader的options中增加esModule:false
 					  esModule: false,
@@ -85,7 +85,7 @@ module.exports = {
     libraryExport: "default", // 对外暴露default属性，就可以直接调用default里的属性
     globalObject: 'this', // 定义全局变量,兼容node和浏览器运行，避免出现"window is not defined"的情况
     libraryTarget: 'umd', // 定义打包方式Universal Module Definition,同时支持在CommonJS、AMD和全局变量使用
-    publicPath:"./dist/"
+    publicPath:"./build/"
   },
   plugins: [
     new CleanWebpackPlugin(),
