@@ -1,5 +1,5 @@
 
-// importScripts('three.js');
+importScripts('./../three/three.js');
 self.onmessage = function(e){
   let postMsg = JSON.parse(JSON.stringify(e.data))
   console.log(postMsg)

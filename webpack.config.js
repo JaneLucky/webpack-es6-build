@@ -78,7 +78,7 @@ module.exports = {
     ]
   },
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'build'),
     // filename: '[name].js', //打包之后生成的文件名，可以随意写。
     filename: 'BIMEngine.js', //打包之后生成的文件名，可以随意写。
     library: 'BIMEngine', // 指定类库名,主要用于直接引用的方式(比如使用script 标签)

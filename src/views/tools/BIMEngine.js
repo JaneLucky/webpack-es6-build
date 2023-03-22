@@ -112,9 +112,6 @@ import {
 	getDeviceType
 } from "@/utils/device"
 import {
-	MultithLoadGlbJsonList
-} from "./loaders/MultithLoader.js" //模型加载
-import {
 	GetZipFile
 } from "@/utils/files.js" //模型加载
 import {
@@ -362,7 +359,6 @@ export function BIMEngine(domid, options, GLTFLoader) {
 			_bimEngine.D3Measure.UpdateViewList(url) //更新视图数据
 			LoadModelBeforeStart(url).then(res => { //加载材质映射列表及材质列表
 				LoadGlbJsonList(scene, relativePath, url, option); //加载glb模型
-				// MultithLoadGlbJsonList(scene, 'http://119.91.39.51:9000', relativePath, type)
 			})
 			//大 382395030305768710%2F396146577690854661%2F396146578055759109%2Fglbs
 			//小 382395030305768710%2F393669613621085445%2F393669613650445573%2Fglbs

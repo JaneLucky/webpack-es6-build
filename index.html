@@ -19,16 +19,16 @@
 </head>
 <body>
   <!-- 引入封装好的引擎BIMEnginejs -->
-  <script src="./dist/BIMEngine.js"></script>
+  <script src="./build/BIMEngine.js"></script>
 	<div class="page-container">
     <div id="threejs-sence-container"></div>
   </div>
   <script type="module">
-    import { GLTFLoader } from '/public/three/loaders/GLTFLoader.js';//加载GLTF的loader
-    import { DRACOLoader } from '/public/three/loaders/DRACOLoader.js'; //解压draco的js
+    import { GLTFLoader } from '/static/three/loaders/GLTFLoader.js';//加载GLTF的loader
+    import { DRACOLoader } from '/static/three/loaders/DRACOLoader.js'; //解压draco的js
 
     const dracoLoader = new DRACOLoader();//创建解压对象
-    dracoLoader.setDecoderPath( '/public/draco/' );//设置解压文件
+    dracoLoader.setDecoderPath( '/static/three/draco/' );//设置解压文件
     const loader = new GLTFLoader();//创建加载GLTF的load对象
     loader.setDRACOLoader( dracoLoader );//设置加载前解压
 

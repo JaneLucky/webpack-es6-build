@@ -1,4 +1,4 @@
-importScripts('three.js');
+importScripts('./../three/three.js');
 self.onmessage = function(e) {
 	let rootmodels = e.data
 	let backList = []
