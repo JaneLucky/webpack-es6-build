@@ -484,62 +484,6 @@ export function LoadGlbJsonList(Scene, relativePath, path = "/file/gis/fl/bim/10
 		if (loadCompleteSize == 2) {
 			window.bimEngine.doneModels.push(path);
 			window.bimEngine.loadedDone('glbModelsLoadedNum');
-			return;
-			// console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
-			let rootmodels = window.bimEngine.scene.children.filter(o => o.name == "rootModel" && o.basePath == path);
-			let modelsList = []
-			for (let i = 0; i < rootmodels.length; i++) {
-				let model = {
-					TypeName: rootmodels[i].TypeName,
-					ElementInfos: []
-				}
-				if (rootmodels[i].TypeName == "Mesh") {
-					for (let j = 0; j < rootmodels[i].ElementInfos.length; j++) {
-						let ele = {
-							geometry: [...rootmodels[i].meshs[j].geometry.attributes.position.array],
-							indexA: [...rootmodels[i].meshs[j].geometry.index.array],
-							matrix: [...rootmodels[i].meshs[j].matrix.elements]
-						}
-						model.ElementInfos.push(ele)
-					}
-					modelsList.push(model)
-				} else if (rootmodels[i].TypeName == "InstancedMesh") {
-					for (let j = 0; j < rootmodels[i].ElementInfos.length; j++) {
-						let ele = {
-							geometry: [...rootmodels[i].meshs.geometry.attributes.position.array],
-							indexA: [...rootmodels[i].meshs.geometry.index.array],
-							matrix: [...rootmodels[i].ElementInfos[j].matrix.elements]
-						}
-						model.ElementInfos.push(ele)
-					}
-					modelsList.push(model)
-				}
-			}
-			// console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
-			//计算边线-并存储，用于测量捕捉
-			var worker = new Worker('static/js/file.worker.js');
-			worker.postMessage(modelsList); //将复杂计算交给子线程,可以理解为给参数让子线程去操作。
-			worker.onmessage = function(e) {
-				// console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
-				let backList = e.data
-				for (let i = 0; i < backList.length; i++) {
-					if (backList[i].TypeName == "Mesh") {
-						for (let j = 0; j < backList[i].ElementInfos.length; j++) {
-							rootmodels[i].ElementInfos[j].EdgeList = backList[i].ElementInfos[j].EdgeList
-						}
-					} else if (backList[i].TypeName == "InstancedMesh") {
-						for (let j = 0; j < backList[i].ElementInfos.length; j++) {
-							rootmodels[i].ElementInfos[j].EdgeList = backList[i].ElementInfos[j].EdgeList
-						}
-					}
-
-				}
-				// console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
-				worker.terminate()
-			}
-			worker.onerror = function(event) {
-				worker.terminate()
-			}
 		}
 	}
 

@@ -90,50 +90,6 @@ export function CreatorInstancePipe(scene, relativePath, url, infos) {
 		if(pipeLoadNum === 3){
 			window.bimEngine.doneModels.push(path);
 			window.bimEngine.loadedDone('pipeModelsLoadedNum')
-			
-			return
-		let rootmodels = window.bimEngine.scene.children.filter(o => o.name == "rootModel" && o.TypeName == "InstancedMesh");
-		// console.log(rootmodels)
-		if(rootmodels && rootmodels.length){
-			let modelsList = []
-			for (let i = 0; i < rootmodels.length; i++) {
-				let model = {
-					TypeName: rootmodels[i].TypeName,
-					ElementInfos: []
-				}
-				for (let j = 0; j < rootmodels[i].ElementInfos.length; j++) {
-					let ele = {
-						geometry: [...rootmodels[i].geometry.attributes.position.array],
-						matrix: [...rootmodels[i].instanceMatrix.array.slice(j * 16, (j+1) * 16)]
-					}
-					model.ElementInfos.push(ele)
-				}
-				modelsList.push(model)
-			}
-			// console.log(modelsList)
-			console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
-			// return
-			//计算边线-并存储，用于测量捕捉
-			var worker = new Worker('static/js/filePipe.worker.js');
-			worker.postMessage(modelsList); //将复杂计算交给子线程,可以理解为给参数让子线程去操作。
-			worker.onmessage = function(e) {
-				// console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
-				let backList = e.data
-				console.log(backList)
-				for (let i = 0; i < backList.length; i++) {
-					for (let j = 0; j < backList[i].ElementInfos.length; j++) {
-						rootmodels[i].ElementInfos[j].EdgeList = backList[i].ElementInfos[j].EdgeList
-					}
-				}
-				console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
-				worker.terminate()
-			}
-			worker.onerror = function(event) {
-				worker.terminate()
-			}
-	
-		}
-	
 		}
 	}
 

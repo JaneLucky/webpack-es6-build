@@ -21,9 +21,8 @@ export function GetModelEdges() {
         break
       }
     }
-    // return
+    
     //计算边线-并存储，用于测量捕捉
-    // worker = new Worker('static/js/edge.worker.js');
     getModelList()
 
     function getModelList() {

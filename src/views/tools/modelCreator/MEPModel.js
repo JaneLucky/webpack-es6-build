@@ -287,48 +287,4 @@ function mergeBufferModel(scene, meshs, path, basePath) {
 	console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
 
 
-	let rootmodels = window.bimEngine.scene.children.filter(o => o.name == "rootModel" && o.TypeName == "PipeMesh");
-	console.log(rootmodels)
-	if(rootmodels && rootmodels.length){
-		let modelsList = []
-		for (let i = 0; i < rootmodels.length; i++) {
-			let model = {
-				TypeName: rootmodels[i].TypeName,
-				ElementInfos: []
-			}
-			for (let j = 0; j < rootmodels[i].ElementInfos.length; j++) {
-				let ele = {
-					geometry: [...rootmodels[i].meshs[j].geometry.attributes.position.array],
-					matrix: [...rootmodels[i].meshs[j].matrix.elements],
-					position: rootmodels[i].meshs[j].position.clone(),
-					rotation: rootmodels[i].meshs[j].rotation.clone(),
-					// extrudeParam:rootmodels[i].meshs[j].extrudeParam,
-				}
-				model.ElementInfos.push(ele)
-			}
-			modelsList.push(model)
-		}
-		console.log(modelsList)
-		console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
-		// return
-		//计算边线-并存储，用于测量捕捉
-		var worker = new Worker('static/js/filePipe.worker.js');
-		worker.postMessage(modelsList); //将复杂计算交给子线程,可以理解为给参数让子线程去操作。
-		worker.onmessage = function(e) {
-			// console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
-			let backList = e.data
-			for (let i = 0; i < backList.length; i++) {
-				for (let j = 0; j < backList[i].ElementInfos.length; j++) {
-					rootmodels[i].ElementInfos[j].EdgeList = backList[i].ElementInfos[j].EdgeList
-				}
-			}
-			console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
-			worker.terminate()
-		}
-		worker.onerror = function(event) {
-			worker.terminate()
-		}
-
-	}
-
 }
