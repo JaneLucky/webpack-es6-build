@@ -501,7 +501,7 @@ export function firstPersonControls(bimengine) {
 				ball.style.top = y+'px'
 
 				_firstPersonControls.controls._camerLocalDirection.x = 1 * ((x - center.x)/BLENDER_RADIUS);
-				_firstPersonControls.controls._camerLocalDirection.z = 1 * ((y - center.y)/BLENDER_RADIUS);
+				_firstPersonControls.controls._camerLocalDirection.z = -1 * ((y - center.y)/BLENDER_RADIUS);
 
 			})
 			ball.addEventListener('touchend', (e)=>{

@@ -187,9 +187,11 @@ export function GetBoundingBox(list, isRequireModel = false) {
 }
 
 //世界坐标转屏幕坐标
+
 export function worldPointToScreenPoint(vector3, camera) {
 	//计算点在不在相机前面
-	let cameraDir = camera.getWorldDirection().clone()
+	let c_dir = new THREE.Vector3()
+	let cameraDir = camera.getWorldDirection(c_dir).clone()
 	let pointDir = (vector3.clone().sub(camera.position.clone()));
 	let Dir = 1
 	if (cameraDir.clone().dot(pointDir.clone()) < 0) { //在相机后面

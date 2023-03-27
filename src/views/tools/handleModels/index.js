@@ -262,53 +262,36 @@ export function HandleModelSelect(list, keyList) {
 
 //获得当前选中的单个构建的信息
 export function getModelInfoClick(select) {
-	let rootmodels = window.bimEngine.scene.children.filter(o => o.name == "rootModel");
+	let rootmodels = window.bimEngine.scene.children;
 	let selectModelList = [];
 	//清除上次模型树-选中样式
 	if (select && select.name) {
 		if (select.TypeName === "InstancedMesh" || select.TypeName === "InstancedMesh-Pipe") {
-			for (let rootmodel of rootmodels) {
-				if (rootmodel && rootmodel.MeshId == select.name && select.glb == rootmodel.url) {
-					let currentModel = {
-						material: null,
-						meshMaterial: null,
-						cloneMaterial: null,
-						modelType: null
-					}
-					currentModel.meshMaterial = rootmodel.material
-					currentModel.cloneMaterial = rootmodel.cloneMaterialArray
-					currentModel.modelType = "InstancedMesh"
-					selectModelList.push(currentModel)
-				}
+			let rootmodel = rootmodels[select.indexs[0]]
+			let currentModel = {
+				material: null,
+				meshMaterial: null,
+				cloneMaterial: null,
+				modelType: null
 			}
+			currentModel.meshMaterial = rootmodel.material
+			currentModel.cloneMaterial = rootmodel.cloneMaterialArray
+			currentModel.modelType = "InstancedMesh"
+			selectModelList.push(currentModel)
 		} else if (select.TypeName === "Mesh" || select.TypeName === "PipeMesh") {
-			for (let rootmodel of rootmodels) {
-				if (rootmodel && rootmodel.material.length) {
-					let hasSet = false
-					for (let model of rootmodel.ElementInfos) {
-						if (model.name === select.name && model.dbid === select.dbid) {
-							// currentModel = rootmodel.material[model.dbid] //改变当前选中的构建
-							// currentModel = rootmodel.meshs[model.dbid].material //改变当前选中的构建相同材质的所有构建
-							let currentModel = {
-								material: null,
-								meshMaterial: null,
-								cloneMaterial: null,
-								modelType: null
-							}
-							currentModel.material = rootmodel.material[model.dbid]
-							currentModel.meshMaterial = rootmodel.meshs[model.dbid].material
-							currentModel.cloneMaterial = rootmodel.cloneMaterialArray[model.dbid] //改变当前选中的构建
-							currentModel.cloneMaterialArray = rootmodel.cloneMaterialArray //改变当前选中的构建,
-							currentModel.modelType = "Mesh"
-							selectModelList.push(currentModel)
-							break
-						}
-					}
-					if (hasSet) {
-						break
-					}
-				}
+			let rootmodel = rootmodels[select.indexs[0]]
+			let currentModel = {
+				material: null,
+				meshMaterial: null,
+				cloneMaterial: null,
+				modelType: null
 			}
+			currentModel.material = rootmodel.material[select.indexs[1]]
+			currentModel.meshMaterial = rootmodel.meshs[select.indexs[1]].material
+			currentModel.cloneMaterial = rootmodel.cloneMaterialArray[select.indexs[1]] //改变当前选中的构建
+			currentModel.cloneMaterialArray = rootmodel.cloneMaterialArray //改变当前选中的构建,
+			currentModel.modelType = "Mesh"
+			selectModelList.push(currentModel)
 		}
 	}
 	return selectModelList

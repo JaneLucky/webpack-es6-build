@@ -57,6 +57,23 @@
       .Form_Item_Label{
         padding-right: 10px;
       }
+      .input_number_contain{
+        display: flex;
+        .inputtext{
+          margin: 0 10px;
+          width: fit-content;
+          text-align: center;
+          display: flex;
+          align-items: center;
+        }
+        .Btn_Contain{
+          border: 1px solid #aaaaaa;
+          font-size: 10px;
+          display: flex;
+          align-items: center;
+          color: #666666;
+        }
+      }
 
 
       .Bg-Color-List{

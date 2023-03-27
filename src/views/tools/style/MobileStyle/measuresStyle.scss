@@ -413,6 +413,21 @@
 
 }
 
+#MobileController{
+	position: absolute;
+	background: transparent;
+	.ControllerHandle{
+		position: relative;
+		width: 100%;
+		height: 100%;
+		border: 6px solid #333;
+		background: rgba(0,0,0,0.2);
+		border-radius: 50%;
+		box-sizing: border-box;
+		pointer-events:none;
+	}
+}
+
 
 @media screen and (orientation: landscape) { /*横屏 css*/ #MeasurePoint{//测量坐标点的样式
 	position: absolute;

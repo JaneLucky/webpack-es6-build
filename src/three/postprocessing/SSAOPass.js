@@ -21,7 +21,7 @@ import {
 	WebGLRenderTarget,
 	ZeroFactor
 } from '../three'
-import { Pass } from '../postprocessing/Pass.js';
+import { Pass } from './Pass.js';
 import { SimplexNoise } from '../math/SimplexNoise.js';
 import { SSAOShader } from '../shaders/SSAOShader.js';
 import { SSAOBlurShader } from '../shaders/SSAOShader.js';

@@ -104,12 +104,13 @@ export function InitRenender(dom){
     antialias:true,
     preserveDrawingBuffer: true //保留图形缓冲区
   }); //创建渲染器
+  // renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(width, height); //设置渲染区域尺寸
   // renderer.setClearColor(0xb9d3ff, 1); //设置背景颜色
   renderer.setClearAlpha(0);//设置背景颜色透明
   renderer.shadowMap.enabled = true;
   renderer.localClippingEnabled = true;
- 
+  renderer.domElement.className = "user-select-none"
   return renderer
 }
 

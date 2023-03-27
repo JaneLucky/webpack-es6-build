@@ -204,7 +204,9 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		stats.domElement.style.position = 'absolute'; //绝对坐标  
 		stats.domElement.style.left = '0px'; // (0,0)px,左上角  
 		stats.domElement.style.top = '0px';
-		document.getElementById(domid).appendChild(stats.domElement);
+		if (process.env.NODE_ENV !== "production") { //开发环境
+			document.getElementById(domid).appendChild(stats.domElement);
+		}
 
 		_bimEngine.ViewCube = new ViewCube(scene, domid); //相机视图对象
 		_bimEngine.ViewCube.init();

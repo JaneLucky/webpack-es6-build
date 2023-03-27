@@ -29,6 +29,7 @@
 
     const dracoLoader = new DRACOLoader();//创建解压对象
     dracoLoader.setDecoderPath( '/static/three/draco/' );//设置解压文件
+		dracoLoader.preload()
     const loader = new GLTFLoader();//创建加载GLTF的load对象
     loader.setDRACOLoader( dracoLoader );//设置加载前解压
 

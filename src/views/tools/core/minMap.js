@@ -1,5 +1,6 @@
 const THREE = require('@/three/three.js')
 import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
+import { getDeviceType } from "@/utils/device"
 //小地图
 
 //点击瞬移
@@ -45,7 +46,7 @@ export function MinMap(bimEngine) {
 	_minMap.show = function() { 
 		initCamera();
 		_minMap.visible = true;
-		document.getElementById("minimap").addEventListener("click", function(res) {
+		document.getElementById("minimap").addEventListener("pointerdown", function(res) {
 			let sceneCamera = bimEngine.scene.camera;
 			let point = getRayPoint({
 				x: res.offsetX,
@@ -92,8 +93,11 @@ export function MinMap(bimEngine) {
 		_minMap.renderer = renderer;
 		domDiv.appendChild(renderer.domElement)
 
+		let deviceType = getDeviceType()
+		if(deviceType === "PC"){
+			domDiv.addEventListener("pointerdown", _onMouseDown);
+		}
 
-		domDiv.addEventListener("pointerdown", _onMouseDown);
 		let _container = bimEngine.scene.renderer.domElement.parentElement;
 
 		function _onMouseDown(e) {
@@ -130,6 +134,7 @@ export function MinMap(bimEngine) {
 				//当移动位置在范围内时，元素跟随鼠标移动。
 				domDiv.style.left = moveLeft + "px";
 				domDiv.style.top = moveTop + "px";
+				domDiv.style.cursor = "move";
 			}
 		}
 

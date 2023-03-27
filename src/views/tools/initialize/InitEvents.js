@@ -65,12 +65,13 @@ export function setEventsMouse(bimEngine, callBack) {
 			label: '显示全部',
 			domItem: null,
 			childContain: null
-		},  {
-			value: '6',
-			label: '隐藏全部',
-			domItem: null,
-			childContain: null
-		}, 
+		},  
+		// {
+		// 	value: '6',
+		// 	label: '隐藏全部',
+		// 	domItem: null,
+		// 	childContain: null
+		// }, 
 		// {
 		// 	value: '7',
 		// 	label: '快速选择',
@@ -88,243 +89,283 @@ export function setEventsMouse(bimEngine, callBack) {
 		// 	}]
 		// }
 	];
+
+
+	// 判断但双击的参数
+	let clickid = 1;
+	let timer = null;
+	let startTime, endTime;
 	CreatorRightClickMenu()
 	//点击了鼠标左键 - 高亮选中的构建，并返回选中的构建
-	bimEngine.scene.renderer.domElement.addEventListener('click', function(event) {
-		bimEngine.UpdateRender();
-		console.log(event);
-		let keyType = (event.ctrlKey || event.shiftKey) ? "keyEnter" : ""
-		if (event.button === 0 && !bimEngine.StopClick) {
-			event.preventDefault(); // 阻止默认的点击事件执行
-			if (CAMERA_POSITION && Math.abs(event.x - CAMERA_POSITION.x) < 2 && Math.abs(event.y -
-					CAMERA_POSITION.y) < 2) {
-				//声明 rayCaster 和 mouse 变量
-				let rayCaster = new THREE.Raycaster();
-				let mouse = new THREE.Vector2();
-				//通过鼠标点击位置，计算出raycaster所需点的位置，以屏幕为中心点，范围-1到1
-				// mouse.x = ((event.clientX - document.body.getBoundingClientRect().left) / document.body
-				// 	.offsetWidth) * 2 - 1;
-				// mouse.y = -((event.clientY - document.body.getBoundingClientRect().top) / document.body
-				// 	.offsetHeight) * 2 + 1; //这里为什么是-号，没有就无法点中
-				mouse.x = ((event.clientX - bimEngine.scene.camera.viewport.x) / bimEngine.scene.camera.viewport.z) * 2 - 1;
-				mouse.y = -((event.clientY - bimEngine.scene.camera.viewport.y) / bimEngine.scene.camera.viewport.w) * 2 + 1; //这里为什么是-号，没有就无法点中
-			     
-				//通过鼠标点击的位置(二维坐标)和当前相机的矩阵计算出射线位置
-				rayCaster.setFromCamera(mouse, bimEngine.scene.camera);
-				//获取与射线相交的对象数组， 其中的元素按照距离排序，越近的越靠前。
-				//+true，是对其后代进行查找，这个在这里必须加，因为模型是由很多部分组成的，后代非常多。
-				let intersects = (rayCaster.intersectObjects(bimEngine.GetAllVisibilityModel(), true));
-				let BeforeSelection = JSON.parse(JSON.stringify(bimEngine.SelectedModels.indexesModels)) //选中的构建列表
-				let BEFORE_SELECT = bimEngine.CurrentSelect ? bimEngine.CurrentSelect : {
-					dbid: null,
-					name: null,
-					glb: null,
-					TypeName: null,
-					basePath: null,
-					relativePath: null,
-					indexs:[],
-					min: null,
-					center: null,
-					max: null
-				} //当前选中的构建位置信息，用于记录上一次选中的模型，也用于模型属性查询
-				//存储选中构建
-				// console.log(intersects)
-				switch (keyType) {
-					case "keyEnter": //ctrlClick/shiftClick
-						if (intersects.length > 0) {
-							for (var intersect of intersects) {
-								if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "PipeMesh") {
-									var clickObj = IncludeElement(intersect.object, intersect
-										.point); //选中的构建位置信息
-									if (clickObj && intersect.object.geometry.groups[clickObj.dbid].visibility !== false) {
-										let indexes = [intersect.object.index, clickObj.dbid]
-										let GroupIndex = BeforeSelection.findIndex(item => item.toString() == indexes.toString())
-										if (GroupIndex < 0) { //不存在
-											BEFORE_SELECT = {
-												dbid: clickObj.dbid,
-												name: clickObj.name,
-												glb: intersect.object.url,
-												TypeName: intersect.object.TypeName,
-												basePath: clickObj.basePath,
-												relativePath: clickObj.relativePath,
-												indexs: [intersect.object.index, clickObj.dbid],
-												min: intersect.object.ElementInfos[clickObj.dbid].min,
-												center: intersect.object.ElementInfos[clickObj.dbid].center,
-												max: intersect.object.ElementInfos[clickObj.dbid].max
+	bimEngine.scene.renderer.domElement.addEventListener('pointerup', function(event) {
+		click()
+		// if(clickid == 1) {
+		// 	startTime = new Date().getTime();
+		// 	clickid++;
+		// 	timer = setTimeout(function () {
+		// 		click(); // 单击事件触发
+		// 		clickid = 1;
+		// 	}, 300)
+		// }
+		// if(clickid == 2) {
+		// 	clickid ++ ;
+		// } else {
+		// 	endTime = new Date().getTime();
+		// 	if ((endTime - startTime) < 300) {
+		// 		click(); // 单击事件触发
+		// 		// dblclick(); // 双击事件
+		// 		clickid = 1;
+		// 		clearTimeout(timer);
+		// 	}
+		// }
+		function click() { // 单击
+			bimEngine.UpdateRender();
+			let keyType = (event.ctrlKey || event.shiftKey) ? "keyEnter" : ""
+			if (event.button === 0 && !bimEngine.StopClick) {
+				event.preventDefault(); // 阻止默认的点击事件执行
+				if (CAMERA_POSITION && Math.abs(event.x - CAMERA_POSITION.x) < 2 && Math.abs(event.y -
+						CAMERA_POSITION.y) < 2) {
+					//声明 rayCaster 和 mouse 变量
+					let rayCaster = new THREE.Raycaster();
+					let mouse = new THREE.Vector2();
+					//通过鼠标点击位置，计算出raycaster所需点的位置，以屏幕为中心点，范围-1到1
+					// mouse.x = ((event.clientX - document.body.getBoundingClientRect().left) / document.body
+					// 	.offsetWidth) * 2 - 1;
+					// mouse.y = -((event.clientY - document.body.getBoundingClientRect().top) / document.body
+					// 	.offsetHeight) * 2 + 1; //这里为什么是-号，没有就无法点中
+					mouse.x = ((event.clientX - bimEngine.scene.camera.viewport.x) / bimEngine.scene.camera.viewport.z) * 2 - 1;
+					mouse.y = -((event.clientY - bimEngine.scene.camera.viewport.y) / bimEngine.scene.camera.viewport.w) * 2 + 1; //这里为什么是-号，没有就无法点中
+						 
+					//通过鼠标点击的位置(二维坐标)和当前相机的矩阵计算出射线位置
+					rayCaster.setFromCamera(mouse, bimEngine.scene.camera);
+					//获取与射线相交的对象数组， 其中的元素按照距离排序，越近的越靠前。
+					//+true，是对其后代进行查找，这个在这里必须加，因为模型是由很多部分组成的，后代非常多。
+					let intersects = (rayCaster.intersectObjects(bimEngine.GetAllVisibilityModel(), true));
+					let BeforeSelection = JSON.parse(JSON.stringify(bimEngine.SelectedModels.indexesModels)) //选中的构建列表
+					let BEFORE_SELECT = bimEngine.CurrentSelect ? bimEngine.CurrentSelect : {
+						dbid: null,
+						name: null,
+						glb: null,
+						TypeName: null,
+						basePath: null,
+						relativePath: null,
+						indexs:[],
+						min: null,
+						center: null,
+						max: null
+					} //当前选中的构建位置信息，用于记录上一次选中的模型，也用于模型属性查询
+					//存储选中构建
+					// console.log(intersects)
+					switch (keyType) {
+						case "keyEnter": //ctrlClick/shiftClick
+							if (intersects.length > 0) {
+								for (var intersect of intersects) {
+									if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "PipeMesh") {
+										var clickObj = IncludeElement(intersect.object, intersect
+											.point); //选中的构建位置信息
+										if (clickObj && intersect.object.geometry.groups[clickObj.dbid].visibility !== false) {
+											let indexes = [intersect.object.index, clickObj.dbid]
+											let GroupIndex = BeforeSelection.findIndex(item => item.toString() == indexes.toString())
+											if (GroupIndex < 0) { //不存在
+												BEFORE_SELECT = {
+													dbid: clickObj.dbid,
+													name: clickObj.name,
+													glb: intersect.object.url,
+													TypeName: intersect.object.TypeName,
+													basePath: clickObj.basePath,
+													relativePath: clickObj.relativePath,
+													indexs: [intersect.object.index, clickObj.dbid],
+													min: intersect.object.ElementInfos[clickObj.dbid].min,
+													center: intersect.object.ElementInfos[clickObj.dbid].center,
+													max: intersect.object.ElementInfos[clickObj.dbid].max
+												}
+												BeforeSelection.push(indexes)
+											} else { //存在
+												BEFORE_SELECT = {
+													dbid: null,
+													name: null,
+													glb: null,
+													TypeName: null,
+													basePath: null,
+													relativePath: null,
+													indexs:[],
+													min: null,
+													center: null,
+													max: null
+												}
+												BeforeSelection.splice(GroupIndex, 1)
 											}
-											BeforeSelection.push(indexes)
-										} else { //存在
-											BEFORE_SELECT = {
-												dbid: null,
-												name: null,
-												glb: null,
-												TypeName: null,
-												basePath: null,
-												relativePath: null,
-												indexs:[],
-												min: null,
-												center: null,
-												max: null
-											}
-											BeforeSelection.splice(GroupIndex, 1)
+											break;
 										}
-										break;
-									}
-								} else if (intersect.object.TypeName == "InstancedMesh" || intersect.object.TypeName == "InstancedMesh-Pipe") {
-									if(!ClipInclude(intersect.object.ElementInfos[intersect.instanceId].min, intersect.object.ElementInfos[intersect.instanceId].max, intersect.object.material.clippingPlanes, intersect.point)){
-										let indexes = [intersect.object.index, intersect.instanceId]
-										let GroupIndex = BeforeSelection.findIndex(item => item.toString() == indexes.toString())
-										if (GroupIndex < 0) { //不存在
-											BEFORE_SELECT = {
-												dbid: intersect.instanceId,
-												name: intersect.object.ElementInfos[intersect.instanceId].name,
-												glb: intersect.object.url,
-												TypeName: intersect.object.TypeName,
-												basePath: intersect.object.basePath,
-												relativePath: intersect.object.relativePath,
-												indexs:[intersect.object.index, intersect.instanceId],
-												min: intersect.object.ElementInfos[intersect.instanceId].min,
-												center: intersect.object.ElementInfos[intersect.instanceId].center,
-												max: intersect.object.ElementInfos[intersect.instanceId].max
+									} else if (intersect.object.TypeName == "InstancedMesh" || intersect.object.TypeName == "InstancedMesh-Pipe") {
+										if(!ClipInclude(intersect.object.ElementInfos[intersect.instanceId].min, intersect.object.ElementInfos[intersect.instanceId].max, intersect.object.material.clippingPlanes, intersect.point)){
+											let indexes = [intersect.object.index, intersect.instanceId]
+											let GroupIndex = BeforeSelection.findIndex(item => item.toString() == indexes.toString())
+											if (GroupIndex < 0) { //不存在
+												BEFORE_SELECT = {
+													dbid: intersect.instanceId,
+													name: intersect.object.ElementInfos[intersect.instanceId].name,
+													glb: intersect.object.url,
+													TypeName: intersect.object.TypeName,
+													basePath: intersect.object.basePath,
+													relativePath: intersect.object.relativePath,
+													indexs:[intersect.object.index, intersect.instanceId],
+													min: intersect.object.ElementInfos[intersect.instanceId].min,
+													center: intersect.object.ElementInfos[intersect.instanceId].center,
+													max: intersect.object.ElementInfos[intersect.instanceId].max
+												}
+												BeforeSelection.push(indexes)
+											} else { //存在
+												BEFORE_SELECT = {
+													dbid: null,
+													name: null,
+													glb: null,
+													TypeName: null,
+													basePath: null,
+													relativePath: null,
+													indexs:[],
+													min: null,
+													center: null,
+													max: null
+												}
+												BeforeSelection.splice(GroupIndex, 1)
 											}
-											BeforeSelection.push(indexes)
-										} else { //存在
-											BEFORE_SELECT = {
-												dbid: null,
-												name: null,
-												glb: null,
-												TypeName: null,
-												basePath: null,
-												relativePath: null,
-												indexs:[],
-												min: null,
-												center: null,
-												max: null
-											}
-											BeforeSelection.splice(GroupIndex, 1)
+											break;
 										}
-										break;
-									}
-								}
-							}
-						}
-						break;
-					default: //click
-						BeforeSelection = [];
-						if (intersects.length > 0 && bimEngine.LockingSelect!=true) {
-							for (var intersect of intersects) {
-								if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "PipeMesh") {
-									var clickObj = IncludeElement(intersect.object, intersect.point); //选中的构建位置信息
-									if(clickObj && intersect.object.geometry.groups[clickObj.dbid].visibility !== false){
-										let indexes = [intersect.object.index, clickObj.dbid]
-
-										if(BEFORE_SELECT.toString() == indexes.toString()){
-											BEFORE_SELECT = {
-												dbid: null,
-												name: null,
-												glb: null,
-												TypeName: null,
-												basePath: null,
-												relativePath: null,
-												indexs:[],
-												min: null,
-												center: null,
-												max: null
-											}
-										}else{
-											BEFORE_SELECT = {
-												dbid: clickObj.dbid,
-												name: clickObj.name,
-												glb: intersect.object.url,
-												TypeName: intersect.object.TypeName,
-												basePath:clickObj.basePath,
-												relativePath:clickObj.relativePath,
-												indexs:[intersect.object.index, clickObj.dbid],
-												min: intersect.object.ElementInfos[clickObj.dbid].min,
-												center: intersect.object.ElementInfos[clickObj.dbid].center,
-												max: intersect.object.ElementInfos[clickObj.dbid].max
-											}
-											BeforeSelection.push(indexes) //给选中数据赋值
-										}
-										break;
-									}
-								} else if (intersect.object.TypeName == "InstancedMesh" || intersect.object.TypeName == "InstancedMesh-Pipe") {
-									if(!ClipInclude(intersect.object.ElementInfos[intersect.instanceId].min, intersect.object.ElementInfos[intersect.instanceId].max, intersect.object.material.clippingPlanes, intersect.point)){
-										let indexes = [intersect.object.index, intersect.instanceId]
-										if(BEFORE_SELECT.toString() == indexes.toString()){
-											BEFORE_SELECT = {
-												dbid: null,
-												name: null,
-												glb: null,
-												TypeName: null,
-												basePath: null,
-												relativePath: null,
-												indexs:[],
-												min: null,
-												center: null,
-												max: null
-											}
-										}else{
-											BEFORE_SELECT = {
-												dbid: intersect.instanceId,
-												name: intersect.object.ElementInfos[intersect.instanceId].name,
-												glb: intersect.object.url,
-												TypeName: intersect.object.TypeName,
-												basePath: intersect.object.ElementInfos[0].basePath,
-												relativePath: intersect.object.ElementInfos[0].relativePath,
-												indexs: [intersect.object.index, intersect.instanceId],
-												min: intersect.object.ElementInfos[intersect.instanceId].min,
-												center: intersect.object.ElementInfos[intersect.instanceId].center,
-												max: intersect.object.ElementInfos[intersect.instanceId].max
-											}
-											BeforeSelection.push(indexes) //给选中数据赋值
-										}
-										break;
 									}
 								}
 							}
-						} else {
-							BEFORE_SELECT = {
-								dbid: null,
-								name: null,
-								glb: null,
-								TypeName: null,
-								basePath: null,
-								relativePath: null,
-								indexs:[],
-								min: null,
-								center: null,
-								max: null
+							break;
+						default: //click
+							BeforeSelection = [];
+							if (intersects.length > 0 && bimEngine.LockingSelect!=true) {
+								for (var intersect of intersects) {
+									if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "PipeMesh") {
+										var clickObj = IncludeElement(intersect.object, intersect.point); //选中的构建位置信息
+										if(clickObj && intersect.object.geometry.groups[clickObj.dbid].visibility !== false){
+											let indexes = [intersect.object.index, clickObj.dbid]
+	
+											if(BEFORE_SELECT.toString() == indexes.toString()){
+												BEFORE_SELECT = {
+													dbid: null,
+													name: null,
+													glb: null,
+													TypeName: null,
+													basePath: null,
+													relativePath: null,
+													indexs:[],
+													min: null,
+													center: null,
+													max: null
+												}
+											}else{
+												BEFORE_SELECT = {
+													dbid: clickObj.dbid,
+													name: clickObj.name,
+													glb: intersect.object.url,
+													TypeName: intersect.object.TypeName,
+													basePath:clickObj.basePath,
+													relativePath:clickObj.relativePath,
+													indexs:[intersect.object.index, clickObj.dbid],
+													min: intersect.object.ElementInfos[clickObj.dbid].min,
+													center: intersect.object.ElementInfos[clickObj.dbid].center,
+													max: intersect.object.ElementInfos[clickObj.dbid].max
+												}
+												BeforeSelection.push(indexes) //给选中数据赋值
+											}
+											break;
+										}
+									} else if (intersect.object.TypeName == "InstancedMesh" || intersect.object.TypeName == "InstancedMesh-Pipe") {
+										if(!ClipInclude(intersect.object.ElementInfos[intersect.instanceId].min, intersect.object.ElementInfos[intersect.instanceId].max, intersect.object.material.clippingPlanes, intersect.point)){
+											let indexes = [intersect.object.index, intersect.instanceId]
+											if(BEFORE_SELECT.toString() == indexes.toString()){
+												BEFORE_SELECT = {
+													dbid: null,
+													name: null,
+													glb: null,
+													TypeName: null,
+													basePath: null,
+													relativePath: null,
+													indexs:[],
+													min: null,
+													center: null,
+													max: null
+												}
+											}else{
+												BEFORE_SELECT = {
+													dbid: intersect.instanceId,
+													name: intersect.object.ElementInfos[intersect.instanceId].name,
+													glb: intersect.object.url,
+													TypeName: intersect.object.TypeName,
+													basePath: intersect.object.ElementInfos[0].basePath,
+													relativePath: intersect.object.ElementInfos[0].relativePath,
+													indexs: [intersect.object.index, intersect.instanceId],
+													min: intersect.object.ElementInfos[intersect.instanceId].min,
+													center: intersect.object.ElementInfos[intersect.instanceId].center,
+													max: intersect.object.ElementInfos[intersect.instanceId].max
+												}
+												BeforeSelection.push(indexes) //给选中数据赋值
+											}
+											break;
+										}
+									}
+								}
+							} else {
+								BEFORE_SELECT = {
+									dbid: null,
+									name: null,
+									glb: null,
+									TypeName: null,
+									basePath: null,
+									relativePath: null,
+									indexs:[],
+									min: null,
+									center: null,
+									max: null
+								}
 							}
-						}
-						break;
+							break;
+					}
+					if(BEFORE_SELECT.dbid && BEFORE_SELECT.center){
+						window.bimEngine.scene.controls.origin = BEFORE_SELECT.center
+					}else{
+						// window.bimEngine.scene.controls.origin = new THREE.Vector3(0, 0, 0);
+					}
+					bimEngine.CurrentSelect = BEFORE_SELECT
+					bimEngine.Selection = BeforeSelection
+					bimEngine.ResetSelectedModels_('highlight', BeforeSelection, true)
+					sessionStorage.setItem('SelectedSingleModelInfo',JSON.stringify(BEFORE_SELECT))
+					//回调
+					callBack({
+						type: 'LeftClick'
+					})
+					CloseMenu()
 				}
-				if(BEFORE_SELECT.dbid && BEFORE_SELECT.center){
-					window.bimEngine.scene.controls.origin = BEFORE_SELECT.center
-				}else{
-					window.bimEngine.scene.controls.origin = new THREE.Vector3(0, 0, 0);
+			}
+			function GetAdjacentModel(start, index, total) {
+				let indexs = [start];
+				return indexs;
+				for (let i = 0; i < index + 1; i++) {
+					indexs.push(start - i);
 				}
-				bimEngine.CurrentSelect = BEFORE_SELECT
-				bimEngine.Selection = BeforeSelection
-				bimEngine.ResetSelectedModels_('highlight', BeforeSelection, true)
-				sessionStorage.setItem('SelectedSingleModelInfo',JSON.stringify(BEFORE_SELECT))
-				//回调
-				callBack({
-					type: 'LeftClick'
-				})
-				CloseMenu()
+				for (let i = index + 1; i < total; i++) {
+					indexs.push(start + i);
+				}
+				return indexs;
 			}
 		}
-		function GetAdjacentModel(start, index, total) {
-			let indexs = [start];
-			return indexs;
-			for (let i = 0; i < index + 1; i++) {
-				indexs.push(start - i);
+		function dblclick() { //双击
+			if(bimEngine.CurrentSelect && bimEngine.CurrentSelect.dbid){
+				let min = bimEngine.CurrentSelect.min
+				let center = bimEngine.CurrentSelect.center
+				let max = bimEngine.CurrentSelect.max
+				var target = min.clone().add(max.clone()).multiplyScalar(0.5);
+				let dir = new THREE.Vector3(1, 1, 1);
+				var tergetCamera = center.clone().add(dir.multiplyScalar(1 * max.distanceTo(min)));
+				window.bimEngine.ViewCube.animateCamera(window.bimEngine.scene.camera.position,
+					tergetCamera, window.bimEngine.scene.controls.target
+					.clone(), target)
 			}
-			for (let i = index + 1; i < total; i++) {
-				indexs.push(start + i);
-			}
-			return indexs;
 		}
 
 	}, false);

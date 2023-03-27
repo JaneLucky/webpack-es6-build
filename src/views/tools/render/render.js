@@ -2,6 +2,7 @@ const THREE = require('@/three/three.js')
 import {
 	SetDeviceStyle
 } from "@/views/tools/style/deviceStyleSet.js"
+import { CreateSvg } from "@/views/tools/common/index.js"
 
 //渲染相关
 /*
@@ -164,7 +165,7 @@ export function Render(bimengine) {
 			return
 		}
 		render_set_dialog = document.createElement("div");
-		render_set_dialog.className = "Render-Set-Dialog";
+		render_set_dialog.className = "Render-Set-Dialog user-select-none";
 		render_set_dialog.addEventListener("mousedown", _onMouseDown);
 
 		let header_contain = document.createElement("div");
@@ -218,6 +219,8 @@ export function Render(bimengine) {
 		}
 		form_item_0.appendChild(input_item_0);
 
+		let input_item_3
+
 		let form_item_1 = document.createElement("div");
 		form_item_1.className = "Form_Item"
 		main_contain.appendChild(form_item_1);
@@ -237,7 +240,7 @@ export function Render(bimengine) {
 			bimengine.RenderSAO.saoPass.params.saoBlurDepthCutoff= 0.1
 			bimengine.RenderSAO.saoPass.params.saoBlurRadius= 1
 			bimengine.RenderSAO.saoPass.params.saoBlurStdDev= 5
-			bimengine.RenderSAO.saoPass.params.saoIntensity= 0.18
+			bimengine.RenderSAO.saoPass.params.saoIntensity= Number(input_item_3.innerText)
 			bimengine.RenderSAO.saoPass.params.saoKernelRadius= 5
 			bimengine.RenderSAO.saoPass.params.saoMinResolution= 0
 			bimengine.RenderSAO.saoPass.params.saoScale= 2
@@ -280,17 +283,48 @@ export function Render(bimengine) {
 		form_item_label_3.className = "Form_Item_Label"
 		form_item_label_3.innerText = "阴影强度"
 		form_item_3.appendChild(form_item_label_3);
-		let input_item_3 = document.createElement("input")
+
+
+		let input_number_contain1 = document.createElement("div");
+		input_number_contain1.className = "input_number_contain"
+		form_item_3.appendChild(input_number_contain1);
+
+		input_item_3 = document.createElement("div")
 		input_item_3.className = "inputtext"
-		input_item_3.type = "number"
-		input_item_3.min = 0
-		input_item_3.max = 1
-		input_item_3.step = 0.1
-		input_item_3.value = 0.2
-		input_item_3.onchange = (e) => {
-			bimengine.RenderSAO.saoPass.params.saoIntensity = e.target.value
+		input_item_3.innerText = 0.2
+		
+		let btn_sub_contain = document.createElement("div");
+		btn_sub_contain.className = "Btn_Contain"
+		let btn_sub_icon = CreateSvg("icon-jianhao")
+		btn_sub_contain.appendChild(btn_sub_icon)
+		btn_sub_contain.onclick = (e)=>{
+			e.stopPropagation();
+			e.preventDefault();
+			let num = Number(input_item_3.innerText)
+			if(num>0){
+				let newNum = (num - 0.1).toFixed(1)
+				input_item_3.innerText = newNum
+				bimengine.RenderSAO.saoPass.params.saoIntensity = newNum
+			}
 		}
-		form_item_3.appendChild(input_item_3);
+		input_number_contain1.appendChild(btn_sub_contain);
+		input_number_contain1.appendChild(input_item_3);
+
+		let btn_add_contain = document.createElement("div");
+		btn_add_contain.className = "Btn_Contain user-select-none"
+		let btn_add_icon = CreateSvg("icon-jiahao")
+		btn_add_contain.appendChild(btn_add_icon)
+		btn_add_contain.onclick = (e)=>{
+			e.stopPropagation();
+			e.preventDefault();
+			let num = Number(input_item_3.innerText)
+			if(num<1){
+				let newNum = (num + 0.1).toFixed(1)
+				input_item_3.innerText = newNum
+				bimengine.RenderSAO.saoPass.params.saoIntensity = newNum
+			}
+		}
+		input_number_contain1.appendChild(btn_add_contain);
 
 
 		let form_item_4 = document.createElement("div");
@@ -300,19 +334,49 @@ export function Render(bimengine) {
 		form_item_label_4.className = "Form_Item_Label"
 		form_item_label_4.innerText = "曝光强度"
 		form_item_4.appendChild(form_item_label_4);
-		let input_item_4 = document.createElement("input")
+
+
+		let input_number_contain2 = document.createElement("div");
+		input_number_contain2.className = "input_number_contain"
+		form_item_4.appendChild(input_number_contain2);
+
+		let input_item_4 = document.createElement("div")
 		input_item_4.className = "inputtext"
-		input_item_4.type = "number"
-		input_item_4.min = 0
-		input_item_4.max = 1
-		input_item_4.step = 0.1
-		input_item_4.value = 0.6
-		input_item_4.onchange = (e) => {
-			_render.SetAmbientLightIntensity(e.target.value)
+		input_item_4.innerText = 0.6
+		
+		let btn_sub_contain2 = document.createElement("div");
+		btn_sub_contain2.className = "Btn_Contain"
+		let btn_sub_icon2 = CreateSvg("icon-jianhao")
+		btn_sub_contain2.appendChild(btn_sub_icon2)
+		btn_sub_contain2.onclick = (e)=>{
+			e.stopPropagation();
+			e.preventDefault();
+			let num = Number(input_item_4.innerText)
+			if(num>0){
+				let newNum = (num - 0.1).toFixed(1)
+				input_item_4.innerText = newNum
+				_render.SetAmbientLightIntensity(newNum)
+			}
 		}
-		form_item_4.appendChild(input_item_4);
+		input_number_contain2.appendChild(btn_sub_contain2);
+		input_number_contain2.appendChild(input_item_4);
 
-
+		let btn_add_contain2 = document.createElement("div");
+		btn_add_contain2.className = "Btn_Contain user-select-none"
+		let btn_add_icon2 = CreateSvg("icon-jiahao")
+		btn_add_contain2.appendChild(btn_add_icon2)
+		btn_add_contain2.onclick = (e)=>{
+			e.stopPropagation();
+			e.preventDefault();
+			let num = Number(input_item_4.innerText)
+			if(num<1){
+				let newNum = (num + 0.1).toFixed(1)
+				input_item_4.innerText = newNum
+				_render.SetAmbientLightIntensity(newNum)
+			}
+		}
+		input_number_contain2.appendChild(btn_add_contain2);
+		
 
 
 
