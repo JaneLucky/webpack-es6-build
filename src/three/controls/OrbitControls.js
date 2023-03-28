@@ -644,11 +644,11 @@ THREE.OrbitControls = function(object, domElement) {
 		dollyDelta.subVectors(dollyEnd, dollyStart);
 
 		if (dollyDelta.y > 0) { // 缩小
-			scope.domElement.style.cursor = "zoom-out"
+			!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "zoom-out")
 			dollyOut(getZoomScale());
 
 		} else if (dollyDelta.y < 0) { // 放大
-			scope.domElement.style.cursor = "zoom-in"
+			!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "zoom-in")
 			dollyIn(getZoomScale());
 
 		}
@@ -926,7 +926,7 @@ THREE.OrbitControls = function(object, domElement) {
 	}
 
 	function onPointerUp(event) {
-		scope.domElement.style.cursor = "auto"
+		!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "auto")
 
 		switch (event.pointerType) {
 
@@ -1081,7 +1081,7 @@ THREE.OrbitControls = function(object, domElement) {
 
 				if (scope.enableRotate === false) return;
 
-				scope.domElement.style.cursor = "alias"
+				!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "alias")
 				handleMouseMoveRotate(event);
 
 				if (scope.showOriginIcon) { // 显示旋转中心
@@ -1106,7 +1106,7 @@ THREE.OrbitControls = function(object, domElement) {
 			case STATE.PAN: //平移
 
 				if (scope.enablePan === false) return;
-				scope.domElement.style.cursor = "move"
+				!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "move")
 				handleMouseMovePan(event);
 
 				break;
@@ -1116,7 +1116,7 @@ THREE.OrbitControls = function(object, domElement) {
 	}
 
 	function onMouseUp(event) {
-		scope.domElement.style.cursor = "auto"
+		!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "auto")
 
 
 		if (scope.showOriginIcon) { // 隐藏旋转中心	
@@ -1158,7 +1158,7 @@ THREE.OrbitControls = function(object, domElement) {
 
 	function onStopWheel(){
 		if(scope.moveWheel2){
-			scope.domElement.style.cursor = "auto"
+			!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "auto")
 			scope.moveWheel2 = false;
 			scope.moveWheel1 = true;
 		}
@@ -1180,9 +1180,9 @@ THREE.OrbitControls = function(object, domElement) {
 		if(scope.moveWheel1){
 			if(event.wheelDelta){
 				if(event.wheelDelta > 0) {
-					scope.domElement.style.cursor = "zoom-in"
+					!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "zoom-in")
 				}else if(event.wheelDelta < 0){
-					scope.domElement.style.cursor = "zoom-out"
+					!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "zoom-out")
 				}
 			}
 			scope.moveWheel1 = false;

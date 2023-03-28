@@ -51,6 +51,7 @@ export function CaptureMark(bimengine) {
 	//激活
 	_captureMark.Active = function() {
 		if (!_captureMark.isActive) {
+			bimengine.Measures.isActive = true
 			_captureMark.models = bimengine.GetAllVisibilityModel();
 			if(bimengine.EngineRay){
 				bimengine.EngineRay.Active()
@@ -63,7 +64,7 @@ export function CaptureMark(bimengine) {
 			Mark_Quadrangle = pinks.Quadrangle
 			Mark_Area = pinks.Area
 			Mark_ChuiDian = pinks.ChuiDian
-			_container.className = "custom-cursor"
+			bimengine.scene.renderer.domElement.className = bimengine.scene.renderer.domElement.className.replace("custom-cursor","").trim() + " custom-cursor"
 			_container.addEventListener('pointermove', onMouseMove);
 
 			function render() {
@@ -77,10 +78,11 @@ export function CaptureMark(bimengine) {
 	//关闭
 	_captureMark.DisActive = function() {
 		if (_captureMark.isActive) {
+			bimengine.Measures.isActive = false
 			bimengine.EngineRay && bimengine.EngineRay.DisActive()
 			var root = document.getElementById(CaptureMarkDom);
 			root && root.remove() //删除坐标点dom
-			_container.className = "default-cursor"
+			bimengine.scene.renderer.domElement.className = bimengine.scene.renderer.domElement.className.replace("custom-cursor","").trim();
 			_container.removeEventListener('pointermove', onMouseMove);
 			cancelAnimationFrame(AnimationFrame) //清除动画
 			_captureMark.isActive = false

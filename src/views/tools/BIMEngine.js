@@ -1,5 +1,5 @@
 const THREE = require('@/three/three.js')
-require('@/styles/index.scss')
+require('./style/index.scss')
 
 import {
 	InitScene,
