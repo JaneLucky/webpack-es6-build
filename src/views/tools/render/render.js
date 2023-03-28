@@ -304,7 +304,7 @@ export function Render(bimengine) {
 			if(num>0){
 				let newNum = (num - 0.1).toFixed(1)
 				input_item_3.innerText = newNum
-				bimengine.RenderSAO.saoPass.params.saoIntensity = newNum
+				input_item_1.checked && (bimengine.RenderSAO.saoPass.params.saoIntensity = newNum)
 			}
 		}
 		input_number_contain1.appendChild(btn_sub_contain);
@@ -321,7 +321,7 @@ export function Render(bimengine) {
 			if(num<1){
 				let newNum = (num + 0.1).toFixed(1)
 				input_item_3.innerText = newNum
-				bimengine.RenderSAO.saoPass.params.saoIntensity = newNum
+				input_item_1.checked && (bimengine.RenderSAO.saoPass.params.saoIntensity = newNum)
 			}
 		}
 		input_number_contain1.appendChild(btn_add_contain);
