@@ -4,11 +4,6 @@ import "@/three/controls/OrbitControls"
 //控制操作加载库
 import "@/three/effects/AnaglyphEffect"
 import '@/three/controls/TransformControls.js';
-import {
-	HandleModelSelect
-} from "@/views/tools/handleModels/index.js"
-import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
-// import { GetModelCategory, GetModelLevel } from "@/api/modelTreeService"
 
 
 //定义窗口的设置
@@ -35,68 +30,13 @@ export function SceneResize() {
 
 //定义鼠标事件
 export function setEventsMouse(bimEngine, callBack) {
-	let CAMERA_POSITION
-	let right_click_menu_container;
-	let _container = bimEngine.scene.renderer.domElement.parentElement;
-	let menuList = [//右键菜单列表
-		// {
-		// value: '1',
-		// label: '查看属性',
-		// domItem: null,
-		// childContain: null
-		// },
-		// {
-		// 	value: '2',
-		// 	label: '工程量',
-		// 	domItem: null,
-		// 	childContain: null
-		// },  
-		{
-			value: '3',
-			label: '隔离',
-			domItem: null,
-			childContain: null
-		},  {
-			value: '4',
-			label: '隐藏',
-			domItem: null,
-			childContain: null
-		},  {
-			value: '5',
-			label: '显示全部',
-			domItem: null,
-			childContain: null
-		},  
-		// {
-		// 	value: '6',
-		// 	label: '隐藏全部',
-		// 	domItem: null,
-		// 	childContain: null
-		// }, 
-		// {
-		// 	value: '7',
-		// 	label: '快速选择',
-		// 	domItem: null,
-		// 	childContain: null,
-		// 	children: [{
-		// 		value: '71',
-		// 		label: '同类构建'
-		// 	}, {
-		// 		value: '72',
-		// 		label: '同层构建'
-		// 	}, {
-		// 		value: '73',
-		// 		label: '同类同层构建'
-		// 	}]
-		// }
-	];
+	let CAMERA_POSITION;
 
 
 	// 判断但双击的参数
 	let clickid = 1;
 	let timer = null;
 	let startTime, endTime;
-	CreatorRightClickMenu()
 	//点击了鼠标左键 - 高亮选中的构建，并返回选中的构建
 	bimEngine.scene.renderer.domElement.addEventListener('pointerup', function(event) {
 		click()
@@ -345,11 +285,6 @@ export function setEventsMouse(bimEngine, callBack) {
 					bimEngine.Selection = BeforeSelection
 					bimEngine.ResetSelectedModels_('highlight', BeforeSelection, true)
 					sessionStorage.setItem('SelectedSingleModelInfo',JSON.stringify(BEFORE_SELECT))
-					//回调
-					callBack({
-						type: 'LeftClick'
-					})
-					CloseMenu()
 				}
 			}
 			function GetAdjacentModel(start, index, total) {
@@ -395,27 +330,6 @@ export function setEventsMouse(bimEngine, callBack) {
 		}
 	})
 
-	//点击了鼠标右键
-	bimEngine.scene.renderer.domElement.addEventListener('contextmenu', function(event) {
-		if (event.button === 2) {
-			event.preventDefault(); // 阻止默认的点击事件执行
-			if (Math.abs(event.x - CAMERA_POSITION.x) < 2 && Math.abs(event.y - CAMERA_POSITION.y) < 2) {
-				callBack({
-					type: 'RightClick',
-					position: {
-						x: event.x,
-						y: event.y
-					}
-				})
-				OpenMenu()
-			} else {
-				callBack({
-					type: 'LeftClick'
-				})
-				CloseMenu()
-			}
-		}
-	}, false);
 
 	//鼠标移动坐标2D坐标
 	bimEngine.scene.renderer.domElement.addEventListener('pointerdown', function(event) {
@@ -425,275 +339,6 @@ export function setEventsMouse(bimEngine, callBack) {
 			y: event.y
 		}
 	}, false);
-
-	function OpenMenu() {
-		right_click_menu_container && (right_click_menu_container.style.display = "block");//关闭弹框UI
-		right_click_menu_container && (right_click_menu_container.style.top = event.y+'px');//关闭弹框UI
-		right_click_menu_container && (right_click_menu_container.style.left = event.x+'px');//关闭弹框UI
-		for(let i=0;i<menuList.length;i++){
-			if(menuList[i].value !== '5' && menuList[i].value !== '6' ){
-				// menuList[i].domItem.style.display = window.bimEngine.SelectedModels.loadedModels.length ?"block":"none"
-				menuList[i].domItem.style.display = window.bimEngine.SelectedModels.indexesModels.length ?"block":"none"
-			}
-		}
-	}
-
-	function CloseMenu() {
-		right_click_menu_container && (right_click_menu_container.style.display = "none");//关闭弹框UI
-	}
-
-	function CreatorRightClickMenu() {
-		require('@/views/tools/style/'+SetDeviceStyle()+'/RightClickMenu.scss')
-		if(right_click_menu_container){
-			right_click_menu_container.style.display = "block";//关闭弹框UI
-			return
-		}
-		right_click_menu_container = document.createElement("div");
-		right_click_menu_container.className = "Right-Click-Menu-Container"
-
-		for(let i=0;i<menuList.length;i++){
-			let menu_item = document.createElement("div");
-			menu_item.className = "Menu-Item"
-			if(menuList[i].children && menuList[i].children.length){
-				let menu_item_span = document.createElement("span");
-				menu_item_span.innerHTML = menuList[i].label
-				menu_item.appendChild(menu_item_span)
-				let menu_item_icon = document.createElement("span");
-				menu_item_icon.className = "Menu-Item-Icon"
-				menu_item_icon.innerHTML = ">";
-				menu_item.appendChild(menu_item_icon)
-
-				let menu_child_container = document.createElement("div");
-				menu_child_container.className = "Menu_Child_Container"
-				for(let j=0;j<menuList[i].children.length;j++){
-					let menu_child_item = document.createElement("div");
-					menu_child_item.className = "Menu-Item"
-					menu_child_item.dataset.value = menuList[i].children[j].value
-
-					let menu_child_item_span = document.createElement("span");
-					menu_child_item_span.innerHTML = menuList[i].children[j].label
-					menu_child_item_span.dataset.value = menuList[i].children[j].value
-					menu_child_item.appendChild(menu_child_item_span)
-					menu_child_item.onclick = (e)=>{
-						e.stopPropagation();
-						handleMenuClickChange(e.target.dataset.value)
-					}
-					menu_child_container.appendChild(menu_child_item)
-				}
-				menu_item.addEventListener("mouseover", (e)=> {
-					menu_child_container.style.display = "block";
-					menu_item.style.background = "#ffffff";
-					menu_item.style.color = "#409EFF";
-				})
-				menu_item.appendChild(menu_child_container)
-				menuList[i].childContain = menu_child_container
-				menuList[i].domItem = menu_item
-			}else{
-				let menu_item_span = document.createElement("span");
-				menu_item_span.innerHTML = menuList[i].label
-				menu_item.appendChild(menu_item_span)
-				menuList[i].domItem = menu_item
-				menu_item.addEventListener("mouseover", (e)=> {
-					for(let k=0;k<menuList.length;k++){
-						if(menuList[k].childContain){
-							menuList[k].childContain.style.display = "none"
-							menuList[k].domItem.style.background = "transparent";
-							menuList[k].domItem.style.color = "#ffffff";
-						}
-					}
-				})
-			}
-			menu_item.dataset.value = menuList[i].value
-			menu_item.onclick = (e)=>{
-				// console.log(e.target.dataset.value)
-				handleMenuClickChange(e.target.dataset.value)
-			}
-			right_click_menu_container.appendChild(menu_item)
-		}
-		_container.appendChild(right_click_menu_container);
-	}
-
-	function handleMenuClickChange(val) {
-		ClearSelect()
-		bimEngine.UpdateRender();
-		let indexesList
-		switch (val) {
-			case '1':
-				
-				break;
-			case '2':
-				
-				break;
-			case '3'://隔离
-				// if(window.bimEngine.SelectedModels.loadedModels.length){
-				// 	//隐藏所有
-				// 	HandleModelSelect(null,[{key:'visible',val:false}])
-				// 	//显示选中的
-				// 	HandleModelSelect(window.bimEngine.SelectedModels.loadedModels,[{key:'visible',val:true}])
-				// }
-				//隐藏所有
-				indexesList = window.bimEngine.GetAllIndexesModel()
-				indexesList.length && window.bimEngine.ResetSelectedModels_('visible', indexesList, false)
-				//显示选中的
-				window.bimEngine.SelectedModels.indexesModels.length && window.bimEngine.ResetSelectedModels_('visible', window.bimEngine.SelectedModels.indexesModels, true)
-				break;
-			case '4'://隐藏
-				window.bimEngine.SelectedModels.indexesModels.length && window.bimEngine.ResetSelectedModels_('visible', window.bimEngine.SelectedModels.indexesModels, false)
-				// if(window.bimEngine.SelectedModels.loadedModels.length){
-				// 	HandleModelSelect(window.bimEngine.SelectedModels.loadedModels,[{key:'visible',val:false}])
-				// }
-				break;
-			case '5'://显示全部
-				indexesList = window.bimEngine.GetAllIndexesModel()
-				indexesList.length && window.bimEngine.ResetSelectedModels_('visible', indexesList, true)
-				sessionStorage.setItem("ShowAllModel",'true')
-				// HandleModelSelect(null,[{key:'visible',val:false}])
-				break;
-			case '6'://隐藏全部
-				indexesList = window.bimEngine.GetAllIndexesModel()
-				indexesList.length && window.bimEngine.ResetSelectedModels_('visible', indexesList, false)
-				// HandleModelSelect(null,[{key:'visible',val:false}])
-				sessionStorage.setItem("ShowAllModel",'false')
-				break;
-			case '71'://同类构建
-				// if(window.bimEngine.SelectedModels.loadedModels.length){
-				// 	GetModelCategory(window.bimEngine.ModelPaths, (data) => {
-				// 		let SameTypeList = getSameTypeORSameLevelModels(data, window.bimEngine.SelectedModels.loadedModels)
-				// 		SameTypeList && SameTypeList.length && window.bimEngine.ResetSelectedModels("required", SameTypeList)
-				// 	});
-				// }
-				break;
-			case '72'://同层构建
-				// if(window.bimEngine.SelectedModels.loadedModels.length){
-				// 	GetModelLevel(window.bimEngine.ModelPaths, (data) => {
-				// 		let SameLevelList = getSameTypeORSameLevelModels(data, window.bimEngine.SelectedModels.loadedModels)
-				// 		SameLevelList && SameLevelList.length && window.bimEngine.ResetSelectedModels("required", SameLevelList)
-				// 	});
-				// }
-				break;
-			case '73'://同类同层构建
-				// if(window.bimEngine.SelectedModels.loadedModels.length){
-				// 	GetModelCategory(window.bimEngine.ModelPaths, (data) => {
-				// 		let SameTypeList = getSameTypeORSameLevelModels(data, window.bimEngine.SelectedModels.loadedModels)
-				// 		if(SameTypeList && SameTypeList.length){
-				// 			GetModelLevel(window.bimEngine.ModelPaths, (data) => {
-				// 				let SameLevelList = getSameTypeORSameLevelModels(data, window.bimEngine.SelectedModels.loadedModels)
-				// 				let FinalList = []
-				// 				for (let SameType of SameTypeList) {
-				// 					for(let SameLevel of SameLevelList){
-				// 						if(SameType.relativePath === SameLevel.relativePath){
-				// 							let sameList = getRepeat([...SameType.children, ...SameLevel.children])
-				// 							if(sameList && sameList.length){
-				// 								let item = {
-				// 									path: SameType.path,
-				// 									children:sameList
-				// 								}
-				// 								FinalList.push(item)
-				// 							}
-				// 						}
-				// 					}
-				// 				}
-				// 				FinalList && FinalList.length && window.bimEngine.ResetSelectedModels("required", FinalList)
-								
-				// 			});
-				// 		}
-						
-				// 	});
-				// }
-				break;
-			default:
-				break;
-		}
-		CloseMenu()
-	}
-
-	//获得同类或同层构建 - 接口获得
-	function getSameTypeORSameLevelModels(data, selectedModels){
-		let list = []
-		if(data && data.length){
-			for (let selectedGroup of selectedModels) {
-				for (let group of data) {
-					if(group.models && group.models.length){
-						for (const models of group.models) {
-							let itemGroup = {
-								path: models.modelId,
-								children:[]
-							}
-							let index = list.findIndex(item => item.path === models.modelId)
-							if (index != -1) { //不存在
-								itemGroup = JSON.parse(JSON.stringify(list[index]))
-								list.splice(index, 1)
-							}
-							if(selectedGroup.relativePath === models.modelId){
-								if(selectedGroup.TypeName === "InstancedMesh" || selectedGroup.TypeName === "InstancedMesh-Pipe"){
-									for (let select of selectedGroup.children) {
-										if(models.models.findIndex(x=>select.name.indexOf(x) != -1) !== -1){
-											itemGroup.children = noRepeat([...itemGroup.children,...models.models])
-										}
-									}
-
-								}else if(selectedGroup.TypeName === "Mesh" || selectedGroup.TypeName == "Mesh-Structure" || selectedGroup.TypeName === "PipeMesh"){
-									for (let select of selectedGroup.children) {
-										if(models.models.findIndex(x=>select.indexOf(x) != -1) !== -1){
-											itemGroup.children = noRepeat([...itemGroup.children,...models.models])
-										}
-									}
-								}
-
-							}
-							if(itemGroup.children && itemGroup.children.length){
-								list.push(itemGroup)
-							}
-							
-						}
-					}
-
-					
-				}
-			}
-		}
-		return list
-	}
-
-	// 清除选中样式
-	function ClearSelect(){
-		for(let i=0;i<menuList.length;i++){
-			if(menuList[i].domItem){
-				menuList[i].domItem.style.background = "#656565";
-				menuList[i].domItem.style.color = "#ffffff";
-			}
-			if(menuList[i].childContain){
-				menuList[i].childContain.style.display = "none";
-			}
-		}
-	}
-
-	// 数组去重
-	function noRepeat(arr){
-		var list = [];
-		var tempSet = new Set(arr);//利用了Set结构不能接收重复数据的特点
-		for(var val of tempSet){
-			list.push(val)
-		}
-		return list
-	}
-
-	// 数组保留重复
-	function getRepeat(arr){
-		let list = []
-		for (let i = 0; i < arr.length; i++) {
-			if (list.indexOf(arr[i]) !== -1) continue
-			for (let j = 0; j < arr.length; j++) {
-				if (i === j) continue
-				if (arr[i] === arr[j]) {
-					list.push(arr[i])
-					break
-				}
-			}
-		}
-		return list
-	}
-
 }
 
 

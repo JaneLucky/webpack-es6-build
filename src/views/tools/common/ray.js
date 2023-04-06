@@ -108,7 +108,7 @@ export function EngineRay(clientX, clientY) {
 		let child = childs[i];
 		let o = child.meshs[j];
 		let _geometry = child.meshs[j].geometry;
-		 
+
 		var geometry = _geometry.clone();
 		let colorsetHex = color.setHex(Math.random() * 0xffffff);
 		applyVertexColors(geometry, colorsetHex);
@@ -181,15 +181,52 @@ export function EngineRay(clientX, clientY) {
 			}
 		}
 	}
+	//添加颜色
+	_engineRay.index = 0;
+	_engineRay.pickingData = [];
+	_engineRay.applyVertexColors = function(geometry, i, j) {
+		let colorsetHex = color.setHex(Math.random() * 0xffffff);
+		_engineRay.pickingData.push({
+			i: i,
+			j: j,
+		});
+		applyVertexColors(geometry, colorsetHex.setHex(_engineRay.index));
+	}
+	//获取点击数据
+	_engineRay.pick = function(_renderer, scene, camera) {
+		const pixelBuffer = new Uint8Array(4);
+		renderer.setRenderTarget(pickingTexture);
+		renderer.render(scene, camera);
+		scene.camera.clearViewOffset();
+		renderer.readRenderTargetPixels(pickingTexture, 0, 0, 1, 1, pixelBuffer);
+		const id = (pixelBuffer[0] << 16) | (pixelBuffer[1] << 8) | (pixelBuffer[2]);
+		if (id != 0) {
+			const data = _engineRay.pickingData[id];
+			if (data) {
+				//模型高亮显示 
+				let highlightBox = new THREE.Mesh(data.geometry, new THREE.MeshBasicMaterial({
+					color: 0xffff00,
+					transparent: true,
+					opacity: 0
+				}));
+				//创建射线，	
+				console.log("点击模型")
+				highlightBox.TypeName = 'HighlightMesh';
+				highlightBox.Indexs = [data.i, data.j]
+				scene.children[5].children[0] = (highlightBox);
+			}
+		}
+		renderer.setRenderTarget(null);
+	}
 
 	_engineRay.Active = function() {
-		function render() {
-			AnimationFrame = requestAnimationFrame(render);
-			pick();
-			renderer.setRenderTarget(null);
-		}
-		render() //开启动画
-		_engineRay.isActive = true
+		// function render() {
+		// 	AnimationFrame = requestAnimationFrame(render);
+		// 	pick();
+		// 	renderer.setRenderTarget(null);
+		// }
+		// render() //开启动画
+		// _engineRay.isActive = true
 	}
 	_engineRay.DisActive = function() {
 		cancelAnimationFrame(AnimationFrame) //清除动画

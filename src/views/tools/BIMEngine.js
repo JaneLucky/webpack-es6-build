@@ -145,9 +145,11 @@ import {
 import {
 	ControlButtons
 } from "./core/ControlButtons.js"
-import ImgPreviewMask from "@/components/Masker/ImgPreviewMask.vue"
-import { create } from "@/utils/create"
-
+  
+import {
+	CreateRightClickMenu
+} from "@/views/tools/rightClickMenu/index.js"
+ 
 // BIM引擎封装
 export function BIMEngine(domid, options, GLTFLoader) {
 	var _bimEngine = new Object();
@@ -165,6 +167,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 	_bimEngine.ModelPaths = [] //所有模型加载的路径
 	_bimEngine.doneModels = [];
 	_bimEngine.move = true;
+
 	_bimEngine.SelectedModels = {
 		indexesModels: [], // 模型索引
 		loadedModels: [], //通过加载方式获得模型构建
@@ -187,8 +190,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 	window.THREE = THREE;
 	sessionStorage.removeItem('SelectedSingleModelInfo') //刷新清空当前选中构建
 	sessionStorage.setItem("ShowAllModel", 'true')
-	// let dom = document.getElementById("threejs-sence-container")
-	// create(dom, ImgPreviewMask, { show:true, item: {} })
+	
 	//初始化
 	_bimEngine.init = function() {
 		// 适配PC端和移动端样式
@@ -229,7 +231,8 @@ export function BIMEngine(domid, options, GLTFLoader) {
 
 		_bimEngine.ViewCube = new ViewCube(scene, domid); //相机视图对象
 		_bimEngine.ViewCube.init();
-
+		_bimEngine.EngineRay = new EngineRay();
+		_bimEngine.RightClickMenu = new CreateRightClickMenu(_bimEngine); //右键列表
 		_bimEngine.Render = new Render(_bimEngine); //渲染对象
 		_bimEngine.MultiView = new Multiview(_bimEngine, camera); //多视图对象
 		SceneResize() // 场景尺寸变化
@@ -268,6 +271,7 @@ export function BIMEngine(domid, options, GLTFLoader) {
 				renderCommand();
 				timeS = 0;
 				setTimeout(function() {
+					_bimEngine.EngineRay.pick(renderer, scene, scene.camera);
 					renderer.render(scene, scene.camera); //执行渲染操作  
 				}, 200);
 			} else {
@@ -388,6 +392,8 @@ export function BIMEngine(domid, options, GLTFLoader) {
 				LoadGlbJsonList(scene, relativePath, url, option); //加载glb模型
 				CreatorStructureModel(scene, relativePath, url); //语义化模型
 				CreatorInstancePipe(scene, relativePath, url) // 加载管道模型InstanceMesh合并
+			
+				_bimEngine.LoadQuantitiesList(); //获得工程量列表
 			})
 			//大 382395030305768710%2F396146577690854661%2F396146578055759109%2Fglbs
 			//小 382395030305768710%2F393669613621085445%2F393669613650445573%2Fglbs
@@ -433,7 +439,6 @@ export function BIMEngine(domid, options, GLTFLoader) {
 		if (!_bimEngine.handleLoadDoneFunOnce) {
 			_bimEngine.handleLoadDoneFunOnce = true
 			_bimEngine.FPS = 60
-			_bimEngine.EngineRay = new EngineRay();
 			// _bimEngine.LoadModelTree(_bimEngine.ModelPaths);
 			_bimEngine.ModelOctree()
 			GetModelEdges()

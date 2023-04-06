@@ -77,7 +77,7 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 				for (const materialMap of materialMapChild) {
 					for (let inst of allMeshs) {
 						if (materialMap.materialName === inst.material.name) {
-							if(materialMap && materialMap.Param){
+							if (materialMap && materialMap.Param) {
 								UpdateMaterialAttribute(inst.material, materialMap.Param);
 								inst.material.materialMap = {
 									Id: materialMap.materialId,
@@ -239,7 +239,7 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 					if (m.ElementInfos.length < 200) {
 						let geos = [];
 						let infos = [];
-						for (var jj = 0; jj < m.ElementInfos.length; jj++) { 
+						for (var jj = 0; jj < m.ElementInfos.length; jj++) {
 							let geo = m.meshs.geometry.clone().applyMatrix4(m.ElementInfos[jj].matrix.clone())
 							geos.push(geo);
 							infos.push(m.ElementInfos[jj]);
@@ -299,7 +299,7 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 					ins_[jj].dbid = jj;
 					ms_.push(m);
 				}
-				
+
 				const mergedGeometries = THREE.BufferGeometryUtils.mergeBufferGeometries(gs_,
 					true);
 				const singleMergeMesh = new THREE.Mesh(mergedGeometries, mat);
@@ -362,7 +362,7 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 				if (materialMapChild.length) {
 					for (const materialMap of materialMapChild) {
 						if (materialMap.materialName === o.material.name) {
-							if(materialMap && materialMap.Param){
+							if (materialMap && materialMap.Param) {
 								UpdateMaterialAttribute(o.material, materialMap.Param)
 								o.material.materialMap = {
 									Id: materialMap.materialId,
@@ -405,6 +405,11 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 				});
 			}
 		}
+ 
+		for (let index = 0; index < geometryArray.length; index++) {
+			window.bimEngine.EngineRay.applyVertexColors(geometryArray[index], window.bimEngine.scene.children.length + 1, index);
+		} 
+		
 		//加载模型
 		const mergedGeometries = THREE.BufferGeometryUtils.mergeBufferGeometries(geometryArray,
 			true);
@@ -568,10 +573,10 @@ export function LoadModelBeforeStart(path) { //模型加载之前-获得材质�
 		LoadJSON(path + '/materialMapList.json', result => { //加载模型材质映射列表
 			if (result) {
 				let MapList = JSON.parse(result)
-				MapList = MapList.map(item=>{
-					if(item.mapList && item.mapList.length){
-						item.mapList.map(map=>{
-							if(map.Param){
+				MapList = MapList.map(item => {
+					if (item.mapList && item.mapList.length) {
+						item.mapList.map(map => {
+							if (map.Param) {
 								map.Param = JSON.parse(map.Param)
 							}
 							return map
