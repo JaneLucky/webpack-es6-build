@@ -113,7 +113,7 @@ export function ModelOctreeVisible(bimEngine) {
 	}
 
 	//判断是否在可视范围
-	function ViewContainbox_fov(box) {
+	function ViewContainbox_fov(box) { 
 		let DensePoints = box.DensePoint;
 		let flag = false;
 		for (let point of DensePoints) {
@@ -239,13 +239,14 @@ export function ModelOctreeVisible(bimEngine) {
 }
 
 export function ModelOctrees(bimEngine) {
+	 
 	var models_ = bimEngine.GetAllVisibilityModel();
 	ModelInstanceTree(bimEngine);
 	//最小的盒子尺寸
 	const minSize = 50;
 	const DenseSize = 30;
 	const models = bimEngine.scene.children.filter(x => x.name == "rootModel" && (x.TypeName == "Mesh" || x.TypeName ==
-		"PipeMesh"));
+	"Mesh-Structure" || x.TypeName == "PipeMesh"));
 	if (window.idindex == null) {
 		window.idindex = 0;
 	}

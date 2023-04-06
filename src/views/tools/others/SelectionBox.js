@@ -140,8 +140,8 @@ export function selectBox(bimengine) {
 									}
 								}	
 							}
-					}else if(rootmodel.TypeName === "Mesh" || rootmodel.TypeName === "PipeMesh"){
-						if (rootmodel && rootmodel.material.length) {
+					}else if(rootmodel.TypeName === "Mesh" || rootmodel.TypeName === "Mesh-Structure" || rootmodel.TypeName === "PipeMesh"){
+						if (rootmodel && rootmodel.ElementInfos.length) {
 							for (let model of rootmodel.ElementInfos) {
 								if(model.screenPosition.x >= startPoint.x && model.screenPosition.y >= startPoint.y && 
 									model.screenPosition.x <= endPoint.x && model.screenPosition.y <= endPoint.y){

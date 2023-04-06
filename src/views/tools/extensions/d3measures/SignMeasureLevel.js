@@ -496,7 +496,7 @@ export function SignMeasureLevel(bimEngine) {
 		let intersects = rayCaster.intersectObjects(_D3Measure.AllModels, true);
 		if (intersects.length) {
 			let intersect = intersects[0]
-			if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "PipeMesh") {
+			if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "Mesh-Structure" || intersect.object.TypeName == "PipeMesh") {
 				var clickObj = IncludeElement(intersect.object.ElementInfos, intersect
 					.point); //选中的构建位置信息
 				if (clickObj != null && (intersect.object.hideElements == null || !intersect.object.hideElements

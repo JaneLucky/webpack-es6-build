@@ -4,9 +4,7 @@ import {
 // import {
 // 	GetModelNameWithUrl
 // } from "@/api/ModelShare.js"
-export function ModelTree(bimEngine) {
-	let paths = bimEngine.ModelPaths;
-	let key = 0;
+export function ModelTree(bimEngine, paths) {
 
 	let allmodels = bimEngine.scene.children.map(x => {
 		return {
@@ -55,7 +53,8 @@ export function ModelTree(bimEngine) {
 				Isleaf: false,
 				children: trees,
 				path: path,
-				key: key++
+				key:  bimEngine.LoadedWatcher.TreeKey++,
+				level:0
 			}
 			bimEngine.treeData.push(treedata);
  
@@ -104,12 +103,12 @@ export function ModelTree(bimEngine) {
 			if (!array || !array.length) return;
 			for (let i = 0; i < array.length; i++) {
 				if(array[i].Isleaf){
-					array[i].key = key++
+					array[i].key =  bimEngine.LoadedWatcher.TreeKey++
 					array[i].path = path
 					array[i].T_Name = name;
 					bckArr.push(array[i])
 				}else{
-					array[i].key = key++
+					array[i].key =  bimEngine.LoadedWatcher.TreeKey++
 					array[i].path = path
 					TreeDiGui(array[i].children, array[i].Name)
 				}

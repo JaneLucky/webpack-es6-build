@@ -131,7 +131,7 @@ export function heightMeasure(bimengine) {
 				if (intersects.length > 0) {
 					bimengine.scene.controls.origin = intersects[0].point;
 					for (var intersect of intersects) {
-						if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "PipeMesh") {
+						if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "Mesh-Structure" || intersect.object.TypeName == "PipeMesh") {
 							var clickObj = IncludeElement(intersect.object, intersect.point); //选中的构建位置信息
 							if(clickObj && intersect.object.geometry.groups[clickObj.dbid].visibility !== false){
 								pickobject = {
@@ -459,8 +459,20 @@ export function heightMeasure(bimengine) {
 	function rayDirectResult(start, normal) {
 		var ray = new THREE.Raycaster(start.clone().add(normal.clone().multiplyScalar(0.01)), normal.clone());
 		var intersects = ray.intersectObjects(_heightMeasure.models);
-		if (intersects.length > 0) {
-			return intersects;
+		let bkIntersect = []
+		for (let intersect of intersects) {
+			if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "Mesh-Structure" || intersect.object.TypeName == "PipeMesh") {
+				var clickObj = IncludeElement(intersect.object, intersect.point); //选中的构建位置信息
+				if(clickObj && intersect.object.geometry.groups[clickObj.dbid].visibility !== false){
+					bkIntersect.push(intersect)
+				}
+			}else{
+				bkIntersect.push(intersect)
+			}
+		}
+
+		if (bkIntersect.length > 0) {
+			return bkIntersect;
 		} else {
 			return null;
 		}

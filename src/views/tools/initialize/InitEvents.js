@@ -44,7 +44,8 @@ export function setEventsMouse(bimEngine, callBack) {
 		// label: '查看属性',
 		// domItem: null,
 		// childContain: null
-		// }, {
+		// },
+		// {
 		// 	value: '2',
 		// 	label: '工程量',
 		// 	domItem: null,
@@ -152,15 +153,15 @@ export function setEventsMouse(bimEngine, callBack) {
 						indexs:[],
 						min: null,
 						center: null,
-						max: null
+						max: null,
+						materialName: null
 					} //当前选中的构建位置信息，用于记录上一次选中的模型，也用于模型属性查询
-					//存储选中构建
-					// console.log(intersects)
+					//存储选中构建 
 					switch (keyType) {
 						case "keyEnter": //ctrlClick/shiftClick
 							if (intersects.length > 0) {
 								for (var intersect of intersects) {
-									if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "PipeMesh") {
+									if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "Mesh-Structure" || intersect.object.TypeName == "PipeMesh") {
 										var clickObj = IncludeElement(intersect.object, intersect
 											.point); //选中的构建位置信息
 										if (clickObj && intersect.object.geometry.groups[clickObj.dbid].visibility !== false) {
@@ -177,7 +178,8 @@ export function setEventsMouse(bimEngine, callBack) {
 													indexs: [intersect.object.index, clickObj.dbid],
 													min: intersect.object.ElementInfos[clickObj.dbid].min,
 													center: intersect.object.ElementInfos[clickObj.dbid].center,
-													max: intersect.object.ElementInfos[clickObj.dbid].max
+													max: intersect.object.ElementInfos[clickObj.dbid].max,
+													materialName: intersect.object.ElementInfos[clickObj.dbid].materialName
 												}
 												BeforeSelection.push(indexes)
 											} else { //存在
@@ -191,7 +193,8 @@ export function setEventsMouse(bimEngine, callBack) {
 													indexs:[],
 													min: null,
 													center: null,
-													max: null
+													max: null,
+													materialName: null
 												}
 												BeforeSelection.splice(GroupIndex, 1)
 											}
@@ -212,7 +215,8 @@ export function setEventsMouse(bimEngine, callBack) {
 													indexs:[intersect.object.index, intersect.instanceId],
 													min: intersect.object.ElementInfos[intersect.instanceId].min,
 													center: intersect.object.ElementInfos[intersect.instanceId].center,
-													max: intersect.object.ElementInfos[intersect.instanceId].max
+													max: intersect.object.ElementInfos[intersect.instanceId].max,
+													materialName: intersect.object.ElementInfos[intersect.instanceId].materialName
 												}
 												BeforeSelection.push(indexes)
 											} else { //存在
@@ -226,7 +230,8 @@ export function setEventsMouse(bimEngine, callBack) {
 													indexs:[],
 													min: null,
 													center: null,
-													max: null
+													max: null,
+													materialName: null
 												}
 												BeforeSelection.splice(GroupIndex, 1)
 											}
@@ -240,7 +245,7 @@ export function setEventsMouse(bimEngine, callBack) {
 							BeforeSelection = [];
 							if (intersects.length > 0 && bimEngine.LockingSelect!=true) {
 								for (var intersect of intersects) {
-									if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "PipeMesh") {
+									if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName ==  "Mesh-Structure" || intersect.object.TypeName == "PipeMesh") {
 										var clickObj = IncludeElement(intersect.object, intersect.point); //选中的构建位置信息
 										if(clickObj && intersect.object.geometry.groups[clickObj.dbid].visibility !== false){
 											let indexes = [intersect.object.index, clickObj.dbid]
@@ -256,7 +261,8 @@ export function setEventsMouse(bimEngine, callBack) {
 													indexs:[],
 													min: null,
 													center: null,
-													max: null
+													max: null,
+													materialName: null
 												}
 											}else{
 												BEFORE_SELECT = {
@@ -269,7 +275,8 @@ export function setEventsMouse(bimEngine, callBack) {
 													indexs:[intersect.object.index, clickObj.dbid],
 													min: intersect.object.ElementInfos[clickObj.dbid].min,
 													center: intersect.object.ElementInfos[clickObj.dbid].center,
-													max: intersect.object.ElementInfos[clickObj.dbid].max
+													max: intersect.object.ElementInfos[clickObj.dbid].max,
+													materialName: intersect.object.ElementInfos[clickObj.dbid].materialName
 												}
 												BeforeSelection.push(indexes) //给选中数据赋值
 											}
@@ -289,7 +296,8 @@ export function setEventsMouse(bimEngine, callBack) {
 													indexs:[],
 													min: null,
 													center: null,
-													max: null
+													max: null,
+													materialName: null
 												}
 											}else{
 												BEFORE_SELECT = {
@@ -302,7 +310,8 @@ export function setEventsMouse(bimEngine, callBack) {
 													indexs: [intersect.object.index, intersect.instanceId],
 													min: intersect.object.ElementInfos[intersect.instanceId].min,
 													center: intersect.object.ElementInfos[intersect.instanceId].center,
-													max: intersect.object.ElementInfos[intersect.instanceId].max
+													max: intersect.object.ElementInfos[intersect.instanceId].max,
+													materialName: intersect.object.ElementInfos[intersect.instanceId].materialName
 												}
 												BeforeSelection.push(indexes) //给选中数据赋值
 											}
@@ -321,7 +330,8 @@ export function setEventsMouse(bimEngine, callBack) {
 									indexs:[],
 									min: null,
 									center: null,
-									max: null
+									max: null,
+									materialName: null
 								}
 							}
 							break;
@@ -372,7 +382,7 @@ export function setEventsMouse(bimEngine, callBack) {
 
 	//模型双击-相机移动到模型位置
 	bimEngine.scene.renderer.domElement.addEventListener('dblclick', ()=>{
-		if(bimEngine.CurrentSelect.dbid){
+		if(bimEngine.CurrentSelect && bimEngine.CurrentSelect.dbid){
 			let min = bimEngine.CurrentSelect.min
 			let center = bimEngine.CurrentSelect.center
 			let max = bimEngine.CurrentSelect.max
@@ -622,7 +632,7 @@ export function setEventsMouse(bimEngine, callBack) {
 										}
 									}
 
-								}else if(selectedGroup.TypeName === "Mesh" || selectedGroup.TypeName === "PipeMesh"){
+								}else if(selectedGroup.TypeName === "Mesh" || selectedGroup.TypeName == "Mesh-Structure" || selectedGroup.TypeName === "PipeMesh"){
 									for (let select of selectedGroup.children) {
 										if(models.models.findIndex(x=>select.indexOf(x) != -1) !== -1){
 											itemGroup.children = noRepeat([...itemGroup.children,...models.models])
@@ -694,8 +704,8 @@ export function IncludeElement(mesh, point) {
 		return null;
 	}
 	let eles = []
-	for(let i=0;i<mesh.material.length;i++){
-		let clip = ClipInclude(elements[i].min, elements[i].max, mesh.material[i].clippingPlanes, point)
+	for(let i=0;i<mesh.meshs.length;i++){
+		let clip = ClipInclude(elements[i].min, elements[i].max, mesh.material.clippingPlanes, point)
 		if(boxInclude(elements[i].min, elements[i].max, point) && !clip){
 			eles.push(elements[i])
 		}

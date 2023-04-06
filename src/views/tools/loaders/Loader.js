@@ -7,6 +7,9 @@ import * as BufferGeometryUtils from "@/three/utils/BufferGeometryUtils.js"
 import {
 	ModelOctrees
 } from "@/views/tools/common/modelOctree.js"
+import {
+	UpdateMaterialAttribute
+} from "@/views/tools/modelCreator/UpdateMaterial.js"
 export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 	window.bimEngine.GLTFLoader.load(path, (gltf) => {
 		gltf.scene.scale.set(1, 1, 1) //  设置模型大小缩放
@@ -47,7 +50,7 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 			Scene.add(gltf.scene);
 			// mergeBufferModel(Scene, allMeshs);
 		}
-		if (option && option.name === 'modelList') { 
+		if (option && option.name === 'modelList') {
 			for (var i = 0; i < allMeshs.length; i++) {
 				var mesh = allMeshs[i];
 				if (option.position != null && option.position.Point != null) {
@@ -63,26 +66,41 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 				}
 			}
 			mergeBufferModel(Scene, allMeshs);
-		} else if (option && option.name === 'instanceList') { 
+		} else if (option && option.name === 'instanceList') {
 			let instanceMeshs = []
+			let instanceModels = [];
 			let MaterialMapList = window.bimEngine.MaterialMapList.filter(item => item.path === relativePath)
-			let materialMap = MaterialMapList.length ? MaterialMapList[0].mapList.filter(item => item.glb ===
-				path)[0] : null
-			let paramMaterial = materialMap ? window.bimEngine.MaterialList.filter(item => item.Id ===
-				materialMap.materialId)[0] : null
+			let materialMapChild = MaterialMapList.length ? MaterialMapList[0].mapList.filter(item => item
+				.glb === path) : []
+
+			if (materialMapChild.length) {
+				for (const materialMap of materialMapChild) {
+					for (let inst of allMeshs) {
+						if (materialMap.materialName === inst.material.name) {
+							if(materialMap && materialMap.Param){
+								UpdateMaterialAttribute(inst.material, materialMap.Param);
+								inst.material.materialMap = {
+									Id: materialMap.materialId,
+									Name: materialMap.Param.name,
+									Img: materialMap.Img,
+									Param: materialMap.Param
+								}
+								break;
+							}
+						}
+					}
+				}
+			}
+
 			for (let item of option.children) {
 				for (var i = 0; i < allMeshs.length; i++) {
-					if (materialMap && materialMap.meshId === allMeshs[i].userData.name && paramMaterial &&
-						paramMaterial.Param) {
-						setMaterialAttribute(allMeshs[i].material, paramMaterial.Param)
-					}
 					if (item.meshId === allMeshs[i].userData.name) {
+						//设置为双边显示材质
+						allMeshs[i].material.side = THREE.DoubleSide;
 						a(0);
 						a(1);
 						a(2);
 						a(3);
-						//设置为双边显示材质
-						allMeshs[i].material.side = THREE.DoubleSide;
 
 						function a(Mirrored) {
 							let _childs = null;
@@ -171,8 +189,8 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 								let center = min.clone().add(max.clone()).multiplyScalar(0.5);
 								_childs.geometry.groups.push({});
 
- 
-								
+
+
 								ElementInfoArray.push({
 									name: child.name,
 									min: min,
@@ -187,7 +205,8 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 									EdgeList: [],
 									matrix: matrix,
 									basePath: basePath,
-									relativePath: relativePath
+									relativePath: relativePath,
+									materialName: allMeshs[i].material.name
 								});
 							}
 							if (ElementInfoArray.length != 0) {
@@ -202,7 +221,8 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 								_childs.url = path;
 								// _childs.cloneInstanceColor = Array.from(_childs.instanceColor.array)
 								_childs.cloneInstanceMatrix = Array.from(_childs.instanceMatrix.array)
-								Scene.add(_childs);
+								// Scene.add(_childs);
+								instanceModels.push(_childs);
 								// instanceMeshs.push(_childs)
 								// break
 							}
@@ -210,11 +230,34 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 					}
 				}
 			}
-
-
+			//数量少的instance直接合并成mesh 
 			{
-
-
+				let meshs = [];
+				let instancemeshs = [];
+				for (var ii = 0; ii < instanceModels.length; ii++) {
+					var m = instanceModels[ii];
+					if (m.ElementInfos.length < 200) {
+						let geos = [];
+						let infos = [];
+						for (var jj = 0; jj < m.ElementInfos.length; jj++) { 
+							let geo = m.meshs.geometry.clone().applyMatrix4(m.ElementInfos[jj].matrix.clone())
+							geos.push(geo);
+							infos.push(m.ElementInfos[jj]);
+						}
+						meshs.push({
+							material: m.material,
+							ElementInfos: infos,
+							geos: geos
+						})
+					} else {
+						m.material = m.material.clone();
+						instancemeshs.push(m);
+					}
+				}
+				mergeBufferInstanceModel(Scene, meshs);
+				instancemeshs.forEach(o => {
+					Scene.add(o);
+				})
 			}
 		}
 		callback(gltf)
@@ -223,8 +266,85 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 	}, (error) => {
 		// console.error(error)
 	})
-	//合并模型 
+	//合并实例模型
+	function mergeBufferInstanceModel(Scene, meshs) {
+		var mats = [];
+		for (var mesh of meshs) {
+			var index = mats.findIndex(o => o.name == mesh.material.name);
+			if (index == -1) {
+				mats.push(mesh.material);
+			}
+		}
+		for (var mat of mats) {
+			var m_objs = meshs.filter(o => o.material.name == mat.name);
+			//然后把所有的网格泠出来
+			var gs = [];
+			var infos = [];
+			for (var m of m_objs) {
+				m.geos.forEach(o => {
+					gs.push(o);
+				});
+				m.ElementInfos.forEach(o => {
+					infos.push(o);
+				})
+			}
+			var geos_ = splitArray(gs, 2000);
+			var infos_ = splitArray(infos, 2000);
+			for (var kk = 0; kk < geos_.length; kk++) {
+				var gs_ = geos_[kk];
+				var ins_ = infos_[kk];
+				var ms_ = [];
+				for (var jj = 0; jj < gs_.length; jj++) {
+					let m = new THREE.Mesh(gs_[jj], mat);
+					ins_[jj].dbid = jj;
+					ms_.push(m);
+				}
+				
+				const mergedGeometries = THREE.BufferGeometryUtils.mergeBufferGeometries(gs_,
+					true);
+				const singleMergeMesh = new THREE.Mesh(mergedGeometries, mat);
+				singleMergeMesh.ElementInfos = ins_;
+				singleMergeMesh.cloneMaterialArray = mat;
+				singleMergeMesh.name = "rootModel";
+				singleMergeMesh.TypeName = "Mesh";
+				singleMergeMesh.meshs = ms_;
+				singleMergeMesh.url = path;
+				singleMergeMesh.basePath = basePath;
+				singleMergeMesh.relativePath = relativePath;
+				Scene.add(singleMergeMesh);
+				// debugger
+			}
+		}
+	}
+	//拆分模型
+	function splitArray(arr, n) {
+		const result = [];
+		for (let i = 0; i < arr.length; i += n) {
+			result.push(arr.slice(i, i + n));
+		}
+		return result;
+	}
+	//合并模型
 	function mergeBufferModel(Scene, meshs) {
+		var mats = [];
+		for (var mesh of meshs) {
+			var index = mats.findIndex(o => o.name == mesh.material.name);
+			if (index == -1) {
+				mats.push(mesh.material);
+			}
+		}
+		for (var mat of mats) {
+			var ms = meshs.filter(o => o.material.name == mat.name);
+			var meshs_ = splitArray(ms, 2000);
+			for (var ms_ of meshs_) {
+				mergeBufferModel_(Scene, ms_)
+			}
+		}
+
+
+	}
+
+	function mergeBufferModel_(Scene, meshs) {
 		let geometryArray = []; // 将你的要合并的多个geometry放入到该数组
 		let materialArray = []; // 将你的要赋值的多个material放入到该数组
 		let cloneMaterialArray = []; // 将你的要赋值的多个material放入到该数组
@@ -235,15 +355,25 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 			if (o.geometry != null && o.matrix != null) {
 				let matrixWorldGeometry = o.geometry.clone().applyMatrix4(o.matrix.clone());
 				let MaterialMapList = window.bimEngine.MaterialMapList.filter(item => item.path === relativePath)
-				let materialMap = MaterialMapList.length ? MaterialMapList[0].mapList.filter(item => item.glb === path)[
-					0] : null
-				let paramMaterial = materialMap ? window.bimEngine.MaterialList.filter(item => item.Id === materialMap
-					.materialId)[0] : null
+				let materialMapChild = MaterialMapList.length ? MaterialMapList[0].mapList.filter(item => item.glb ===
+					path) : []
 
-				if (materialMap && materialMap.meshId === o.userData.name && paramMaterial && paramMaterial.Param) {
-					setMaterialAttribute(o.material, paramMaterial.Param)
-				} else {
-					o.material.side = THREE.DoubleSide;
+				o.material.side = THREE.DoubleSide;
+				if (materialMapChild.length) {
+					for (const materialMap of materialMapChild) {
+						if (materialMap.materialName === o.material.name) {
+							if(materialMap && materialMap.Param){
+								UpdateMaterialAttribute(o.material, materialMap.Param)
+								o.material.materialMap = {
+									Id: materialMap.materialId,
+									Name: materialMap.Param.name,
+									Img: materialMap.Img,
+									Param: materialMap.Param
+								}
+								break;
+							}
+						}
+					}
 				}
 
 
@@ -270,14 +400,15 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 					MergeName: o.MergeName,
 					EdgeList: [],
 					basePath: basePath,
-					relativePath: relativePath
+					relativePath: relativePath,
+					materialName: o.material.name
 				});
 			}
 		}
 		//加载模型
 		const mergedGeometries = THREE.BufferGeometryUtils.mergeBufferGeometries(geometryArray,
 			true);
-		const singleMergeMesh = new THREE.Mesh(mergedGeometries, materialArray);
+		const singleMergeMesh = new THREE.Mesh(mergedGeometries, materialArray[0]);
 		singleMergeMesh.ElementInfos = ElementInfoArray;
 		singleMergeMesh.cloneMaterialArray = cloneMaterialArray;
 		singleMergeMesh.name = "rootModel";
@@ -289,50 +420,10 @@ export function LoadGLB(Scene, relativePath, basePath, path, option, callback) {
 		Scene.add(singleMergeMesh);
 	}
 
-	//设置材质属性
-	function setMaterialAttribute(material, param) {
-		material.transparent = param.transparent //是否透明
-		material.opacity = param.opacity //透明度
-		material.side = THREE[param.side] //渲染面
-		material.color = new THREE.Color(param.color) //颜色
-		material.emissive = new THREE.Color(param.emissive) //自发光
-		material.emissiveIntensity = param.emissiveIntensity //自发光强度
-
-		material.roughness = param.roughness //粗糙度 
-		material.metalness = param.metalness //金属度 
-		material.normalScale = new THREE.Vector2(param.metalness, param.metalness) //视差 
-		
-		material.map = param.map.url ? new THREE.TextureLoader().load(param.map.url, (texture) => {
-				texture.wrapS = THREE.RepeatWrapping
-				texture.wrapT = THREE.RepeatWrapping
-				//表示在x、y上的重复次数
-				texture.repeat.set(param.map.repeat.u, param.map.repeat.v);
-				//表示在x、y上的偏移
-				texture.offset.set(param.map.offset.u, param.map.offset.v);
-			}) : null, //纹理贴图
-		material.normalMap = param.normalMap.url ? new THREE.TextureLoader().load(param.normalMap.url, (
-			texture) => {
-			texture.wrapS = THREE.RepeatWrapping
-			texture.wrapT = THREE.RepeatWrapping
-			//表示在x、y上的重复次数
-			texture.repeat.set(param.normalMap.repeat.u, param.normalMap.repeat.v);
-			//表示在x、y上的偏移
-			texture.offset.set(param.normalMap.offset.u, param.normalMap.offset.v);
-		}) : null, //法线贴图
-		material.roughnessMap = param.roughnessMap.url ? new THREE.TextureLoader().load(param.roughnessMap.url, (
-			texture) => {
-			texture.wrapS = THREE.RepeatWrapping
-			texture.wrapT = THREE.RepeatWrapping
-			//表示在x、y上的重复次数
-			texture.repeat.set(param.roughnessMap.repeat.u, param.roughnessMap.repeat.v);
-			//表示在x、y上的偏移
-			texture.offset.set(param.roughnessMap.offset.u, param.roughnessMap.offset.v);
-		}) : null //粗糙贴图
-	}
 }
 //合并模型
 export function mergeModel(Scene) {
-	var models = window.bimEngine.scene.children.filter(o => o.name == "rootModel");
+	var models = Scene.children.filter(o => o.name == "rootModel");
 	var meshs = [];
 	for (var model of models) {
 		for (var o of model.meshs) {
@@ -420,11 +511,11 @@ export function LoadGlbJsonList(Scene, relativePath, path = "/file/gis/fl/bim/10
 			loadCompleteSize = loadCompleteSize + 1
 		}
 	})
-
+	let currentIndex = 0;
 	LoadZipJson(path + '/instanceList.zip', res => {
 		let glbList = JSON.parse(res)
 		if (glbList && glbList.length) {
-			let currentIndex = 0;
+
 			let loadsAll = async () => {
 				let getGLB = item => {
 					return new Promise((resolve, reject) => {
@@ -465,54 +556,32 @@ export function LoadGlbJsonList(Scene, relativePath, path = "/file/gis/fl/bim/10
 		//同一个目录下的模型加载完成
 		if (loadCompleteSize == 2) {
 			window.bimEngine.doneModels.push(path);
-			window.bimEngine.loadedDone('glbModelsLoadedNum');
+			window.bimEngine.UpdateLoadStatus('glbModelsLoadedNum', relativePath, path);
 		}
 	}
 
 }
 
-export function LoadModelBeforeStart(path) { //模型加载之前
+export function LoadModelBeforeStart(path) { //模型加载之前-获得材质映射
 	window.bimEngine.MaterialMapList = window.bimEngine.MaterialMapList ? window.bimEngine.MaterialMapList : []
-	window.bimEngine.MaterialList = window.bimEngine.MaterialList ? window.bimEngine.MaterialList : []
 	return new Promise((resolve, reject) => {
 		LoadJSON(path + '/materialMapList.json', result => { //加载模型材质映射列表
-			result && window.bimEngine.MaterialMapList.push(JSON.parse(result))
 			if (result) {
-				LoadJSON(path + '/materialList.json', res => { //加载模型属性列表
-					if (res) {
-						let MaterialList = JSON.parse(res) ? (JSON.parse(res)).map(item => {
-							item.Param = JSON.parse(item.Param)
-							if (item.Param) {
-								if (item.Param.envMap && item.Param.envMap.url) {
-									item.Param.envMap.url = '/materialFile' + item.Param
-										.envMap.url.split('/api/file')[1]
-								}
-								if (item.Param.map && item.Param.map.url) {
-									item.Param.map.url = '/materialFile' + item.Param
-										.map.url.split('/api/file')[1]
-								}
-								if (item.Param.normalMap && item.Param.normalMap.url) {
-									item.Param.normalMap.url = '/materialFile' + item
-										.Param.normalMap.url.split('/api/file')[1]
-								}
-								if (item.Param.roughnessMap && item.Param.roughnessMap
-									.url) {
-									item.Param.roughnessMap.url = '/materialFile' + item
-										.Param.roughnessMap.url.split('/api/file')[1]
-								}
-								if (item.Param.alphaMap && item.Param.alphaMap.url) {
-									item.Param.alphaMap.url = '/materialFile' + item
-										.Param.alphaMap.url.split('/api/file')[1]
-								}
+				let MapList = JSON.parse(result)
+				MapList = MapList.map(item=>{
+					if(item.mapList && item.mapList.length){
+						item.mapList.map(map=>{
+							if(map.Param){
+								map.Param = JSON.parse(map.Param)
 							}
-							return item
-						}) : [];
-						window.bimEngine.MaterialList = [...window.bimEngine.MaterialList, ...
-							MaterialList
-						]
+							return map
+						})
 					}
-					resolve('材质映射列表不为空');
+					return item
 				})
+				window.bimEngine.MaterialMapList = [...window.bimEngine.MaterialMapList, ...MapList]
+				console.log(window.bimEngine.MaterialMapList)
+				resolve('材质映射列表不为空');
 			} else {
 				resolve('材质映射列表为空');
 			}

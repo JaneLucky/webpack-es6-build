@@ -1,6 +1,10 @@
 const THREE = require('@/three/three.js')
-import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
-import { getDeviceType } from "@/utils/device"
+import {
+	SetDeviceStyle
+} from "@/views/tools/style/deviceStyleSet.js"
+import {
+	getDeviceType
+} from "@/utils/device"
 //小地图
 
 //点击瞬移
@@ -8,12 +12,12 @@ import { getDeviceType } from "@/utils/device"
 
 
 export function MinMap(bimEngine) {
-  require('@/views/tools/style/'+SetDeviceStyle()+'/minMap.scss')
+	require('@/views/tools/style/' + SetDeviceStyle() + '/minMap.scss')
 	var _minMap = new Object();
 	_minMap.visible = false;
 	const HEIGHT = (window.innerHeight) * window.devicePixelRatio;
 	//更新位置
-	_minMap.renderUpdata = function() { 
+	_minMap.renderUpdata = function() {
 		if (_minMap.camera == null) return;
 		if (_minMap.visible == false) return;
 		//更新相机的位置
@@ -43,16 +47,20 @@ export function MinMap(bimEngine) {
 		// console.log(bimEngine.scene.camera.rotation.y)
 	}
 	//显示
-	_minMap.show = function() { 
-		initCamera();
-		_minMap.visible = true;
+	_minMap.show = function() {
+		 
+		//判断开关是否开启
+		if (document.getElementById("checkbox_minmap")!=null&&document.getElementById("checkbox_minmap").checked) {
+			_minMap.visible = true;
+			initCamera();
+		}
 		document.getElementById("minimap").addEventListener("pointerdown", function(res) {
 			let sceneCamera = bimEngine.scene.camera;
 			let point = getRayPoint({
 				x: res.offsetX,
 				y: res.offsetY
 			});
-			if(point){
+			if (point) {
 				sceneCamera.position.set(point.x, sceneCamera.position.y, point.z);
 			}
 		})
@@ -67,12 +75,14 @@ export function MinMap(bimEngine) {
 
 	//初始化相机
 	function initCamera() {
+		if (document.getElementById("miniMapRoot") != null) {
+			return;
+		}
 		let domDiv = document.createElement("div");
-
 		//适配移动端
-		if(bimEngine.DeviceType === "Mobile"){
+		if (bimEngine.DeviceType === "Mobile") {
 			domDiv.className = "miniMap-Mobile";
-		}else{
+		} else {
 			domDiv.className = "miniMap";
 		}
 		domDiv.id = "miniMapRoot";
@@ -94,7 +104,7 @@ export function MinMap(bimEngine) {
 		domDiv.appendChild(renderer.domElement)
 
 		let deviceType = getDeviceType()
-		if(deviceType === "PC"){
+		if (deviceType === "PC") {
 			domDiv.addEventListener("pointerdown", _onMouseDown);
 		}
 
@@ -107,13 +117,14 @@ export function MinMap(bimEngine) {
 			var cleft = e.clientX - left;
 			var ctop = e.clientY - top;
 			domDiv.style.cursor = "move";
-			document.addEventListener('pointermove',handelPosition)
-			document.addEventListener('pointerup',()=>{
+			document.addEventListener('pointermove', handelPosition)
+			document.addEventListener('pointerup', () => {
 				domDiv.style.cursor = "auto";
-				document.removeEventListener("pointermove",handelPosition)
+				document.removeEventListener("pointermove", handelPosition)
 
 			})
-			function handelPosition(doc){
+
+			function handelPosition(doc) {
 				//计算出移动后的坐标。
 				var moveLeft = doc.clientX - cleft;
 				var moveTop = doc.clientY - ctop;
@@ -144,7 +155,7 @@ export function MinMap(bimEngine) {
 			return;
 		}
 		//初始化相机，并跳转过去
-		
+
 		if (dom != null) {
 			var width = dom.offsetWidth; //窗口宽度
 			var height = dom.offsetHeight; //窗口高度
@@ -178,7 +189,7 @@ export function MinMap(bimEngine) {
 		const x = (mouseX / _minMap.camera.viewport.z) * 2 - 1;
 		const y = -(mouseY / _minMap.camera.viewport.w) * 2 + 1;
 		const stdVector = new THREE.Vector3(x, y, 0.5);
-		 
+
 		const worldVector = stdVector.unproject(_minMap.camera);
 		// const worldVector = stdVector.unproject(bimEngine.scene.camera);  
 		return worldVector
@@ -200,7 +211,7 @@ export function MinMap(bimEngine) {
 		let intersects = (rayCaster.intersectObjects(bimEngine.GetAllVisibilityModel(), true));
 		if (intersects.length > 0) {
 			return intersects[0].point;
-		}else{
+		} else {
 			return null;
 		}
 	}

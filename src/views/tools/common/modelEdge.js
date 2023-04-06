@@ -40,7 +40,7 @@ export function GetModelEdges() {
             }
             modelsList.push(ele)
           }
-        }else if(rootmodelsAll[i].TypeName == "Mesh"){
+        }else if(rootmodelsAll[i].TypeName == "Mesh" || rootmodelsAll[i].TypeName == "Mesh-Structure"){
           for (let j = 0; j < rootmodelsAll[i].ElementInfos.length; j++) {
             let ele
             if(rootmodelsAll[i].meshs[j].geometry.index){

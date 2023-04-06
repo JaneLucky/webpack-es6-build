@@ -57,7 +57,7 @@ export function EngineRay(clientX, clientY) {
 			// 	A2(i, m)
 			// }
 		}
-		if (child.TypeName == "Mesh") {
+		if (child.TypeName == "Mesh" || child.TypeName == "Mesh-Structure") {
 			for (let k = 0; k < child.ElementInfos.length; k++) {
 				A3(i, k)
 			}
@@ -108,6 +108,7 @@ export function EngineRay(clientX, clientY) {
 		let child = childs[i];
 		let o = child.meshs[j];
 		let _geometry = child.meshs[j].geometry;
+		 
 		var geometry = _geometry.clone();
 		let colorsetHex = color.setHex(Math.random() * 0xffffff);
 		applyVertexColors(geometry, colorsetHex);
@@ -170,27 +171,27 @@ export function EngineRay(clientX, clientY) {
 				//模型高亮显示 
 				let highlightBox = new THREE.Mesh(data.geometry, new THREE.MeshBasicMaterial({
 					color: 0xffff00,
-					transparent : true,
-					opacity : 0
+					transparent: true,
+					opacity: 0
 				}));
 				//创建射线，	
 				highlightBox.TypeName = 'HighlightMesh';
-				highlightBox.Indexs = [data.i,data.j]
+				highlightBox.Indexs = [data.i, data.j]
 				scene.children[5].children[0] = (highlightBox);
 			}
 		}
 	}
 
-	_engineRay.Active = function (){
+	_engineRay.Active = function() {
 		function render() {
 			AnimationFrame = requestAnimationFrame(render);
 			pick();
-			renderer.setRenderTarget(null); 
+			renderer.setRenderTarget(null);
 		}
 		render() //开启动画
 		_engineRay.isActive = true
 	}
-	_engineRay.DisActive = function (){
+	_engineRay.DisActive = function() {
 		cancelAnimationFrame(AnimationFrame) //清除动画
 		_engineRay.isActive = false
 	}

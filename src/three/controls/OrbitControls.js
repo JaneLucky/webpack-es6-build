@@ -875,6 +875,7 @@ THREE.OrbitControls = function(object, domElement) {
 
 	function handleTouchMoveDollyRotate(event) {
 
+
 		if (scope.enableZoom) handleTouchMoveDolly(event);
 
 		if (scope.enableRotate) handleTouchMoveRotate(event);
@@ -893,8 +894,7 @@ THREE.OrbitControls = function(object, domElement) {
 
 	function onPointerDown(event) {
 
-		if (scope.enabled === false) return;
-
+		if (scope.enabled === false) return; 
 		switch (event.pointerType) {
 
 			case 'mouse':
@@ -948,21 +948,21 @@ THREE.OrbitControls = function(object, domElement) {
 
 		// 旋转中心为源点时，设置鼠标点下去打到的第一个元素的位置为源点
 		if (scope.showOriginIcon) {
-			if (window.bimEngine && (!window.bimEngine.CurrentSelect || (window.bimEngine.CurrentSelect && !window
-					.bimEngine.CurrentSelect.dbid))) {
-				// scope.origin = new THREE.Vector3(0, 0, 0);
-				let rayCaster = new THREE.Raycaster();
-				let mouse = new THREE.Vector2();
-				mouse.x = ((event.clientX - window.bimEngine.scene.camera.viewport.x) / window.bimEngine.scene
-					.camera.viewport.z) * 2 - 1;
-				mouse.y = -((event.clientY - window.bimEngine.scene.camera.viewport.y) / window.bimEngine.scene
-					.camera.viewport.w) * 2 + 1;
-				rayCaster.setFromCamera(mouse, window.bimEngine.scene.camera);
-				let intersects = (rayCaster.intersectObjects(window.bimEngine.GetAllVisibilityModel(), true));
-				if (intersects.length > 0) {
-					scope.origin = intersects[0].point
-				}
-			}
+			// if (window.bimEngine && (!window.bimEngine.CurrentSelect || (window.bimEngine.CurrentSelect && !window
+			// 		.bimEngine.CurrentSelect.dbid))) {
+			// 	// scope.origin = new THREE.Vector3(0, 0, 0);
+			// 	let rayCaster = new THREE.Raycaster();
+			// 	let mouse = new THREE.Vector2();
+			// 	mouse.x = ((event.clientX - window.bimEngine.scene.camera.viewport.x) / window.bimEngine.scene
+			// 		.camera.viewport.z) * 2 - 1;
+			// 	mouse.y = -((event.clientY - window.bimEngine.scene.camera.viewport.y) / window.bimEngine.scene
+			// 		.camera.viewport.w) * 2 + 1;
+			// 	rayCaster.setFromCamera(mouse, window.bimEngine.scene.camera);
+			// 	let intersects = (rayCaster.intersectObjects(window.bimEngine.GetAllVisibilityModel(), true));
+			// 	if (intersects.length > 0) {
+			// 		scope.origin = intersects[0].point
+			// 	}
+			// }
 			scope.originPosition = worldPointToScreenPoint(scope.origin.clone(), window.bimEngine.scene.camera)
 		}
 
@@ -1151,6 +1151,7 @@ THREE.OrbitControls = function(object, domElement) {
 			icon.style.position = "absolute"
 			icon.style.width = "30px"
 			icon.style.height = "30px"
+			icon.style.pointerEvents = "none";
 			scope.domElement.parentElement.appendChild(icon)
 		}
 		return icon

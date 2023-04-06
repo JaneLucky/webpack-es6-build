@@ -11,6 +11,7 @@ import {
 import {
 	worldPointToScreenPoint
 } from "@/views/tools/common/index.js"
+import { IncludeElement } from "@/views/tools/initialize/InitEvents.js" //监听函数
 import {
 	SetDeviceStyle
 } from "@/views/tools/style/deviceStyleSet.js"
@@ -114,30 +115,23 @@ export function CaptureMark(bimengine) {
 		//这里为什么是-号，没有就无法点中
 		rayCaster.setFromCamera(mouse, bimengine.scene.camera);
 		let intersects = rayCaster.intersectObjects(_captureMark.models, true);
-		// let intersects = rayCaster.intersectObjects([bimengine.scene.children[5]], true);
-		// let intersects = rayCaster.intersectObject(bimengine.scene.children[5], true);
-
-		// let intersects = [] 
+		
 		if (intersects.length) {
 			let intersect = intersects[0]
 			if (intersect.object.TypeName == "HighlightMesh") {
-				var clickObj = bimengine.scene.children[intersect.object.Indexs[0]];
-				var clickInfo = clickObj.ElementInfos[intersect.object.Indexs[1]];
-				if (clickInfo != null && (clickObj.hideElements == null || !clickObj.hideElements
-						.includes(clickInfo.dbid))) { 
-					let EdgeList = clickInfo.EdgeList
+				var mainInstance = bimengine.scene.children[intersect.object.Indexs[0]];
+				var clickObj = mainInstance.ElementInfos[intersect.object.Indexs[1]];
+				if (clickObj && mainInstance.geometry.groups[clickObj.dbid].visibility !== false) {
+					let EdgeList = clickObj.EdgeList
 					PINK_DETAILS = getPinkType(bimengine.scene, intersect, EdgeList, intersect.face.normal.clone());
 				}
-			} else if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "PipeMesh") {
-				var clickObj = IncludeElement(intersect.object.ElementInfos, intersect
-					.point); //选中的构建位置信息
-				if (clickObj != null && (intersect.object.hideElements == null || !intersect.object.hideElements
-						.includes(clickObj.dbid))) {
+			} else if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "Mesh-Structure" || intersect.object.TypeName == "PipeMesh") {
+				var clickObj = IncludeElement(intersect.object, intersect.point); //选中的构建位置信息
+				if (clickObj && intersect.object.geometry.groups[clickObj.dbid].visibility !== false) {
 					let EdgeList = intersect.object.ElementInfos[clickObj.dbid].EdgeList
 					PINK_DETAILS = getPinkType(bimengine.scene, intersect, EdgeList, intersect.face.normal.clone())
 				}
-			} else if (intersects[0].object.TypeName == "InstancedMesh" || intersects[0].object.TypeName ==
-				"InstancedMesh-Pipe") {
+			} else if (intersect.object.TypeName == "InstancedMesh" || intersect.object.TypeName == "InstancedMesh-Pipe") {
 				let EdgeList = intersect.object.ElementInfos[intersect.instanceId].EdgeList
 				
 				let matrixArray = intersect.object.instanceMatrix.array.slice(intersect.instanceId * 16, (intersect.instanceId + 1) * 16);
@@ -153,8 +147,8 @@ export function CaptureMark(bimengine) {
 				PINK_DETAILS = getPinkType(bimengine.scene, intersect, EdgeList, trueNormal)
 			}
 			let position = {
-				worldPoint: intersects[0].point.clone(), //世界坐标
-				screenPoint: worldPointToScreenPoint(intersects[0].point.clone(), bimengine.scene
+				worldPoint: intersect.point.clone(), //世界坐标
+				screenPoint: worldPointToScreenPoint(intersect.point.clone(), bimengine.scene
 					.camera), //世界坐标转为屏幕坐标
 				capture: PINK_DETAILS
 			}
@@ -379,36 +373,6 @@ export function CaptureMark(bimengine) {
 			_container.appendChild(root);
 		}
 		return root
-	}
-
-	//包含关系
-	function IncludeElement(elements, point) {
-		if (elements == null || elements.length == 0) {
-			return null;
-		}
-		var eles = elements.filter(o => boxInclude(o.min, o.max, point));
-		//再判断间距最小 
-		if (eles.length == 0) {
-			return null;
-		}
-		//找到距离点击位置最近的box
-		eles.sort(function(a, b) {
-			return a.center.distanceTo(point) - b.center.distanceTo(point);
-		});
-		return eles[0]
-	}
-
-	function boxInclude(min, max, point) {
-
-		if (point.x >= min.x - 0.001 && point.y >= min.y - 0.001 && point.z >= min.z - 0.001 && point
-			.x <=
-			max
-			.x + 0.001 && point.y <= max.y + 0.001 &&
-			point.z <= max.z + 0.001) {
-			return true;
-		} else {
-			return false;
-		}
 	}
 
 	return _captureMark;

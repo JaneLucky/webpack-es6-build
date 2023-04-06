@@ -239,7 +239,7 @@ export function ViewCube(scene, domid) {
 
 
 		_ViewCube.animateCamera(_ViewCube.scene.camera.position, position, _ViewCube.scene.controls.target
-			.clone(), target)
+			.clone(), target, _ViewCube.scene.camera.quaternion, quaternion)
 	}
 	//相机回归正位
 	_ViewCube.cameraGoHome = function() {
@@ -259,26 +259,63 @@ export function ViewCube(scene, domid) {
 	// target1 相机的目标位置
 	// current2 当前的controls的target
 	// target2 新的controls的target
-	_ViewCube.animateCamera = function(current1, target1, current2, target2) {
-		var tween = new TWEEN.Tween({
-			x1: current1.x, // 相机当前位置x
-			y1: current1.y, // 相机当前位置y
-			z1: current1.z, // 相机当前位置z
-			x2: current2.x, // 控制当前的中心点x
-			y2: current2.y, // 控制当前的中心点y
-			z2: current2.z // 控制当前的中心点z
-		});
-		tween.to({
-			x1: target1.x, // 新的相机位置x
-			y1: target1.y, // 新的相机位置y
-			z1: target1.z, // 新的相机位置z
-			x2: target2.x, // 新的控制中心点位置x
-			y2: target2.y, // 新的控制中心点位置x
-			z2: target2.z // 新的控制中心点位置x
-		}, 1000);
-		
+	// current3 相机当前quaternion
+	// target3 相机的目标quaternion
+	_ViewCube.animateCamera = function(current1, target1, current2, target2, current3, target3) {
+		var tween
+		if(current3 && target3){
+			tween = new TWEEN.Tween({
+				x1: current1.x, // 相机当前位置x
+				y1: current1.y, // 相机当前位置y
+				z1: current1.z, // 相机当前位置z
+				x2: current2.x, // 控制当前的中心点x
+				y2: current2.y, // 控制当前的中心点y
+				z2: current2.z, // 控制当前的中心点z
+				_x: current3._x, // 相机当前quaternion
+				_y: current3._y, // 相机当前quaternion
+				_z: current3._z, // 相机当前quaternion
+				_w: current3._w // 相机当前quaternion
+			});
+			tween.to({
+				x1: target1.x, // 新的相机位置x
+				y1: target1.y, // 新的相机位置y
+				z1: target1.z, // 新的相机位置z
+				x2: target2.x, // 新的控制中心点位置x
+				y2: target2.y, // 新的控制中心点位置x
+				z2: target2.z, // 新的控制中心点位置x
+				_x: target3._x, // 新的相机quaternion
+				_y: target3._y, // 新的相机quaternion
+				_z: target3._z, // 新的相机quaternion
+				_w: target3._w // 新的相机quaternion
+			}, 1000);
+
+		}else{
+			tween = new TWEEN.Tween({
+				x1: current1.x, // 相机当前位置x
+				y1: current1.y, // 相机当前位置y
+				z1: current1.z, // 相机当前位置z
+				x2: current2.x, // 控制当前的中心点x
+				y2: current2.y, // 控制当前的中心点y
+				z2: current2.z, // 控制当前的中心点z
+			});
+			tween.to({
+				x1: target1.x, // 新的相机位置x
+				y1: target1.y, // 新的相机位置y
+				z1: target1.z, // 新的相机位置z
+				x2: target2.x, // 新的控制中心点位置x
+				y2: target2.y, // 新的控制中心点位置x
+				z2: target2.z, // 新的控制中心点位置x
+			}, 1000);
+		}
 		tween.onUpdate(function(res) {
-			_ViewCube.scene.controls.auto = true;
+			if(current3 && target3){
+				_ViewCube.scene.camera.quaternion._x = res._x
+				_ViewCube.scene.camera.quaternion._y = res._y
+				_ViewCube.scene.camera.quaternion._z = res._z
+				_ViewCube.scene.camera.quaternion._w = res._w
+			}else{
+				_ViewCube.scene.controls.auto = true;
+			}
 			_ViewCube.scene.camera.position.x = res.x1;
 			_ViewCube.scene.camera.position.y = res.y1;
 			_ViewCube.scene.camera.position.z = res.z1;

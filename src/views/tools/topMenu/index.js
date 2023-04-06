@@ -2,7 +2,6 @@ import {
 	CreateSvg
 } from "@/views/tools/common/index.js"
 import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
-// import { Message } from 'element-ui'
 import { getDeviceType } from "@/utils/device"
 
 export function CreateTopMenu(bimengine){
@@ -464,11 +463,7 @@ export function CreateTopMenu(bimengine){
   // 设置互斥操做
   function closeOtherActive(){
     if(sessionStorage.getItem("RootMenuSelect") === "视点"){
-      // Message({
-      //   message: "请先关闭右侧视点列表！",
-      //   type: "warning",
-      //   duration: 2000
-      // })
+      window.DataWatcher.MenuName = "视点"
       return true
     }
     return false

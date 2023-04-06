@@ -2,6 +2,7 @@ const THREE = require('@/three/three.js')
 import {
 	worldPointToScreenPoint
 } from "@/views/tools/common/index.js"
+import { IncludeElement } from "@/views/tools/initialize/InitEvents.js" //监听函数
 import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
 export function distanceMeasure(bimengine) {
   require('@/views/tools/style/'+SetDeviceStyle()+'/measuresStyle.scss')
@@ -74,16 +75,19 @@ export function distanceMeasure(bimengine) {
 			if (Position) {
 				let point = new THREE.Vector3(Position.worldPoint.x, Position.worldPoint.y, Position.worldPoint.z)
 				let normal = new THREE.Vector3(Position.capture.faceNormal.x, Position.capture.faceNormal.y, Position.capture.faceNormal.z);
-				console.log(normal)
 				let results = rayDirectResult(point, normal);
+				let temDom = document.getElementById('temp')
 				if (results != null) {
-					var result = results[0];
+					temDom && (temDom.style.display = "block")
 					_distanceMeasure.currentMeasure = {
 						start: point,
-						end: result.point,
-						dis: point.distanceTo(result.point),
+						end: results.point,
+						dis: point.distanceTo(results.point),
 						id: "temp"
 					};
+				}else{
+					temDom && (temDom.style.display = "none")
+					_distanceMeasure.currentMeasure = null
 				}
 			}
 
@@ -159,7 +163,20 @@ export function distanceMeasure(bimengine) {
 		var ray = new THREE.Raycaster(start.clone().add(normal.clone().multiplyScalar(0.01)), normal.clone());
 		var intersects = ray.intersectObjects(_distanceMeasure.models, true);
 		if (intersects.length > 0) {
-			return intersects;
+			let bkIntersect = null
+			for (let intersect of intersects) {
+				if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "Mesh-Structure" || intersect.object.TypeName == "PipeMesh") {
+					var clickObj = IncludeElement(intersect.object, intersect.point); //选中的构建位置信息
+					if(clickObj && intersect.object.geometry.groups[clickObj.dbid].visibility !== false){
+						bkIntersect = intersect
+						break;
+					}
+				}else{
+					bkIntersect = intersect
+					break
+				}
+			}
+			return bkIntersect;
 		} else {
 			return null;
 		}
@@ -391,5 +408,6 @@ export function distanceMeasure(bimengine) {
 			return v.toString(16);
 		});
 	}
+	
 	return _distanceMeasure;
 }

@@ -105,7 +105,7 @@ export function Render(bimengine) {
 	_render.DisplayEdge = function(enable) {
 		if(enable){
 			let material = new THREE.LineBasicMaterial({
-				color: '#000000',
+				color: '#999999',
 			})
 			let EdgeList = bimengine.AllEdgeList
 			for (const Edge of EdgeList) {

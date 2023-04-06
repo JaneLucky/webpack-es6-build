@@ -264,36 +264,17 @@ export function HandleModelSelect(list, keyList) {
 export function getModelInfoClick(select) {
 	let rootmodels = window.bimEngine.scene.children;
 	let selectModelList = [];
-	//清除上次模型树-选中样式
-	if (select && select.name) {
-		if (select.TypeName === "InstancedMesh" || select.TypeName === "InstancedMesh-Pipe") {
-			let rootmodel = rootmodels[select.indexs[0]]
-			let currentModel = {
-				material: null,
-				meshMaterial: null,
-				cloneMaterial: null,
-				modelType: null
-			}
-			currentModel.meshMaterial = rootmodel.material
-			currentModel.cloneMaterial = rootmodel.cloneMaterialArray
-			currentModel.modelType = "InstancedMesh"
-			selectModelList.push(currentModel)
-		} else if (select.TypeName === "Mesh" || select.TypeName === "PipeMesh") {
-			let rootmodel = rootmodels[select.indexs[0]]
-			let currentModel = {
-				material: null,
-				meshMaterial: null,
-				cloneMaterial: null,
-				modelType: null
-			}
-			currentModel.material = rootmodel.material[select.indexs[1]]
-			currentModel.meshMaterial = rootmodel.meshs[select.indexs[1]].material
-			currentModel.cloneMaterial = rootmodel.cloneMaterialArray[select.indexs[1]] //改变当前选中的构建
-			currentModel.cloneMaterialArray = rootmodel.cloneMaterialArray //改变当前选中的构建,
-			currentModel.modelType = "Mesh"
-			selectModelList.push(currentModel)
-		}
+	let rootmodel = rootmodels[select.indexs[0]]
+	let currentModel = {
+		meshMaterial: null,
+		cloneMaterial: null,
+		modelType: null,
+		indexs:select.indexs
 	}
+	currentModel.meshMaterial = rootmodel.material
+	currentModel.cloneMaterial = rootmodel.cloneMaterialArray
+	currentModel.modelType = select.TypeName
+	selectModelList.push(currentModel)
 	return selectModelList
 }
 
@@ -312,9 +293,71 @@ export function HandleRequestModelSelect_(list, visible) {
 			//普通模型
 			model.geometry.groups[list[i][1]].visibility = visible;
 			handleHighlightModels(list[i], visible);
-			if(visible==true){
+			if (visible == true) {
 				model.visible = true;
+				if (model.geometry.index != null) {
+					var arrays = model.geometry.index.array;
+					var start = model.geometry.groups[list[i][1]].start;
+					var end = start + model.geometry.groups[list[i][1]].count;
+					if (model.geometry.hides == null) {
+						model.geometry.hides = [];
+					}
+					for (var ar = start; ar < end; ar++) {
+						if(model.geometry.hides[ar]!=null) {
+							arrays[ar] = model.geometry.hides[ar];
+						} 
+					}
+					model.geometry.index.needsUpdate = true;
+					model.geometry.index.needsUpdate = false;
+				} else {
+					var arrays = model.geometry.attributes.position.array;
+					var start = model.geometry.groups[list[i][1]].start * 3;
+					var end = start + model.geometry.groups[list[i][1]].count * 3;
+					if (model.geometry.hides == null) {
+						model.geometry.hides = [];
+					}
+					for (var ar = start; ar < end; ar++) {
+						if (arrays[ar] == 0) {
+							arrays[ar] = model.geometry.hides[ar];
+						}
+					}
+					model.geometry.attributes.position.needsUpdate = true;
+					model.geometry.attributes.position.needsUpdate = false;
+				}
+			} else {
+				if (model.geometry.index != null) {
+					var arrays = model.geometry.index.array;
+					var start = model.geometry.groups[list[i][1]].start;
+					var end = start + model.geometry.groups[list[i][1]].count;
+					if (model.geometry.hides == null) {
+						model.geometry.hides = [];
+					}
+					for (var ar = start; ar < end; ar++) { 
+						if(arrays[ar]!=-1){
+							model.geometry.hides[ar] = arrays[ar];
+							arrays[ar] = -1;
+						} 
+					} 
+					model.geometry.index.needsUpdate = true;
+					model.geometry.index.needsUpdate = false;
+				} else {
+					var arrays = model.geometry.attributes.position.array;
+					var start = model.geometry.groups[list[i][1]].start * 3;
+					var end = start + model.geometry.groups[list[i][1]].count * 3;
+					if (model.geometry.hides == null) {
+						model.geometry.hides = [];
+					}
+					for (var ar = start; ar < end; ar++) {
+						if (arrays[ar] != 0) {
+							model.geometry.hides[ar] = arrays[ar];
+							arrays[ar] = 0;
+						}
+					}
+					model.geometry.attributes.position.needsUpdate = true;
+					model.geometry.attributes.position.needsUpdate = false;
+				}
 			}
+
 		} else if (model.instanceMatrix != null) {
 			if (visible == true) {
 				//显示
@@ -324,6 +367,7 @@ export function HandleRequestModelSelect_(list, visible) {
 				matrix.elements = matrixArray;
 				model.setMatrixAt(list[i][1], matrix);
 				model.instanceMatrix.needsUpdate = true;
+				model.instanceMatrix.needsUpdate = false;
 				model.visible = true;
 			} else {
 				//隐藏 
@@ -331,40 +375,43 @@ export function HandleRequestModelSelect_(list, visible) {
 				matrix = matrix.clone().makeScale(0, 0, 0);
 				model.setMatrixAt(list[i][1], matrix);
 				model.instanceMatrix.needsUpdate = true;
+				model.instanceMatrix.needsUpdate = false;
 			}
 			handleHighlightModels(list[i], visible)
 		}
 	}
 	handleEdgeModels(list, visible)
-	
+
 	// 处理边线的得模型显隐
 	function handleEdgeModels(list, visible) {
 		// debugger
 		let ModelEdgesList = window.bimEngine.scene.children.filter(o => o.name == "ModelEdges" && o.visible);
-		if(ModelEdgesList && ModelEdgesList.length){
+		if (ModelEdgesList && ModelEdgesList.length) {
 			let groupList = []
-			for(let k=0;k<list.length;k++){
-				let index = groupList.findIndex(item=>item.index === list[k][0])
-				if(index < 0){
+			for (let k = 0; k < list.length; k++) {
+				let index = groupList.findIndex(item => item.index === list[k][0])
+				if (index < 0) {
 					let group = {
 						index: list[k][0],
 						children: [list[k][1]]
 					}
 					groupList.push(group)
-				}else{
+				} else {
 					groupList[index].children.push(list[k][1])
 				}
 			}
 			for (let i = 0; i < groupList.length; i++) {
-				let ModelEdge = ModelEdgesList.filter(item=>item.indexO == groupList[i].index)[0]
-				if(ModelEdge){
+				let ModelEdge = ModelEdgesList.filter(item => item.indexO == groupList[i].index)[0]
+				if (ModelEdge) {
 					let ModelEdgesChild = ModelEdge.ElementInfos.children
-					if(ModelEdgesChild && ModelEdgesChild.length){
+					if (ModelEdgesChild && ModelEdgesChild.length) {
 						let positions = Array.from(ModelEdge.geometry.getAttribute('position').array)
 						for (let j = 0; j < groupList[i].children.length; j++) {
-							let Edge = ModelEdge.ElementInfos.children.filter(item=>item.index == groupList[i].children[j])[0]
-							let addPos = visible?Edge.EdgeList:new Array(Edge.EdgeList.length).fill(0)
-							Array.prototype.splice.apply(positions, [Edge.startIndex, Edge.EdgeList.length].concat(addPos));
+							let Edge = ModelEdge.ElementInfos.children.filter(item => item.index == groupList[i]
+								.children[j])[0]
+							let addPos = visible ? Edge.EdgeList : new Array(Edge.EdgeList.length).fill(0)
+							Array.prototype.splice.apply(positions, [Edge.startIndex, Edge.EdgeList.length].concat(
+								addPos));
 						}
 						ModelEdge.geometry.setAttribute(
 							'position',
@@ -373,7 +420,7 @@ export function HandleRequestModelSelect_(list, visible) {
 
 					}
 				}
-				
+
 			}
 		}
 	}
@@ -388,7 +435,7 @@ export function HandleRequestModelSelect_(list, visible) {
 				}
 			}
 		}
-		
+
 	}
 	window.bimEngine.RenderUpdata();
 }
@@ -454,7 +501,7 @@ export function HandleHighlightModelSelect_(list, highlight) {
 					mesh.position.set(positionX, positionY, positionZ);
 					// line.position.set(positionX, positionY, positionZ);
 				}
-				mesh.material.clippingPlanes =  model.material[list[i][1]].clippingPlanes
+				mesh.material.clippingPlanes = model.material.clippingPlanes
 				group.add(mesh);
 				HighLightGroup.add(group)
 			} else {

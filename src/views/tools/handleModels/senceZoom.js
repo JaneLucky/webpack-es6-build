@@ -42,7 +42,7 @@ export function SenceZoom(scene) {
   function handlerShowHide(list) {
     console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
     //监听相机移动-模型显隐处理
-    let rootmodels = scene.children.filter(o => o.name == "rootModel" && o.type == "Mesh")
+    let rootmodels = scene.children.filter(o => o.name == "rootModel" && (o.type == "Mesh" || o.type == "Mesh-Structure"))
     for (let rootmodel of rootmodels) {
       for (let i=0;i<rootmodel.meshs.length;i++) {
         let model = rootmodel.ElementInfos[i]

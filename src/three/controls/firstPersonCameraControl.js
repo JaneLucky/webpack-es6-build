@@ -39,7 +39,7 @@ export class FirstPersonCameraControl {
 		this.bindonKeyUp = this.onKeyUp.bind(this);
 		this.bindMousewheel = this.onMousewheel.bind(this);
 		this.moveWheelRun = true;
-    this.moveWheelStop = false;
+        this.moveWheelStop = false;
 		this.wheelClock;
 	}
 
@@ -167,7 +167,7 @@ export class FirstPersonCameraControl {
 		this.camera.quaternion.setFromEuler(this._euler);
 		this._prevMouseX = event.screenX;
 		this._prevMouseY = event.screenY;
-		 
+		window.bimEngine.movefirst = true;
 		var myEvent = new CustomEvent('bimengine:camerachange', {
 			detail: ""
 		});
@@ -175,6 +175,7 @@ export class FirstPersonCameraControl {
 	}
 
 	onMouseUp(event) {
+		window.bimEngine.movefirst = false;
 		this.domElement.removeEventListener("pointermove", this.bindmousemove);
 	}
 
@@ -182,6 +183,7 @@ export class FirstPersonCameraControl {
 		var myEvent = new CustomEvent('bimengine:camerachange', {
 			detail: ""
 		});
+	    window.bimEngine.movefirst = true;
 		window.dispatchEvent(myEvent);  
 		switch (event.keyCode) {
 			
@@ -225,6 +227,7 @@ export class FirstPersonCameraControl {
 	}
 
 	onKeyUp(event) {
+		window.bimEngine.movefirst = false;
 		switch (event.keyCode) {
 			case 38: // up
 
@@ -282,7 +285,7 @@ export class FirstPersonCameraControl {
 		this.collisionTest();
 	}
 
-	gravityTest() {
+	gravityTest() { 
 		if (this.applyGravity) {
 			let isFalling = true;
 			this._fallingTime += 0.01;
@@ -326,6 +329,7 @@ export class FirstPersonCameraControl {
 	}
 
 	collisionTestX() {
+		window.bimEngine.movefirst=true; 
 		this._tmpVector.setFromMatrixColumn(this.camera.matrix, 0);
 		this._tmpVector.multiplyScalar(this._camerLocalDirection.x);
 		if (this.applyCollision) {
@@ -339,6 +343,7 @@ export class FirstPersonCameraControl {
 	}
 
 	collisionTestZ() {
+		window.bimEngine.movefirst=true; 
 		this._tmpVector.setFromMatrixColumn(this.camera.matrix, 0);
 		this._tmpVector.crossVectors(this.camera.up, this._tmpVector);
 		this._tmpVector.multiplyScalar(this._camerLocalDirection.z);
@@ -352,6 +357,7 @@ export class FirstPersonCameraControl {
 		this.camera.position.addScaledVector(this._tmpVector, this.moveSpeed);
 	}
 	collisionTestY() {
+		window.bimEngine.movefirst=true; 
 		this._tmpVector.setFromMatrixColumn(this.camera.matrix, 0);
 		this._tmpVector = new THREE.Vector3(0, 1, 0);
 		this._tmpVector.multiplyScalar(this._camerLocalDirection.y);

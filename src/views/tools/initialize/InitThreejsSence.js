@@ -19,17 +19,17 @@ export function InitLight(scene){
 	// let hemisphereLight = new THREE.HemisphereLight( 0.3);
 	// hemisphereLight.position.set(0, 500, 0);
 	// scene.add(hemisphereLight);
-  var point = new THREE.PointLight(0xffffff,0.3);
-  point.position.set(0, 200, 0); //点光源位置
+  var point = new THREE.PointLight(0xffffff,0.5);
+  point.position.set(200, 200, 200); //点光源位置
   // point.castShadow = true;
   scene.add(point); //点光源添加到场景中
   
-  var point1 = new THREE.PointLight(0xffffff,0.3);
-  point1.position.set(0, -200, 0); //点光源位置
+  var point1 = new THREE.PointLight(0xffffff,0.5);
+  point1.position.set(-200, -200, -200); //点光源位置
   // point1.castShadow = true;
   scene.add(point1); //点光源添加到场景中
   //环境光
-  var ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+  var ambientLight = new THREE.AmbientLight(0xffffff, 0.63);
   scene.add(ambientLight);
   scene.ambientLight = ambientLight
   // return point

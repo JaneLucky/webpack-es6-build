@@ -5,6 +5,7 @@ import {
 import {
 	worldPointToScreenPoint
 } from "@/views/tools/common/index.js"
+import { IncludeElement } from "@/views/tools/initialize/InitEvents.js" //监听函数
 //基础测量
 export function simpleMeasure(bimengine) {
 	require('@/views/tools/style/' + SetDeviceStyle() + '/measuresStyle.scss')
@@ -123,15 +124,27 @@ export function simpleMeasure(bimengine) {
 				.start_normal.clone().multiplyScalar(0.01)), _simpleMeasure.currentMeasure.start_normal);
 			var intersects = ray.intersectObjects(_simpleMeasure.models);
 			if (intersects.length > 0) {
-				//判断如果投影点比较近
-				var point = intersects[0].point;
-				const dis = point.distanceTo(intersect);
-				if (dis < 0.1) {
-					let position = worldPointToScreenPoint(new THREE.Vector3(point.x, point.y, point.z), camera);
-					MeasurePink_ChuiDian.style.top = (position.y) + "px";
-					MeasurePink_ChuiDian.style.left = (position.x) + "px";
-					MeasurePink_ChuiDian.style.display = "block";
-					return point;
+				let point = null
+				let intersect = intersects[0]
+				if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "Mesh-Structure" || intersect.object.TypeName == "PipeMesh") {
+					var clickObj = IncludeElement(intersect.object, intersect.point); //选中的构建位置信息
+					if(clickObj && intersect.object.geometry.groups[clickObj.dbid].visibility !== false){
+						point = intersect.point
+					}
+				}else{
+					point = intersect.point
+				}
+				if(point){
+					//判断如果投影点比较近
+					// var point = intersects[0].point;
+					const dis = point.distanceTo(intersect);
+					if (dis < 0.1) {
+						let position = worldPointToScreenPoint(new THREE.Vector3(point.x, point.y, point.z), camera);
+						MeasurePink_ChuiDian.style.top = (position.y) + "px";
+						MeasurePink_ChuiDian.style.left = (position.x) + "px";
+						MeasurePink_ChuiDian.style.display = "block";
+						return point;
+					}
 				}
 			}
 			return null;

@@ -1,10 +1,11 @@
+.PCView-page-container{
 #MeasurePoint{//测量坐标点的样式
 	position: absolute;
 	top: 0;
 	left: 0;
 	pointer-events: auto;
 	.PointItem{
-		transform: translate(-50%,-50%);
+		transform: translate(-50%,-50%) !important;
 		position: absolute;
 		z-index: 2;
 		.ItemContain{
@@ -88,16 +89,32 @@
 	}
 }
 
-#MeasureLine{//测量距离的样式
+#MeasureLine, #MeasureDistance, #MeasureHeight{//测量距离的样式
 	position: absolute;
 	top: 0;
 	left: 0;
 	pointer-events: auto;
+	.PointMark{
+		transform: translate(-50%,-50%) !important;
+		position: absolute;
+		top: 500px;
+		left: 500px;
+		z-index: 2;
+		background: #009bff;
+		width: 10px;
+		height: 10px;
+		border-radius: 100%;
+		box-sizing: border-box;
+		border: 3px solid #ffffff;
+		display: none;
+	}
 	.LineItem {
 		position: absolute;
 		z-index: 2;
 		.dom_start,.dom_end,.dom_line,.dom_text {
 			position: absolute;
+			box-sizing: border-box;
+			transform:translate(-50%,-50%);
 			pointer-events: none;
 		}
 		
@@ -107,22 +124,21 @@
 		}
 		.dom_text
 		 {
+			width: max-content;
+			height: max-content;
+			box-sizing: border-box;
 			color: white;
 			background: dodgerblue;
-			height: 24px;
-			width: 100px;
+			padding: 0 10px;
 			border-radius: 8px;
-			margin-left: -50px;
-			margin-top: -10px;
 			text-align: center;
 			box-shadow: 0px 1px 3px 1px rgb(0 0 0 / 25%);
 			z-index: 3;
 			cursor:pointer;
-			border-width: 2px;
+			border-width: 3px;
 			border-style: solid;
 			border-color: transparent;
 			box-sizing: border-box;
-			line-height: 24px;
 		}
 		.dom_text :hover{
 			box-shadow: 1px 2px 6px 2px rgb(0 0 0 / 80%);
@@ -130,19 +146,16 @@
 		 
 		.BoxControllerUI {
 			display: inline-block;
-			position: absolute;
-			width: 7px;
-			height: 7px;
-			left: -5px;
-			top: -5px;
+			width: 12px;
+			height: 12px;
+			box-sizing: border-box;
 			background-color: #009bff;
 			border-style: solid;
-			border-width: 2px;
+			border-width: 3px;
 			border-color: transparent;
 			border-radius: 100px;
 			box-shadow: 0 2px 5px 0 #182a3d;
 			z-index: 2;
-			margin: -4.5px;
 		}
 	}
 	.LineFinal{
@@ -162,7 +175,7 @@
 	}
 }
 
-#MeasureChuiDianPink{
+#MeasureChuiDianPink{//捕捉垂点样式
 	position: absolute;
 	width: 10px;
 	height: 10px;
@@ -187,13 +200,13 @@
 	border-color: rgb(0, 255, 0);
 	display: none;
 	pointer-events: none;
-	transform: translate(-50%,-50%);
+	transform: translate(-50%,-50%) !important;
 	transform-origin: center center;
 	background: rgba($color: rgb(0, 255, 0), $alpha: 0.2)
 }
 
 
-#HeightMeasuePanel{
+#HeightMeasuePanel{// 测量标高选择框样式
 	position: absolute;
 	top: 10px;
 	left: 10px;
@@ -210,183 +223,6 @@
 			.label_txt{
 				padding-left: 5px
 			}
-		}
-	}
-}
-
-
-#MeasureDistance{
-	position: absolute;
-	top: 0;
-	left: 0;
-	pointer-events: auto;
-	.PointMark{
-		transform: translate(-50%,-50%);
-		position: absolute;
-		top: 500px;
-		left: 500px;
-		z-index: 2;
-		background: #009bff;
-		width: 10px;
-		height: 10px;
-		border-radius: 100%;
-		box-sizing: border-box;
-		border: 3px solid #ffffff;
-		display: none;
-	}
-	.LineItem {
-		position: absolute;
-		z-index: 2;
-		.dom_start,.dom_end,.dom_line,.dom_text {
-			position: absolute;
-			pointer-events: none;
-		}
-		
-		.dom_line {
-			background: dodgerblue;
-			height: 4px;
-		}
-		.dom_text
-		 {
-			color: white;
-			background: dodgerblue;
-			height: 24px;
-			width: 100px;
-			border-radius: 8px;
-			margin-left: -50px;
-			margin-top: -10px;
-			text-align: center;
-			box-shadow: 0px 1px 3px 1px rgb(0 0 0 / 25%);
-			z-index: 3;
-			cursor:pointer;
-			border-width: 2px;
-			border-style: solid;
-			border-color: transparent;
-			box-sizing: border-box;
-			line-height: 24px;
-		}
-		.dom_text :hover{
-			box-shadow: 1px 2px 6px 2px rgb(0 0 0 / 80%);
-		}
-		 
-		.BoxControllerUI {
-			display: inline-block;
-			position: absolute;
-			width: 7px;
-			height: 7px;
-			left: -5px;
-			top: -5px;
-			background-color: #009bff;
-			border-style: solid;
-			border-width: 2px;
-			border-color: transparent;
-			border-radius: 100px;
-			box-shadow: 0 2px 5px 0 #182a3d;
-			z-index: 2;
-			margin: -4.5px;
-		}
-	}
-	.LineFinal{
-		.dom_start,.dom_end,.dom_line,.dom_text {
-			pointer-events: auto !important;
-		}
-	}
-	.Actived{
-		.dom_text{
-			border-width: 3px;
-			border-color: #ffffff;
-		}
-		.dom_start,.dom_end{
-			border-width: 3px;
-			border-color: #ffffff;
-		}
-	}
-}
-
-#MeasureHeight{
-	position: absolute;
-	top: 0;
-	left: 0;
-	pointer-events: auto;
-	.PointMark{
-		transform: translate(-50%,-50%);
-		position: absolute;
-		top: 500px;
-		left: 500px;
-		z-index: 2;
-		background: #009bff;
-		width: 10px;
-		height: 10px;
-		border-radius: 100%;
-		box-sizing: border-box;
-		border: 3px solid #ffffff;
-		display: none;
-	}
-	.LineItem {
-		position: absolute;
-		z-index: 2;
-		.dom_start,.dom_end,.dom_line,.dom_text {
-			position: absolute;
-			pointer-events: none;
-		}
-		
-		.dom_line {
-			background: dodgerblue;
-			height: 4px;
-		}
-		.dom_text
-		 {
-			color: white;
-			background: dodgerblue;
-			height: 24px;
-			width: 100px;
-			border-radius: 8px;
-			margin-left: -50px;
-			margin-top: -10px;
-			text-align: center;
-			box-shadow: 0px 1px 3px 1px rgb(0 0 0 / 25%);
-			z-index: 3;
-			cursor:pointer;
-			border-width: 2px;
-			border-style: solid;
-			border-color: transparent;
-			box-sizing: border-box;
-			line-height: 24px;
-		}
-		.dom_text :hover{
-			box-shadow: 1px 2px 6px 2px rgb(0 0 0 / 80%);
-		}
-		 
-		.BoxControllerUI {
-			display: inline-block;
-			position: absolute;
-			width: 7px;
-			height: 7px;
-			left: -5px;
-			top: -5px;
-			background-color: #009bff;
-			border-style: solid;
-			border-width: 2px;
-			border-color: transparent;
-			border-radius: 100px;
-			box-shadow: 0 2px 5px 0 #182a3d;
-			z-index: 2;
-			margin: -4.5px;
-		}
-	}
-	.LineFinal{
-		.dom_start,.dom_end,.dom_line,.dom_text {
-			pointer-events: auto !important;
-		}
-	}
-	.Actived{
-		.dom_text{
-			border-width: 3px;
-			border-color: #ffffff;
-		}
-		.dom_start,.dom_end{
-			border-width: 3px;
-			border-color: #ffffff;
 		}
 	}
 }
@@ -423,4 +259,5 @@
 		}
 	}
 
+}
 }

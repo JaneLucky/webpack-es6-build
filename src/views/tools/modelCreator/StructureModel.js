@@ -1,7 +1,10 @@
 const THREE = require('@/three/three.js')
 import {
 	LoadZipJson
-} from "@/utils/LoadJSON.js" 
+} from "@/utils/LoadJSON.js"
+import {
+	UpdateMaterialAttribute
+} from "@/views/tools/modelCreator/UpdateMaterial.js"
 export function CreatorStructureModel(scene, relativePath, url, infos) {
 	//加载json文件
 	var currentMaterials = [];
@@ -9,8 +12,9 @@ export function CreatorStructureModel(scene, relativePath, url, infos) {
 	var defaultMat = new THREE.MeshStandardMaterial({
 		color: new THREE.Color(`rgb(220,220,220)`),
 		side: THREE.DoubleSide,
-		depthTest: true
 	})
+	defaultMat.EId = 0;
+	defaultMat.name = 0;
 	LoadZipJson(url + '/semantics.zip', res => {
 		let model = JSON.parse(res);
 		//创建材质
@@ -28,10 +32,33 @@ export function CreatorStructureModel(scene, relativePath, url, infos) {
 		//创建空心剪切
 		var cuts = model.cuts;
 
-		if(allMesh && allMesh.length){
-			mergeBufferModel(scene, allMesh, url + '/sysmodelList.json', url, relativePath);
-		}else{
-			window.bimEngine.loadedDone('structureModelsLoadedNum')
+		if (allMesh && allMesh.length) {
+			//按材质对模型进行拆分
+			function splitArray(arr, n) {
+				const result = [];
+				for (let i = 0; i < arr.length; i += n) {
+					result.push(arr.slice(i, i + n));
+				}
+				return result;
+			}
+
+			function splitMaterial(array) {
+				var results = [];
+				for (var mat of materials) {
+					results.push(array.filter(o => o.material.EId == mat.Id))
+				}
+				return results;
+			}
+			var meshs = splitMaterial(allMesh);
+			for (var ms of meshs) {
+				var meshs_ = splitArray(ms, 2000);
+				for (var ms_ of meshs_) {
+					mergeBufferModel(scene, ms_, url + '/semantics.json', url, relativePath, currentMaterials);
+				}
+			}
+			setLoaded(url + '/semantics.json', relativePath);
+		} else {
+			setLoaded(url + '/semantics.json', relativePath);
 		}
 
 	})
@@ -42,8 +69,9 @@ export function CreatorStructureModel(scene, relativePath, url, infos) {
 			var material = new THREE.MeshStandardMaterial({
 				color: new THREE.Color(`rgb(${eles[i].color})`),
 				side: THREE.DoubleSide,
-				depthTest: true
+				// depthTest: true 
 			});
+			material.name = eles[i].Id
 			material.map = eles[i].materialImage ? new THREE.TextureLoader().load(url + "/" + eles[i].materialImage, (
 				texture) => {
 				texture.wrapS = THREE.RepeatWrapping
@@ -53,8 +81,9 @@ export function CreatorStructureModel(scene, relativePath, url, infos) {
 				//表示在x、y上的偏移
 				// texture.offset.set(param.map.offset.u, param.map.offset.v);
 			}) : null; //纹理贴图 
+			material.name = eles[i].Id;
 			material.EId = eles[i].Id;
-			currentMaterials.push(material); 
+			currentMaterials.push(material);
 		}
 	}
 	//创建柱子
@@ -103,6 +132,7 @@ export function CreatorStructureModel(scene, relativePath, url, infos) {
 						name: ele.Name
 					};
 					var mesh = addShape(BaseShape, extrudeSettings, ele.MaterialId, start, param);
+					// scene.add(mesh);
 					allMesh.push(mesh);
 				}
 			}
@@ -127,11 +157,27 @@ export function CreatorStructureModel(scene, relativePath, url, infos) {
 		}
 	}
 
+	function d(geometry) {
+		return geometry;
+		// 单独指定顶点坐标属性
+		const positions = geometry.attributes.position;
+		const positionAttribute = new THREE.BufferAttribute(positions, 3);
+		// 将非索引数据转换为索引数据
+		const indices = [];
+		for (let i = 0; i < positionAttribute.length / 3; i += 3) {
+			indices.push(i, i + 1, i + 2);
+		}
+		const indexAttribute = new THREE.BufferAttribute(new Uint16Array(indices), 1);
+		geometry.setIndex(indexAttribute);
+		return geometry;
+	}
+
 	//通用方法
 	//获取创建拉伸模型
 	function addShape(shape, extrudeSettings, mId, position, param) {
-
+		// const geometry = new THREE.BoxGeometry(1, 1, 1);
 		let geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+		// geometry=d(geometry);
 		let matIndex = currentMaterials.findIndex(x => x.EId == mId);
 		// mesh.name = "rootModel";  
 		var mat = defaultMat;
@@ -154,7 +200,8 @@ export function CreatorStructureModel(scene, relativePath, url, infos) {
 		let angle_y = 0;
 		let angle_z = 0;
 		//end.clone().sub(start.clone())是起点到终点的投影向量
-		if (Math.abs(end.clone().sub(start.clone()).z) < 0.0001 && Math.abs(end.clone().sub(start.clone()).x) < 0.0001) {
+		if (Math.abs(end.clone().sub(start.clone()).z) < 0.0001 && Math.abs(end.clone().sub(start.clone()).x) <
+			0.0001) {
 			//立管
 			let dir = param.startPoint.y > param.endPoint.y ? 1 : -1; //判断立管是向上还是向下的
 			angle_x = dir * Math.PI * 0.5; //旋转90度，让管子竖起来
@@ -186,6 +233,7 @@ export function CreatorStructureModel(scene, relativePath, url, infos) {
 		mesh.MergeName = param.name;
 		mesh.startPoint = param.startPoint;
 		mesh.endPoint = param.endPoint;
+		mesh.materialId = mId;
 		// scene.add(mesh);
 		return mesh
 	}
@@ -201,19 +249,85 @@ export function CreatorStructureModel(scene, relativePath, url, infos) {
 	}
 
 	function getPosition_2D(point) {
-		if(point==null){
-			return new THREE.Vector2(0,0,0);
+		if (point == null) {
+			return new THREE.Vector2(0, 0, 0);
 		}
 		var p = new THREE.Vector2(point.X * 0.3048, point.Y * 0.3048);
 		return p;
 	}
 }
 
-function mergeBufferModel(scene, meshs, path, basePath, relativePath) {
+function mergeBufferModel(scene, meshs, path, basePath, relativePath, currentMaterials) {
+	// window.bimEngine.MaterialMapList = [
+	// 	{
+	// 		path: "glbs/qq",
+	// 		mapList:[
+	// 			// {
+	// 			// 	glb: "file/glbs/qq/semantics.json",
+	// 			// 	materialId: "409858960632317189",
+	// 			// 	meshId: "楼板-200mm[634203][a4a3816d-3f82-4c50-b852-b5aeeb6e77af-0009ad5b]",
+	// 			// 	materialName: "619355"
+	// 			// },
+	// 			{
+	// 				glb: "file/glbs/qq/semantics.json",
+	// 				materialId: "409858960632317191",
+	// 				meshId:  "楼板-200mm[634203][a4a3816d-3f82-4c50-b852-b5aeeb6e77af-0009ad5b]",
+	// 				materialName: "619355",
+	// 				Img: "/materialFile/Image/material/20230327_409877721166906629.jpg",
+	// 				param: {
+	// 					color: "rgb(255,255,255)",
+	// 					emissive: "rgb(255,255,255)",
+	// 					emissiveIntensity: 0,
+	// 					metalness: 0,
+	// 					name: "木纹-01",
+	// 					normalScale: 1,
+	// 					opacity: 1,
+	// 					roughness: 0.5,
+	// 					side: "DoubleSide",
+	// 					transparent: false,
+	// 					//贴图
+	// 					map: {
+	// 						url: "",
+	// 						repeat: {
+	// 							u: 1,
+	// 							v: 1
+	// 						},
+	// 						offset: {
+	// 							u: 0,
+	// 							v: 0
+	// 						}
+	// 					}, //纹理贴图
+	// 					normalMap: {
+	// 						url: '',
+	// 						repeat: {
+	// 							u: 1,
+	// 							v: 1
+	// 						},
+	// 						offset: {
+	// 							u: 0,
+	// 							v: 0
+	// 						}
+	// 					}, //法线贴图
+	// 					roughnessMap: {
+	// 						url: '',
+	// 						repeat: {
+	// 							u: 1,
+	// 							v: 1
+	// 						},
+	// 						offset: {
+	// 							u: 0,
+	// 							v: 0
+	// 						}
+	// 					}, //粗糙贴图
+	// 				}
+	// 			}
+	// 		]
+	// 	}
+	// ]
 	let geometryArray = []; // 将你的要合并的多个geometry放入到该数组
 	let materialArray = []; // 将你的要赋值的多个material放入到该数组
-	let cloneMaterialArray = []; // 将你的要赋值的多个material放入到该数组
 	let ElementInfoArray = []; // 将你的要赋值的多个material放入到该数组
+	let MaterialMapList = window.bimEngine.MaterialMapList.filter(item => item.path === relativePath)
 	//对mesh位置进行偏移
 	for (var i = 0; i < meshs.length; i++) {
 		let o = meshs[i];
@@ -227,6 +341,110 @@ function mergeBufferModel(scene, meshs, path, basePath, relativePath) {
 			let matrixWorldGeometry = o.geometry.clone().applyMatrix4(matrix.clone());
 
 			o.material.side = THREE.DoubleSide;
+
+			let materialMap = MaterialMapList.length ? MaterialMapList[0].mapList.filter(item => item.meshId === o
+				.name)[
+				0] : null
+			if(materialMap && materialMap.Param){
+				UpdateMaterialAttribute(o.material, materialMap.Param)
+				o.material.materialMap = {
+					Id: materialMap.materialId,
+					Name: materialMap.Param.name,
+					Img: materialMap.Img,
+					Param: materialMap.Param
+				}
+			}
+
+			geometryArray.push(matrixWorldGeometry);
+			materialArray.push(o.material)
+			//如果我们直接获取boundingBox，得到的结果将会是undefined，需要先执行计算。
+			o.geometry.computeBoundingBox()
+			let _min = o.geometry.boundingBox.min.clone().applyMatrix4(matrix
+				.clone());
+			let _max = o.geometry.boundingBox.max.clone().applyMatrix4(matrix
+				.clone());
+			let min = new THREE.Vector3(Math.min(_min.x, _max.x), Math.min(_min.y, _max.y), Math
+				.min(_min.z, _max.z));
+			let max = new THREE.Vector3(Math.max(_min.x, _max.x), Math.max(_min.y, _max.y), Math
+				.max(_min.z, _max.z));
+			let center = min.clone().add(max.clone()).multiplyScalar(0.5);
+			let positions = []
+			ElementInfoArray.push({
+				name: o.name,
+				min: min,
+				max: max,
+				center: center,
+				dbid: i,
+				IsMerge: o.IsMerge,
+				MergeIndex: o.MergeIndex,
+				MergeCount: o.MergeCount,
+				MergeName: o.MergeName,
+				EdgeList: positions,
+				basePath: basePath,
+				materialName: o.material.name
+			});
+		}
+	}
+	//加载模型
+	// const mergedGeometries = THREE.BufferGeometryUtils.mergeBufferGeometries(geometryArray,true);
+	// const singleMergeMesh = new THREE.Mesh(mergedGeometries, materialArray);
+	const mergedGeometries = THREE.BufferGeometryUtils.mergeBufferGeometries(geometryArray, true);
+	const singleMergeMesh = new THREE.Mesh(mergedGeometries, materialArray[0]);
+
+
+	let matIndex = currentMaterials.findIndex(x => x.EId == meshs[0].materialId);
+	let cloneMaterial;
+	if (matIndex == -1) {
+		cloneMaterial = meshs[0].material.clone();
+		cloneMaterial.materialMap = meshs[0].material.materialMap;
+	} else {
+		cloneMaterial = currentMaterials[matIndex].clone();
+		cloneMaterial.materialMap = currentMaterials[matIndex].materialMap;
+	}
+
+	singleMergeMesh.ElementInfos = ElementInfoArray;
+	singleMergeMesh.cloneMaterialArray = cloneMaterial;
+	singleMergeMesh.relativePath = relativePath;
+	singleMergeMesh.name = "rootModel";
+	singleMergeMesh.TypeName = "Mesh";
+	singleMergeMesh.meshs = meshs;
+	singleMergeMesh.url = path;
+	singleMergeMesh.basePath = basePath
+	// console.log(singleMergeMesh)
+	scene.add(singleMergeMesh);
+
+	
+}
+
+function mergeBufferModel_old(scene, meshs, path, basePath, relativePath) {
+	let geometryArray = []; // 将你的要合并的多个geometry放入到该数组
+	let materialArray = []; // 将你的要赋值的多个material放入到该数组
+	let cloneMaterialArray = []; // 将你的要赋值的多个material放入到该数组
+	let ElementInfoArray = []; // 将你的要赋值的多个material放入到该数组
+	let MaterialMapList = window.bimEngine.MaterialMapList.filter(item => item.path === relativePath)
+	//对mesh位置进行偏移
+	for (var i = 0; i < meshs.length; i++) {
+		let o = meshs[i];
+		if (o.geometry != null && o.matrix != null) {
+			//o.geometry.matrix是假的，需要自己创建4维矩阵
+			var matrix = new THREE.Matrix4();
+			matrix = matrix.makeRotationFromEuler(o.rotation);
+			matrix.elements[12] = o.position.x;
+			matrix.elements[13] = o.position.y;
+			matrix.elements[14] = o.position.z;
+			let matrixWorldGeometry = o.geometry.clone().applyMatrix4(matrix.clone());
+
+			o.material.side = THREE.DoubleSide;
+
+			let materialMap = MaterialMapList.length ? MaterialMapList[0].mapList.filter(item => item.meshId === o
+				.name)[
+				0] : null
+			let paramMaterial = materialMap ? window.bimEngine.MaterialList.filter(item => item.Id === materialMap
+				.materialId)[0] : null
+			if (paramMaterial && paramMaterial.Param) {
+				UpdateMaterialAttribute(o.material, paramMaterial.Param)
+			}
+
 			geometryArray.push(matrixWorldGeometry);
 			materialArray.push(o.material)
 			cloneMaterialArray.push(o.material.clone());
@@ -241,32 +459,7 @@ function mergeBufferModel(scene, meshs, path, basePath, relativePath) {
 			let max = new THREE.Vector3(Math.max(_min.x, _max.x), Math.max(_min.y, _max.y), Math
 				.max(_min.z, _max.z));
 			let center = min.clone().add(max.clone()).multiplyScalar(0.5);
-			//计算边线-并存储，用于测量捕捉
-			// var edges = new THREE.EdgesGeometry(o.geometry, 89); //大于89度才添加线条 
-			// var ps = edges.attributes.position.array;
 			let positions = []
-			// for (var ii = 0; ii < ps.length; ii = ii + 3) {
-			// 	let point = new THREE.Vector3(ps[ii], ps[ii + 1], ps[ii + 2]);
-			// 	let newpoint = point.clone().applyMatrix4(matrix.clone());
-			// 	positions.push(newpoint.x);
-			// 	positions.push(newpoint.y);
-			// 	positions.push(newpoint.z);
-			// }
- 
-			// 绘制边线
-			// let geometry = new THREE.BufferGeometry()
-			// geometry.setAttribute(
-			// 	'position',
-			// 	new THREE.Float32BufferAttribute(positions, 3)
-			// )
-			// const bufferline = new THREE.LineSegments(
-			// 	geometry,
-			// 	new THREE.LineBasicMaterial({
-			// 		color: '#000000'
-			// 	})
-			// )
-			// scene.add(bufferline);
-
 			ElementInfoArray.push({
 				name: o.name,
 				min: min,
@@ -278,14 +471,21 @@ function mergeBufferModel(scene, meshs, path, basePath, relativePath) {
 				MergeCount: o.MergeCount,
 				MergeName: o.MergeName,
 				EdgeList: positions,
-				basePath: basePath
+				basePath: basePath,
+				materialid:o.material.name,
 			});
 		}
 	}
 	//加载模型
-	const mergedGeometries = THREE.BufferGeometryUtils.mergeBufferGeometries(geometryArray,
-		true);
-	const singleMergeMesh = new THREE.Mesh(mergedGeometries, materialArray);
+	// const mergedGeometries = THREE.BufferGeometryUtils.mergeBufferGeometries(geometryArray,true);
+	// const singleMergeMesh = new THREE.Mesh(mergedGeometries, materialArray);
+	const mergedGeometries = THREE.BufferGeometryUtils.mergeBufferGeometries(geometryArray, true);
+	var mat = new THREE.MeshStandardMaterial({
+		side: THREE.DoubleSide
+	})
+	const singleMergeMesh = new THREE.Mesh(mergedGeometries, mat);
+
+
 	singleMergeMesh.ElementInfos = ElementInfoArray;
 	singleMergeMesh.cloneMaterialArray = cloneMaterialArray;
 	singleMergeMesh.relativePath = relativePath;
@@ -296,6 +496,11 @@ function mergeBufferModel(scene, meshs, path, basePath, relativePath) {
 	singleMergeMesh.basePath = basePath
 	// console.log(singleMergeMesh)
 	scene.add(singleMergeMesh);
+
+	setLoaded(path, relativePath);
+}
+
+function setLoaded(path, relativePath) {
 	window.bimEngine.doneModels.push(path);
-	window.bimEngine.loadedDone('structureModelsLoadedNum')
+	window.bimEngine.UpdateLoadStatus('structureModelsLoadedNum', relativePath, path);
 }

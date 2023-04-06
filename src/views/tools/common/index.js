@@ -215,8 +215,8 @@ export function worldPointToScreenPoint(vector3, camera) {
 	const x = Math.round(stdVector.x * a + a);
 	const y = Math.round(-stdVector.y * b + b);
 	return {
-		x: (basex + x) * Dir,
-		y: (basey + y) * Dir
+		x: (basex) + (x) * Dir,
+		y: (basey) + (y) * Dir
 	}
 }
 
