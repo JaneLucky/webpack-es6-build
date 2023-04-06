@@ -11,6 +11,13 @@
         "regenerator": true,
         "useESModules": false
       }
+    ],
+    [
+      "component",
+      {
+        "libraryName": "element-ui",
+        "styleLibraryName": "theme-chalk"
+      }
     ]
   ]
 }

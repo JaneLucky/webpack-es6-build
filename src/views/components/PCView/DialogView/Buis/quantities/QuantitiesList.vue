@@ -1,11 +1,57 @@
 <template>
-	<div v-if="dialogVisible">
-222222222222222222
-	</div>
+	<el-dialog class="DIALOG" title="工程量统计" v-if="dialogVisible" :visible.sync="dialogVisible" width="70%" append-to-body>
+		<div>
+			<!-- 筛选条件 -->
+			<el-row>
+				<!-- <el-select size="mini" @change="SelectTypeChange" v-model="search_major" placeholder="选择专业">
+					<el-option v-for="item in options" :key="item" :label="item" :value="item">
+					</el-option>
+				</el-select>
+				<el-select size="mini" v-model="search_type" placeholder="选择类型">
+					<el-option v-for="item in CatogoryOptions" :key="item" :label="item" :value="item">
+					</el-option>
+				</el-select>
+				<el-button @click="Search(false)" size="mini">查询</el-button> -->
+				<!-- <el-button size="mini" @click="toAddMaterialPlan" :loading="btnLoading">生成材料计划</el-button> -->
+				<el-button @click="Setting" size="mini" style="float: right;">设置</el-button>
+				<!-- <el-button @click="Search(true)" size="mini" style="float: right;">导出</el-button> -->
+			</el-row>
+			<!-- 表格内容 -->
+			<el-row style="margin-top: 10px;">
+				<el-table :data="tableList" size="mini" height="50vh">
+					<el-table-column label="序号" width="60" type="index">
+					</el-table-column>
+					<el-table-column label="专业" width="80" prop="Category">
+					</el-table-column>
+					<el-table-column label="构件类型" prop="ModelType" width="120">
+					</el-table-column>
+					<el-table-column label="族类型" prop="Name">
+					</el-table-column>
+					<el-table-column label="特征类型" prop="Feature" width="120">
+					</el-table-column>
+					<el-table-column label="项目特征" prop="FeatureDetail" width="280">
+						<template slot-scope="scope">
+							<span style="white-space:pre-line;">{{scope.row.FeatureDetail}}</span>
+						</template>
+					</el-table-column>
+					<el-table-column label="计量方式" width="120" prop="StatisticalType">
+					</el-table-column>
+					<el-table-column label="工程量" width="180" prop="Number">
+						<template slot-scope="scope">
+							<span>{{scope.row.Number.toFixed(3)}}</span>
+						</template>
+					</el-table-column>
+					<el-table-column label="计量单位" width="120" prop="Unit">
+					</el-table-column>
+				</el-table>
+			</el-row>
+		</div>
+		<Form @Submit="GetCostFilter" ref="Form" />
+	</el-dialog>
 </template>
 
 <script>
-	// import Form from './Form'
+	import Form from './Form.vue'
 	// import {
 	// 	GetCostFilter,
 	// 	SaveCostFilters,
@@ -23,7 +69,7 @@
 			}
 		},
 		components: {
-			// Form
+			Form
 		},
 		data() {
 			return {

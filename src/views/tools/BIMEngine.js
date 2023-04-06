@@ -1,4 +1,8 @@
 const THREE = require('@/three/three.js')
+import Vue from 'vue';
+import ElementUI from 'element-ui';
+import 'element-ui/lib/theme-chalk/index.css';
+Vue.use(ElementUI);
 require('./style/index.scss')
 import {
 	LoadZipJson,

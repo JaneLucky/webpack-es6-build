@@ -51,7 +51,7 @@ module.exports = {
         }
       }, 
       {
-        test: /\.(png|jpe?g|gif|svg)(\?.*)?$/, 
+        test: /\.(png|jpe?g|gif|svg|eot|ttf|woff|woff2)(\?.*)?$/, 
         use: [{ loader: 'file-loader',options: {
 					// limit:设定大小阀值
 					// a. 被处理图片大小 大于该阀值，就通过物理文件重新生成该图片
