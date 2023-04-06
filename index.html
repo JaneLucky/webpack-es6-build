@@ -38,6 +38,7 @@
 		bimEngine.SetBuild = true
     bimEngine.init();//初始化场景
     let pathList = ['qq']
+		bimEngine.ModelPaths = pathList
     //加载模型
     for (let path of pathList) {
       bimEngine.start("file", path, "glbjson", {}, res => {
