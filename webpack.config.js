@@ -4,6 +4,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = {
   mode: "production", // 告诉webpack使用production模式的内置优化,
@@ -36,6 +37,12 @@ module.exports = {
   },
   module: {
     rules: [
+      {
+        test: /\.vue$/,
+        use: {
+          loader: "vue-loader"
+        } 
+      },
       {
         test: /\.m?js$/,
         exclude: /node_modules/,
@@ -100,7 +107,8 @@ module.exports = {
       //是否删除原有静态资源文件，即只保留压缩后的.gz文件，建议这个置为false，还保留源文件。以防：
       // 假如出现访问.gz文件访问不到的时候，还可以访问源文件双重保障
       deleteOriginalAssets: false
-    })
+    }),
+    new VueLoaderPlugin()
   ],
   resolve: {
     alias: {

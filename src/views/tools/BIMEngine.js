@@ -145,8 +145,8 @@ import {
 import {
 	ControlButtons
 } from "./core/ControlButtons.js"
-// import ImgPreviewMask from "@/components/Masker/ImgPreviewMask.vue"
-// import { create } from "@/utils/create"
+import ImgPreviewMask from "@/components/Masker/ImgPreviewMask.vue"
+import { create } from "@/utils/create"
 
 // BIM引擎封装
 export function BIMEngine(domid, options, GLTFLoader) {
