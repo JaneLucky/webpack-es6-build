@@ -13,19 +13,47 @@ module.exports = {
     compress:true,
 		open: true,
 		proxy: {
-			// "/file": {
-			// 	target: "http://localhost:8011/",
-			// 	changeOrigin: true,
-			// 	pathRewrite: {
-			// 		'^/file': '/'
-			// 	}
-			// },
+			//物联网接口 
+			'/api': {
+				// target: "http://localhost:58504/",
+				// target: "http://119.91.39.51:8088/",//线上服务器
+				target: "http://10.168.1.125:30003/",//徐振本地服务器
+				changeOrigin: true,
+				pathRewrite: {
+					'^/api': '/api'
+				}
+			},
+			"/modelToken": {
+				// target: "http://localhost:9002/",
+				target: "http://10.168.1.125:30003/",//徐振本地服务器
+				changeOrigin: true,
+				pathRewrite: {
+					'^/modelToken': '/'
+				}
+			},
 			"/file": {
 				// target: "http://119.91.39.51:9000/",//线上服务器
 				target: "http://10.168.1.125:9000/",//徐振本地服务器
 				changeOrigin: true,
 				pathRewrite: {
 					'^/file': ''
+				}
+			},
+			"/materialSet": {
+				// target: "http://localhost:58504/",
+				// target: "http://10.168.1.125:30003",
+				target: "http://119.91.39.51:30003/", //线上环境
+				changeOrigin: true,
+				pathRewrite: {
+					'^/materialSet': '/api'
+				}
+			},
+			"/materialFile": {
+				// target: "http://10.168.1.125:30003/",
+				target: "http://119.91.39.51:30003/", //线上环境
+				changeOrigin: true,
+				pathRewrite: {
+					'^/materialFile': '/api/file'
 				}
 			},
 

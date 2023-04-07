@@ -153,6 +153,15 @@ import {
 import {
 	CreateRightClickMenu
 } from "@/views/tools/rightClickMenu/index.js"
+import qs from 'qs'
+import md5 from 'js-md5';
+import {
+	login,
+	proejctPick
+} from '@/api/user'
+import {
+	setToken
+} from '@/utils/auth'
  
 // BIM引擎封装
 export function BIMEngine(domid, options, GLTFLoader) {
@@ -205,6 +214,21 @@ export function BIMEngine(domid, options, GLTFLoader) {
 			rootDom.parentElement.className = rootDom.parentElement.className + " MobileView-page-container"
 		}
 
+		login(qs.stringify({
+			account: "admin",
+			password: md5("hh061518"),
+			client_id: 'admin',
+			client_secret: '123456',
+			scope: 'all',
+			grant_type: 'password'
+		})).then(response => {
+			setToken(response.data.token)
+			proejctPick('382395030305768710').then((data) => {
+				// 设置新的Token
+				setToken(data.data.token);
+			});
+		})
+		
 		_bimEngine.scene = InitScene();
 		window.bimEngine = _bimEngine;
 		// 创建辅助坐标轴
