@@ -87,7 +87,7 @@ module.exports = {
 					  limit: 8196,
 					  // 做配置，使得生成的物理图片被存储在build/image里边
 					  outputPath: "image",
-					  //通过在url-loader的options中增加esModule:false
+					  //通过在file-loader的options中增加esModule:false
 					  esModule: false,
 					},
         }]
