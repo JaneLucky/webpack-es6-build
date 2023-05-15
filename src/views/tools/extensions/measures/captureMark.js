@@ -15,6 +15,7 @@ import { IncludeElement } from "@/views/tools/initialize/InitEvents.js" //监听
 import {
 	SetDeviceStyle
 } from "@/views/tools/style/deviceStyleSet.js"
+import { getRootDom } from './index.js'
 
 /**
  * 
@@ -30,10 +31,10 @@ import {
 		// 	}
 		// }
  */
-export function CaptureMark(bimengine) {
+export function CaptureMark(_Engine) {
 	require('@/views/tools/style/' + SetDeviceStyle() + '/CaptureMark.scss')
 	var _captureMark = new Object();
-	var _container = bimengine.scene.renderer.domElement.parentElement;
+	var _container = _Engine.scene.renderer.domElement.parentElement;
 	let CaptureMarkDom = "CaptureMarkContain"; //捕捉dom的根节点
 	let Mark_Line = "CaptureMarkEdgeLine"; //渲染捕捉线-模型渲染
 	let Mark_Quadrangle; //渲染捕捉端点-正方形
@@ -52,25 +53,30 @@ export function CaptureMark(bimengine) {
 	//激活
 	_captureMark.Active = function() {
 		if (!_captureMark.isActive) {
-			bimengine.Measures.isActive = true
-			_captureMark.models = bimengine.GetAllVisibilityModel();
-			if(bimengine.EngineRay){
-				bimengine.EngineRay.Active()
+			_Engine.Measures.isActive = true;
+			
+			_captureMark.models = _Engine.GetAllVisibilityModel();
+			if(_Engine.EngineRay&&_Engine.GpuRay!=null){
+				_Engine.EngineRay.Active()
 				_captureMark.models = _captureMark.models.filter(o => o.TypeName == "InstancedMesh" || o
 					.TypeName == "InstancedMesh-Pipe");
-				_captureMark.models.push(bimengine.scene.children[5]);
+				_captureMark.models.push(_Engine.scene.children[5]);
+				console.log(_captureMark.models)
 			}
+			_Engine.ResetSelectedModels_("highlight", [], true);
 			let pinks = CreateCaptureMarkDom(CaptureMarkDom) //渲染捕捉点
 			Mark_Triangle = pinks.Triangle
 			Mark_Quadrangle = pinks.Quadrangle
 			Mark_Area = pinks.Area
 			Mark_ChuiDian = pinks.ChuiDian
-			bimengine.scene.renderer.domElement.className = bimengine.scene.renderer.domElement.className.replace("custom-cursor","").trim() + " custom-cursor"
+			_Engine.scene.renderer.domElement.className = _Engine.scene.renderer.domElement.className.replace("custom-cursor","").trim() + " custom-cursor"
 			_container.addEventListener('pointermove', onMouseMove);
 
 			function render() {
 				AnimationFrame = requestAnimationFrame(render);
 				_captureMark.MouseEvent && Animate_MeasurePointPink(_captureMark.MouseEvent)
+				// _Engine.EngineRay.pick();
+				_Engine.scene.renderer.render(_Engine.scene, _Engine.scene.camera); //执行渲染操作  
 			}
 			render() //开启动画
 			_captureMark.isActive = true
@@ -79,11 +85,11 @@ export function CaptureMark(bimengine) {
 	//关闭
 	_captureMark.DisActive = function() {
 		if (_captureMark.isActive) {
-			bimengine.Measures.isActive = false
-			bimengine.EngineRay && bimengine.EngineRay.DisActive()
-			var root = document.getElementById(CaptureMarkDom);
+			_Engine.Measures.isActive = false
+			_Engine.EngineRay && _Engine.EngineRay.DisActive()
+			var root = _container.getElementsByClassName(CaptureMarkDom)[0];
 			root && root.remove() //删除坐标点dom
-			bimengine.scene.renderer.domElement.className = bimengine.scene.renderer.domElement.className.replace("custom-cursor","").trim();
+			_Engine.scene.renderer.domElement.className = _Engine.scene.renderer.domElement.className.replace("custom-cursor","").trim();
 			_container.removeEventListener('pointermove', onMouseMove);
 			cancelAnimationFrame(AnimationFrame) //清除动画
 			_captureMark.isActive = false
@@ -106,34 +112,40 @@ export function CaptureMark(bimengine) {
 		if (!(mouseEvent.event.target instanceof HTMLCanvasElement)) { //当鼠标不在场景上，直接返回
 			return;
 		}
-		let rayCaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 30);
+		let rayCaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 300);
 
 		// let rayCaster = new THREE.Raycaster();
 		let mouse = new THREE.Vector2();
-		mouse.x = ((mouseEvent.x - bimengine.scene.camera.viewport.x) / bimengine.scene.camera.viewport.z) * 2 - 1;
-		mouse.y = -((mouseEvent.y - bimengine.scene.camera.viewport.y) / bimengine.scene.camera.viewport.w) * 2 + 1;
+		mouse.x = ((mouseEvent.x - _Engine.scene.camera.viewport.x) / _Engine.scene.camera.viewport.z) * 2 - 1;
+		mouse.y = -((mouseEvent.y - _Engine.scene.camera.viewport.y) / _Engine.scene.camera.viewport.w) * 2 + 1;
 		//这里为什么是-号，没有就无法点中
-		rayCaster.setFromCamera(mouse, bimengine.scene.camera);
+		rayCaster.setFromCamera(mouse, _Engine.scene.camera);
 		let intersects = rayCaster.intersectObjects(_captureMark.models, true);
 		
 		if (intersects.length) {
 			let intersect = intersects[0]
+			let EdgeInfos=[], EdgeItem=null, EdgeList=[];
 			if (intersect.object.TypeName == "HighlightMesh") {
-				var mainInstance = bimengine.scene.children[intersect.object.Indexs[0]];
+				var mainInstance = _Engine.scene.children[intersect.object.Indexs[0]];
 				var clickObj = mainInstance.ElementInfos[intersect.object.Indexs[1]];
 				if (clickObj && mainInstance.geometry.groups[clickObj.dbid].visibility !== false) {
-					let EdgeList = clickObj.EdgeList
-					PINK_DETAILS = getPinkType(bimengine.scene, intersect, EdgeList, intersect.face.normal.clone());
+					EdgeInfos = _Engine.AllEdgeList.filter(item=>item.Indexs === intersect.object.Indexs[0])
+					EdgeItem = EdgeInfos && EdgeInfos.length ? EdgeInfos[0] : null
+					EdgeList = EdgeItem && EdgeItem.ElementInfos[clickObj.dbid]?EdgeItem.ElementInfos[clickObj.dbid].EdgeList:[]
+					PINK_DETAILS = getPinkType(_Engine.scene, intersect, EdgeList, intersect.face.normal.clone());
 				}
 			} else if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "Mesh-Structure" || intersect.object.TypeName == "PipeMesh") {
-				var clickObj = IncludeElement(intersect.object, intersect.point); //选中的构建位置信息
+				var clickObj = IncludeElement(_Engine, intersect.object, intersect.point); //选中的构建位置信息
 				if (clickObj && intersect.object.geometry.groups[clickObj.dbid].visibility !== false) {
-					let EdgeList = intersect.object.ElementInfos[clickObj.dbid].EdgeList
-					PINK_DETAILS = getPinkType(bimengine.scene, intersect, EdgeList, intersect.face.normal.clone())
+					EdgeInfos = _Engine.AllEdgeList.filter(item=>item.Indexs === intersect.object.index)
+					EdgeItem = EdgeInfos && EdgeInfos.length ? EdgeInfos[0] : null
+					EdgeList = EdgeItem && EdgeItem.ElementInfos[clickObj.dbid]?EdgeItem.ElementInfos[clickObj.dbid].EdgeList:[]
+					PINK_DETAILS = getPinkType(_Engine.scene, intersect, EdgeList, intersect.face.normal.clone())
 				}
 			} else if (intersect.object.TypeName == "InstancedMesh" || intersect.object.TypeName == "InstancedMesh-Pipe") {
-				let EdgeList = intersect.object.ElementInfos[intersect.instanceId].EdgeList
-				
+				EdgeInfos = _Engine.AllEdgeList.filter(item=>item.Indexs === intersect.object.index)
+				EdgeItem = EdgeInfos && EdgeInfos.length ? EdgeInfos[0] : null
+				EdgeList = EdgeItem && EdgeItem.ElementInfos[intersect.instanceId]?EdgeItem.ElementInfos[intersect.instanceId].EdgeList:[]
 				let matrixArray = intersect.object.instanceMatrix.array.slice(intersect.instanceId * 16, (intersect.instanceId + 1) * 16);
 				let matrix = new THREE.Matrix4();
 				matrix.elements = matrixArray;
@@ -144,11 +156,11 @@ export function CaptureMark(bimengine) {
 				var newmatrix = (new THREE.Matrix4()).makeRotationFromQuaternion(q);
 				var trueNormal = ((intersect.face.normal.clone()).applyMatrix4(newmatrix.clone())).normalize()
 
-				PINK_DETAILS = getPinkType(bimengine.scene, intersect, EdgeList, trueNormal)
+				PINK_DETAILS = getPinkType(_Engine.scene, intersect, EdgeList, trueNormal)
 			}
 			let position = {
 				worldPoint: intersect.point.clone(), //世界坐标
-				screenPoint: worldPointToScreenPoint(intersect.point.clone(), bimengine.scene
+				screenPoint: worldPointToScreenPoint(intersect.point.clone(), _Engine.scene
 					.camera), //世界坐标转为屏幕坐标
 				capture: PINK_DETAILS
 			}
@@ -159,7 +171,7 @@ export function CaptureMark(bimengine) {
 				if (intersects.length && PINK_DETAILS.val) {
 					//新增
 					let areaPoints = PINK_DETAILS.val.map(item => {
-						let p = worldPointToScreenPoint(new THREE.Vector3(item.x, item.y, item.z), bimengine
+						let p = worldPointToScreenPoint(new THREE.Vector3(item.x, item.y, item.z), _Engine
 							.scene.camera)
 						return p.x + ',' + p.y
 					})
@@ -168,18 +180,18 @@ export function CaptureMark(bimengine) {
 				}
 				break;
 			case "line":
-				drawLine(bimengine.scene, PINK_DETAILS.line)
+				drawLine(_Engine.scene, PINK_DETAILS.line)
 				break;
 			case "point":
 				if (PINK_DETAILS.isCenter) {
 					let position = worldPointToScreenPoint(new THREE.Vector3(PINK_DETAILS.val.x, PINK_DETAILS.val.y,
-						PINK_DETAILS.val.z), bimengine.scene.camera);
+						PINK_DETAILS.val.z), _Engine.scene.camera);
 					Mark_Triangle.style.display = "block";
 					Mark_Triangle.style.top = (position.y - 5) + "px";
 					Mark_Triangle.style.left = (position.x - 5) + "px";
 				} else {
 					let position = worldPointToScreenPoint(new THREE.Vector3(PINK_DETAILS.val.x, PINK_DETAILS.val.y,
-						PINK_DETAILS.val.z), bimengine.scene.camera);
+						PINK_DETAILS.val.z), _Engine.scene.camera);
 					Mark_Quadrangle.style.top = (position.y) + "px";
 					Mark_Quadrangle.style.left = (position.x) + "px";
 					Mark_Quadrangle.style.width = "10px";
@@ -286,7 +298,7 @@ export function CaptureMark(bimengine) {
 
 	//创建捕捉对象
 	function CreateCaptureMarkDom(domName) {
-		var root = getRootDom(domName)
+		var root = getRootDom(_container, domName)
 		let NS_SVG = 'http://www.w3.org/2000/svg'
 		let Triangle = document.createElementNS(NS_SVG, 'svg')
 		Triangle.setAttribute('style', 'position:absolute;width:20px;height:20px;display:none;pointer-events:none;')
@@ -329,7 +341,7 @@ export function CaptureMark(bimengine) {
 		Mark_Triangle.style.display = "none";
 		Mark_Area.style.display = "none";
 		Mark_ChuiDian.style.display = "none";
-		clearDrawLineModel(bimengine.scene)
+		clearDrawLineModel(_Engine.scene)
 		PINK_DETAILS = {
 			type: "area",
 			val: null,
@@ -362,17 +374,6 @@ export function CaptureMark(bimengine) {
 				scene.remove(scene.children[index]);
 			}
 		}
-	}
-
-	//获得捕捉标记的dom根节点
-	function getRootDom(domName) {
-		var root = document.getElementById(domName);
-		if (root == null) { //不存在点标记包裹div
-			root = document.createElement("div");
-			root.id = domName;
-			_container.appendChild(root);
-		}
-		return root
 	}
 
 	return _captureMark;

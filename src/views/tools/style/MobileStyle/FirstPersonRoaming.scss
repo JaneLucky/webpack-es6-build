@@ -1,8 +1,7 @@
 .Roam_Dialog{
 	position: absolute;
 	bottom: 10px;
-	left: 50%;
-	transform: translate(-50%,0);
+	left: calc(50% - 310px);
 	width: 620px;
 	height: fit-content;
 	border: 1px solid #656565;
@@ -258,7 +257,7 @@
 }
 
 
-#MobileRoamContainer{
+.MobileRoamContainer{
 	position: absolute;
 	bottom: 0;
 	left: 0;
@@ -346,7 +345,7 @@
 }
 
 @media screen and (orientation: landscape) { /*横屏 css*/ 
-	#MobileRoamContainer{
+	.MobileRoamContainer{
 		position: absolute;
 		bottom: 0;
 		left: 0;

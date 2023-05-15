@@ -1,5 +1,5 @@
 //基础的拓展
-export function extensions(bimengine) {
+export function extensions(_Engine) {
 	var _extensions = new Object();
 
 

@@ -3,7 +3,7 @@ import {
 	LoadJSON
 } from "@/utils/LoadJSON.js" 
 const THREE = require('@/three/three.js')
-export function LoadViewList(bimEngine, path){
+export function LoadViewList(_Engine, path){
 	//加载视图清单 
 	LoadJSON(path + "/viewlist.json", res => {
 		if(res){
@@ -13,19 +13,19 @@ export function LoadViewList(bimEngine, path){
 			var _viewList = _viewList1.concat(_viewList2);
 			//遍历平面视图
 			for (let view of _viewList) {
-				let index1 = bimEngine.D3Measure.ViewList.findIndex(x => x.label == view.Rules);
+				let index1 = _Engine.D3Measure.ViewList.findIndex(x => x.label == view.Rules);
 				if (index1 != -1) {
-					let index2 = bimEngine.D3Measure.ViewList[index1].children.findIndex(x => x.label == view
+					let index2 = _Engine.D3Measure.ViewList[index1].children.findIndex(x => x.label == view
 						.ViewType);
 					if (index2 != -1) {
-						bimEngine.D3Measure.ViewList[index1].children[index2].children.push({
+						_Engine.D3Measure.ViewList[index1].children[index2].children.push({
 							label: view.Name,
 							Id: view.Id,
 							ViewType: view.ViewType,
 							ViewData: view
 						});
 					} else {
-						bimEngine.D3Measure.ViewList[index1].children.push({
+						_Engine.D3Measure.ViewList[index1].children.push({
 							label: view.ViewType,
 							Id: guid(),
 							children: [{
@@ -37,7 +37,7 @@ export function LoadViewList(bimEngine, path){
 						})
 					}
 				} else {
-					bimEngine.D3Measure.ViewList.unshift({
+					_Engine.D3Measure.ViewList.unshift({
 						label: view.Rules,
 						Id: guid(),
 						children: [{

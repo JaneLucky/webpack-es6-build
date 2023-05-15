@@ -2,23 +2,28 @@ const THREE = require('@/three/three.js')
 import {
 	worldPointToScreenPoint
 } from "@/views/tools/common/index.js"
-export function elevationHeightMeasure(bimengine) {
+import { getRootDom, guidId } from './index.js'
+export function elevationHeightMeasure(_Engine) {
 	var _elevationHeightMeasure = new Object();
-	var _container = bimengine.scene.renderer.domElement.parentElement;
-	var camera = bimengine.scene.camera;
+	var _container = _Engine.scene.renderer.domElement.parentElement;
+	var camera = _Engine.scene.camera;
 	let CurrentDom; //当前选中的dom
   let MeasureDomeId = "MeasureElevationHeight";//捕捉dom的根节点
 	_elevationHeightMeasure.TotalMeasures = []; //所有测量点集合
 	_elevationHeightMeasure.isActive = false; //测量点是否激活
 	let AnimationFrame = null //动画
 	let CAMERA_POSITION;
+	let DrawDomeId; // 视点绘画捕捉dom的根节点
+	_elevationHeightMeasure.PinkClick = true; // 标记点是否点击
 	//激活
-	_elevationHeightMeasure.Active = function() {
-		bimengine.CaptureMark.Active()
+	_elevationHeightMeasure.Active = function(dom) {
+		_elevationHeightMeasure.PinkClick = true;
+		DrawDomeId = dom
+		_Engine.CaptureMark.Active()
 		_container.addEventListener('pointerdown', onMouseDown);
 		_container.addEventListener('pointerup', onMouseUp);
 		window.addEventListener('keydown', DeleteMeasureItem);//监听键盘delete
-		bimengine.StopClick = true
+		_Engine.StopClick = true
 
 		function render() {
 			AnimationFrame = requestAnimationFrame(render);
@@ -29,16 +34,51 @@ export function elevationHeightMeasure(bimengine) {
 	}
 	//关闭
 	_elevationHeightMeasure.DisActive = function() {
-		bimengine.CaptureMark.DisActive()
-		var root = getRootDom(_container);
+		_Engine.CaptureMark.DisActive()
+		var root = getRootDom(_container, MeasureDomeId, false);
 		root && root.remove() //删除坐标点dom
+		DrawDomeId && ResetCurrentDom()
 		_container.removeEventListener('pointerdown', onMouseDown);
 		_container.removeEventListener('pointerup', onMouseUp);
 		window.removeEventListener('keydown',DeleteMeasureItem)
-		bimengine.StopClick = false
+		_Engine.StopClick = false
 		cancelAnimationFrame(AnimationFrame) //清除动画
 		_elevationHeightMeasure.isActive = false
 		_elevationHeightMeasure.TotalMeasures = []
+	}
+	
+	//创建测量标记
+	_elevationHeightMeasure.CreateMeasureDom = function(dom, list) {
+		DrawDomeId = dom
+		_elevationHeightMeasure.PinkClick = false
+		for (let item of list) {
+			item.position = new THREE.Vector3(item.position.x, item.position.y, item.position.z)
+			renderPoint(item, false)
+		}
+	}
+
+	// 开启监听键盘delete
+	_elevationHeightMeasure.OpenDrawDeleteListener = function() {
+		CurrentDom = null
+		_elevationHeightMeasure.PinkClick = true
+		window.addEventListener('keydown', DeleteDrawMeasureItem);
+	}
+
+	//清除键盘delete
+	_elevationHeightMeasure.CloseDrawDeleteListener = function() {
+		_elevationHeightMeasure.PinkClick = false
+		window.removeEventListener('keydown',DeleteDrawMeasureItem);
+	}
+
+	// 视点中-选中标记点-点击delete可删除
+	function DeleteDrawMeasureItem(e) {
+		if(!_elevationHeightMeasure.isActive){
+			if (e.key === "Delete" && CurrentDom) {
+				var root = getRootDom(_container, DrawDomeId, false)
+				root && root.removeChild(CurrentDom)
+				ResetCurrentDom()
+			}
+		}
 	}
 
 	//鼠标按下
@@ -55,13 +95,13 @@ export function elevationHeightMeasure(bimengine) {
 		ResetCurrentDom()
 		if (event.button === 0) {
 			if (Math.abs(event.x - CAMERA_POSITION.x) < 2 && Math.abs(event.y - CAMERA_POSITION.y) < 2) {
-				if(bimengine.CaptureMark.Position){
-					let Position = JSON.parse(JSON.stringify(bimengine.CaptureMark.Position)) 
+				if(_Engine.CaptureMark.Position){
+					let Position = JSON.parse(JSON.stringify(_Engine.CaptureMark.Position)) 
 					let pos = new THREE.Vector3(Position.worldPoint.x, Position.worldPoint.y, Position.worldPoint.z)
-					window.bimEngine.scene.controls.origin = pos;
+					_Engine.scene.controls.origin = pos;
 					let point = {
 						position: pos,
-						id: guid()
+						id: guidId()
 					}
 					if(Position.capture && (Position.capture.type === "point" || Position.capture.type === "line")){
 						point.position = new THREE.Vector3(Position.capture.val.x, Position.capture.val.y, Position.capture.val.z)
@@ -75,7 +115,7 @@ export function elevationHeightMeasure(bimengine) {
 
 	//鼠标移动更新标记点位置标
 	function Animate_MeasurePoints(TotalMeasures) {
-		if(bimengine.scene==null){
+		if(_Engine.scene==null){
 			return;
 		}
 		for (let measure of TotalMeasures) {
@@ -88,7 +128,7 @@ export function elevationHeightMeasure(bimengine) {
 			}
 			item && (item.style.display = "block");
 			let position = worldPointToScreenPoint(new THREE.Vector3(measure.position.x, measure.position.y, measure
-				.position.z), bimengine.scene.camera);
+				.position.z), _Engine.scene.camera);
 			if (position != null) {
 				let offy = position.y
 				let offx = position.x;
@@ -99,13 +139,16 @@ export function elevationHeightMeasure(bimengine) {
 	}
 
 	//渲染选中点
-	function renderPoint(point) {
-		var root = getRootDom(_container)
+	function renderPoint(point, active = true) {
+		let DomeId = DrawDomeId?DrawDomeId:MeasureDomeId
+		var root = getRootDom(_container, DomeId)
 		// 当前点dom
 		var height_item = document.createElement("div");
-		height_item.className = "HeightItem Actived";
+		let itemClassName = active?"HeightItem Actived":"HeightItem";
+		height_item.className = itemClassName;
+		height_item.dataset.dataInfo = JSON.stringify(point);
 		height_item.dataset.dataId = point.id;
-		height_item.dataset.cameraId = bimengine.scene.camera.type + "_" + bimengine.scene.camera.Id;
+		height_item.dataset.cameraId = _Engine.scene.camera.type + "_" + _Engine.scene.camera.Id;
 		height_item.id = point.id;
 		CurrentDom = height_item;
 		let item_box = document.createElement("div");
@@ -124,14 +167,13 @@ export function elevationHeightMeasure(bimengine) {
 		height_item.appendChild(pink_svg);
 		root.appendChild(height_item);
 		height_item.addEventListener('click',(e)=>{
-			console.log(e.target.dataset.dataId)
 			if(e.target.dataset.dataId){//选择标记
 				ResetCurrentDom(e.target.dataset.dataId)
 			}else{// 非标记
 				ResetCurrentDom()
 			}
 		})
-		const printPoint = worldPointToScreenPoint(point.position, bimengine.scene.camera); //世界坐标转为屏幕坐标
+		const printPoint = worldPointToScreenPoint(point.position, _Engine.scene.camera); //世界坐标转为屏幕坐标
 		height_item.style.top = (printPoint.y - 40) + "px";
 		height_item.style.left = (printPoint.x - 13) + "px";
 	}
@@ -141,16 +183,23 @@ export function elevationHeightMeasure(bimengine) {
 		if (e.key === "Delete" && CurrentDom) {
 			let index = _elevationHeightMeasure.TotalMeasures.findIndex(item => item.id === CurrentDom.id);
 			_elevationHeightMeasure.TotalMeasures.splice(index, 1)
-			document.getElementById(MeasureDomeId).removeChild(CurrentDom)
+			let DomeId = DrawDomeId?DrawDomeId:MeasureDomeId
+			var root = getRootDom(_container, DomeId, false)
+			root && root.removeChild(CurrentDom)
 			ResetCurrentDom()
 		}
 	}
 
 	function ResetCurrentDom(id){
-		if(!document.getElementById(MeasureDomeId)){
+		if (!_elevationHeightMeasure.isActive && !_elevationHeightMeasure.PinkClick){
 			return
 		}
-		let DomList = document.getElementById(MeasureDomeId).children
+		let DomeId = DrawDomeId?DrawDomeId:MeasureDomeId
+		var root = getRootDom(_container, DomeId, false)
+		if(!root){
+			return
+		}
+		let DomList = root.children
 		for (let item of DomList) {
 			if(item.id){
 				item.className = "HeightItem"
@@ -166,25 +215,6 @@ export function elevationHeightMeasure(bimengine) {
 				}
 			}
 		}
-	}
-
-	//获得点标记的dom根节点
-	function getRootDom(_container) {
-		var root = document.getElementById(MeasureDomeId);
-		if (root == null) { //不存在点标记包裹div
-			root = document.createElement("div");
-			root.id = MeasureDomeId;
-			_container.appendChild(root);
-		}
-		return root
-	}
-	//生成随机字符串id
-	function guid() {
-		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-			var r = Math.random() * 16 | 0,
-				v = c == 'x' ? r : (r & 0x3 | 0x8);
-			return v.toString(16);
-		});
 	}
 	return _elevationHeightMeasure;
 }

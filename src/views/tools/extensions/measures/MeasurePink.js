@@ -198,17 +198,6 @@ export function getPinkType(scene, intersect, list) {
   return PINK_DETAILS
 }
 
-//获得点标记的dom根节点
-function getRootDom(domName) {
-  var root = document.getElementById(domName);
-  if (root == null) { //不存在点标记包裹div
-    root = document.createElement("div");
-    root.id = domName;
-    window.bimEngine.scene.renderer.domElement.parentElement.appendChild(root);
-  }
-  return root
-}
-
 //包含关系
 export function IncludeElement(elements, point) {
   if (elements == null || elements.length == 0) {

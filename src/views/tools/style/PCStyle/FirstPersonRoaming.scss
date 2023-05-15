@@ -1,9 +1,8 @@
 .Roam_Dialog{
 	position: absolute;
 	bottom: 10px;
-	left: 50%;
-	transform: translate(-50%,0);
-	width: 620px;
+	left: calc(50% - 250px);
+	width: 500px;
 	height: fit-content;
 	border: 1px solid #656565;
 	box-sizing: border-box;

@@ -1,7 +1,7 @@
 const THREE = require('@/three/three.js')
 import { LoadJSON } from "@/utils/LoadJSON.js" 
 //绘制管道
-export function CreatorPipe(scene, url, infos) {
+export function CreatorPipe(_Engine, scene, url, infos) {
 
 	LoadJSON(url + '/sysmodelList.json', res => {
 		let sysmodelList = JSON.parse(res)
@@ -71,9 +71,9 @@ export function CreatorPipe(scene, url, infos) {
 		}
 
 		if(meshList && meshList.length){
-			mergeBufferModel(scene, meshList, url + '/sysmodelList.json', url)
+			mergeBufferModel(_Engine, scene, meshList, url + '/sysmodelList.json', url)
 		}else{
-			window.bimEngine.loadedDone('pipeModelsLoadedNum')
+			_Engine.loadedDone('pipeModelsLoadedNum')
 		}
 		
 	})
@@ -182,10 +182,6 @@ function DrawPipes(type, param, scene) {
 		mesh.rotation.set(angle_x, angle_y, angle_z);
 
 		mesh.name = param.name;
-		mesh.IsMerge = false;
-		mesh.MergeIndex = 0;
-		mesh.MergeCount = 1;
-		mesh.MergeName = param.name;
 		mesh.startPoint = param.startPoint;
 		mesh.endPoint = param.endPoint;
 		// mesh.extrudeParam = param;
@@ -196,7 +192,7 @@ function DrawPipes(type, param, scene) {
 
 
 //合并模型 
-function mergeBufferModel(scene, meshs, path, basePath) {
+function mergeBufferModel(_Engine, scene, meshs, path, basePath) {
 	let geometryArray = []; // 将你的要合并的多个geometry放入到该数组
 	let materialArray = []; // 将你的要赋值的多个material放入到该数组
 	let cloneMaterialArray = []; // 将你的要赋值的多个material放入到该数组
@@ -260,11 +256,6 @@ function mergeBufferModel(scene, meshs, path, basePath) {
 				max: max,
 				center: center,
 				dbid: i,
-				IsMerge: o.IsMerge,
-				MergeIndex: o.MergeIndex,
-				MergeCount: o.MergeCount,
-				MergeName: o.MergeName,
-				EdgeList: [],
 				basePath: basePath
 			});
 		}
@@ -282,8 +273,8 @@ function mergeBufferModel(scene, meshs, path, basePath) {
 	singleMergeMesh.basePath = basePath
 	// console.log(singleMergeMesh)
 	scene.add(singleMergeMesh);
-	window.bimEngine.doneModels.push(path);
-	window.bimEngine.loadedDone('pipeModelsLoadedNum')
+	_Engine.doneModels.push(path);
+	_Engine.loadedDone('pipeModelsLoadedNum')
 	console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
 
 

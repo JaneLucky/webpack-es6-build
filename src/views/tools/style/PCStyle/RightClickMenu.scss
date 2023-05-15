@@ -11,6 +11,7 @@
   color: #ffffff;
   font-size: 14px;
   box-sizing: border-box;
+  user-select: none;
   .Menu-Item{
     padding: 0 25px;
     height: 34px;
@@ -32,7 +33,7 @@
     }
     .Menu_Child_Container{
       position: absolute;
-      top: 0;
+      top: 80%;
       right: 0;
       width: fit-content;
       height: fit-content;

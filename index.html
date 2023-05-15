@@ -38,12 +38,40 @@
 		bimEngine.SetBuild = true
     bimEngine.init();//初始化场景
     let pathList = ['qq']
-		bimEngine.ModelPaths = pathList
+    let pathOff = []
+    bimEngine.SetLoadPaths(pathList, pathOff);
     //加载模型
-    for (let path of pathList) {
-      bimEngine.start("file", path, "glbjson", {}, res => {
-      });
-    }
+    let LoadInOrder = async () => {
+      let LoadItem = async i => {
+        return new Promise((resolve, reject) => {
+          bimEngine.start(
+            "file",
+            bimEngine.ModelPaths[i],
+            "glbjson",
+            {
+              off: bimEngine.PathOff[i]
+            },
+            () => {
+              resolve();
+            }
+          );
+        });
+      };
+      //for循环调接口
+      for (let i = 0; i < bimEngine.ModelPaths.length; i++) {
+        await LoadItem(i);
+      }
+    };
+    LoadInOrder();
+
+    window.bimEngine = bimEngine;
+    // let pathList = ['qq']
+		// bimEngine.ModelPaths = pathList
+    // //加载模型
+    // for (let path of pathList) {
+    //   bimEngine.start("file", path, "glbjson", {}, res => {
+    //   });
+    // }
     
   </script>
 </body>

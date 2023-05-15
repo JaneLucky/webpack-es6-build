@@ -96,8 +96,8 @@ export function InitOrthCamera(scene){
 
 //初始化渲染器
 export function InitRenender(dom){
-  var width = document.getElementById(dom).clientWidth; //窗口宽度
-  var height = document.getElementById(dom).clientHeight; //窗口高度
+  var width = dom.clientWidth; //窗口宽度
+  var height = dom.clientHeight; //窗口高度
   var renderer = new THREE.WebGLRenderer({
     // powerPreference:'high-performance',
     alpha : true,
@@ -127,8 +127,7 @@ export function InitBackgroundScene(scene){
 
 //其他内容初始化
 export function InitOthers(dom, renderer){
-  let container = document.getElementById(dom);
-  container.appendChild(renderer.domElement);//渲染到浏览器
+  dom.appendChild(renderer.domElement);//渲染到浏览器
 }
 
 

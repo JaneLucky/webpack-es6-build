@@ -2,20 +2,22 @@ const THREE = require('@/three/three.js')
 import '@/three/interactive/SelectionBox.js';
 import '@/three/interactive/SelectionHelper.js';
 import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
-export function selectBox(bimengine) {
+export function selectBox(_Engine) {
   require('@/views/tools/style/'+SetDeviceStyle()+'/selectBox.scss')
 	var _selectBox = new Object();
-	var scene = bimengine.scene;
-	var camera = bimengine.scene.camera;
-	var renderer = bimengine.scene.renderer;
-	var controls = bimengine.scene.controls;
+	_selectBox.isActive = false; //框选是否激活
+	var scene = _Engine.scene;
+	var camera = _Engine.scene.camera;
+	var renderer = _Engine.scene.renderer;
+	var controls = _Engine.scene.controls;
 	let helper, selectionBox, rootmodels = [];
 	let HighLightGroup
 	let start = false
 	//激活
 	_selectBox.Active = function() {
+		_selectBox.isActive = true
 		rootmodels = scene.children.filter(o => o.name == "rootModel");
-		let HighLightGroupList = window.bimEngine.scene.children.filter(o => o.name == "HighLightGroup");
+		let HighLightGroupList = _Engine.scene.children.filter(o => o.name == "HighLightGroup");
 		HighLightGroup = HighLightGroupList[0];
 		for (let rootmodel of rootmodels) {
 			for (let model of rootmodel.ElementInfos) {
@@ -41,6 +43,7 @@ export function selectBox(bimengine) {
 		renderer.domElement.addEventListener('pointerup', onPointerUp, false);
 	}
 	_selectBox.DisActive = function() {
+		_selectBox.isActive = false
 		controls.enabled = true
 		renderer.domElement.removeEventListener('pointerdown', onPointerDown);
 		renderer.domElement.removeEventListener('pointermove', onPointerMove);
@@ -53,7 +56,7 @@ export function selectBox(bimengine) {
 	function onPointerDown(event) {
 		if(event.button === 0){
 			start = true
-			bimengine.UpdateRender();
+			_Engine.UpdateRender();
 			if(HighLightGroup){
 				for (const group of HighLightGroup.children) {
 					HighLightGroup.children = []
@@ -61,19 +64,19 @@ export function selectBox(bimengine) {
 			}
 			selectionBox = resetSelectionBox()
 			selectionBox.startPoint = {
-				x:event.clientX,
-				y:event.clientY
+				x:event.clientX - camera.viewport.x,
+				y:event.clientY - camera.viewport.y
 			}
 		}
 	}
 
 	function onPointerMove(event) {
 		if(start){
-			bimengine.UpdateRender();
+			_Engine.UpdateRender();
 			if (helper.isDown) {
 				selectionBox.endPoint = {
-					x:event.clientX,
-					y:event.clientY
+					x:event.clientX - camera.viewport.x,
+					y:event.clientY - camera.viewport.y
 				}
 			}
 		}
@@ -81,10 +84,10 @@ export function selectBox(bimengine) {
 
 	function onPointerUp(event) {
 		if(event.button === 0){
-			bimengine.UpdateRender();
+			_Engine.UpdateRender();
 			selectionBox.endPoint = {
-				x:event.clientX,
-				y:event.clientY
+				x:event.clientX - camera.viewport.x,
+				y:event.clientY - camera.viewport.y
 			}
 			getSelect(true)
 			start = false
@@ -132,7 +135,8 @@ export function selectBox(bimengine) {
 								if(model.screenPosition.x >= startPoint.x && model.screenPosition.y >= startPoint.y && 
 									model.screenPosition.x <= endPoint.x && model.screenPosition.y <= endPoint.y){
 									let indexes = [rootmodel.index, model.dbid]
-									let GroupIndex = BeforeSelection.findIndex(item => item.toString() == indexes.toString())
+									let GroupIndex = BeforeSelection.findIndex(item => item[0] == indexes[0]&&item[1] == indexes[1])
+									//let GroupIndex = BeforeSelection.findIndex(item => item.toString() == indexes.toString())
 									if (GroupIndex < 0) { //不存在
 										BeforeSelection.push(indexes)
 									} else { //存在
@@ -146,8 +150,11 @@ export function selectBox(bimengine) {
 								if(model.screenPosition.x >= startPoint.x && model.screenPosition.y >= startPoint.y && 
 									model.screenPosition.x <= endPoint.x && model.screenPosition.y <= endPoint.y){
 									let indexes = [rootmodel.index, model.dbid]
-									let GroupIndex = BeforeSelection.findIndex(item => item.toString() == indexes.toString())
-									if (GroupIndex < 0) { //不存在
+									let isShow = rootmodel.geometry.groups[model.dbid].visibility !== false
+									// console.log(isShow)
+									let GroupIndex = BeforeSelection.findIndex(item => item[0] == indexes[0]&&item[1] == indexes[1])
+									//let GroupIndex = BeforeSelection.findIndex(item => item.toString() == indexes.toString())
+									if (isShow && GroupIndex < 0) { //不存在
 										BeforeSelection.push(indexes)
 									} else { //存在
 										BeforeSelection.splice(GroupIndex, 1)
@@ -157,8 +164,7 @@ export function selectBox(bimengine) {
 						}
 					}
 				}
-				bimEngine.Selection = BeforeSelection
-				bimEngine.ResetSelectedModels_('highlight', BeforeSelection, true)
+				_Engine.ResetSelectedModels_('highlight', BeforeSelection, true)
 				selectionBox.endPoint = {
 					x: 0,
 					y: 0

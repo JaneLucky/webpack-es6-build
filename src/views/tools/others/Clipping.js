@@ -1,7 +1,7 @@
 const THREE = require('@/three/three.js')
 import '@/three/controls/TransformControls.js';
 //模型单面剖切
-export function ClippingSingleSide(scene, status, type) {
+export function ClippingSingleSide(_Engine, scene, status, type) {
 	let plane, control;
 	let planes = [{
 			type: 'X轴',
@@ -22,12 +22,12 @@ export function ClippingSingleSide(scene, status, type) {
 			show: 'showZ'
 		},
 	]
-	control = window.bimEngine.scene.children.filter(item => item.name === "TransformControlsClipping")[0] //获得控制器
+	control = _Engine.scene.children.filter(item => item.name === "TransformControlsClipping")[0] //获得控制器
 
 	clearClippingMesh() //删除之前创建的ClippingMesh剖切辅助对象，并还原所有构建
 
 	status && init() // 根据状态初始化
-	window.bimEngine.UpdateRender();
+	_Engine.UpdateRender();
 	function init() {
 		let BoundingBox = getClippingMeshSizeAndPosition() //获得辅助对象的宽高和位置
 		plane = new THREE.Plane(BoundingBox.plane.vector, 0) //创建二维切割平面
@@ -83,7 +83,7 @@ export function ClippingSingleSide(scene, status, type) {
 			}else{
 				mesh.visible = true
 			}
-			window.bimEngine.UpdateRender();
+			_Engine.UpdateRender();
 		});
 		setModelClippingPlanes(plane) //设置所有构建的clippingPlanes
 	}
@@ -100,12 +100,13 @@ export function ClippingSingleSide(scene, status, type) {
 				plane.constant = res.target.worldPosition.z - 0
 				break;
 		}
-		window.bimEngine.UpdateRender();
+		_Engine.Clipping.Plane = [plane]
+		_Engine.UpdateRender();
 	}
 
 	//获得辅助对象的宽高和位置
 	function getClippingMeshSizeAndPosition() {
-		let BoundingBox = window.bimEngine.ViewCube.getBoundingBox()
+		let BoundingBox = _Engine.ViewCube.getBoundingBox(_Engine)
 		let width = 0,
 			height = 0,
 			direction = null,
@@ -148,7 +149,7 @@ export function ClippingSingleSide(scene, status, type) {
 
 	//设置所有构建的clippingPlanes
 	function setModelClippingPlanes(plane) {
-		let models = window.bimEngine.scene.children;
+		let models = _Engine.scene.children;
 		let planes = plane ? [plane] : null
 		models.forEach(item => {
 			if (item.name === "rootModel") {
@@ -165,8 +166,9 @@ export function ClippingSingleSide(scene, status, type) {
 				}
 			}
 		})
-		setHighlightModelClippingPlanes(planes)
-		setModelEdgesClippingPlanes(planes)
+		_Engine.Clipping.Plane = planes
+		setHighlightModelClippingPlanes(_Engine, planes)
+		setModelEdgesClippingPlanes(_Engine, planes)
 	}
 
 	//删除之前创建的ClippingMesh剖切辅助对象，并还原所有构建
@@ -176,11 +178,11 @@ export function ClippingSingleSide(scene, status, type) {
 		})
 		setModelClippingPlanes() //还原所有构建
 		//删除之前创建的ClippingMesh剖切辅助对象
-		let models = window.bimEngine.scene.children;
+		let models = _Engine.scene.children;
 		for (let i = models.length - 1; i >= 0; i--) {
 			if (models[i].name === "ClippingMesh") {
 				if (status) {
-					window.bimEngine.scene.remove(models[i])
+					_Engine.scene.remove(models[i])
 				} else {
 					models[i].visible = false
 				}
@@ -190,9 +192,9 @@ export function ClippingSingleSide(scene, status, type) {
 }
 
 //模型多面剖切
-export function ClippingMultiSide(scene, status) {
+export function ClippingMultiSide(_Engine, scene, status) {
 	let planes = []; //所有剖切plane集合
-	let BoundingBox = window.bimEngine.ViewCube.getBoundingBox(); //场景中的模型包围矩形框
+	let BoundingBox = _Engine.ViewCube.getBoundingBox(_Engine); //场景中的模型包围矩形框
 	let MultiSide = getMultiSideSizeAndPosition();//6个剖切面的参数
 	let center = BoundingBox.center;//中心点-剖切过程中变化
 	let size = {//剖切矩形大小-剖切过程中变化
@@ -204,7 +206,7 @@ export function ClippingMultiSide(scene, status) {
 	clearClippingMesh(); //删除之前创建的ClippingMesh剖切辅助对象，并还原所有构建
 
 	status && init() // 根据状态初始化
-	window.bimEngine.UpdateRender();
+	_Engine.UpdateRender();
 	function init() {
 		drawClippingBox(size,center,true);
 		const material = new THREE.MeshBasicMaterial({
@@ -275,7 +277,7 @@ export function ClippingMultiSide(scene, status) {
 				scene.controls.enabled = !event.value;
 				if(scene.controls.enabled){
 					mesh.visible = false
-					let models = window.bimEngine.scene.children;
+					let models = _Engine.scene.children;
 					let controlPositonList = models.filter(item=>item.name === "TransformControlsClipping-MultiSide")
 					let sxmax=0,symax=0,szmax=0,sxmin=0,symin=0,szmin=0;
 					controlPositonList.map(item=>{
@@ -314,7 +316,7 @@ export function ClippingMultiSide(scene, status) {
 				}else{
 					mesh.visible = true
 				}
-				window.bimEngine.UpdateRender();
+				_Engine.UpdateRender();
 			});
 			
 			//实时修改plane.constant，以实现模型剖切
@@ -339,7 +341,8 @@ export function ClippingMultiSide(scene, status) {
 						plane.constant = -res.target.worldPosition.z - 0
 						break;
 				} 
-				window.bimEngine.UpdateRender();
+				_Engine.UpdateRender();
+				_Engine.Clipping.Plane = planes
 			}
 		}
 		setModelClippingPlanes(planes) //设置所有构建的clippingPlanes
@@ -347,12 +350,12 @@ export function ClippingMultiSide(scene, status) {
 
 	//绘制剖切矩形
 	function drawClippingBox(size,position,showType,first=false) {
-		let models = window.bimEngine.scene.children;
+		let models = _Engine.scene.children;
 		if(!first){
 			//删除上次的示例剖切矩形
 			for (let i = models.length - 1; i >= 0; i--) {
 				if (models[i].name === "ClippingBox") {
-					window.bimEngine.scene.remove(models[i]);
+					_Engine.scene.remove(models[i]);
 					break;
 				}
 			}
@@ -486,7 +489,7 @@ export function ClippingMultiSide(scene, status) {
 
 	//设置所有构建的clippingPlanes
 	function setModelClippingPlanes(planes) {
-		let models = window.bimEngine.scene.children;
+		let models = _Engine.scene.children;
 		models.forEach(item => {
 			if (item.name === "rootModel") {
 				if(item.material instanceof Array){
@@ -503,19 +506,20 @@ export function ClippingMultiSide(scene, status) {
 				}
 			}
 		})
-		setHighlightModelClippingPlanes(planes)
-		setModelEdgesClippingPlanes(planes)
+		_Engine.Clipping.Plane = planes
+		setHighlightModelClippingPlanes(_Engine, planes)
+		setModelEdgesClippingPlanes(_Engine, planes)
 	}
 
 	//删除之前创建的ClippingMesh剖切辅助对象，并还原所有构建
 	function clearClippingMesh() {
 		setModelClippingPlanes() //还原所有构建
 		//删除之前创建的ClippingMesh剖切辅助对象
-		let models = window.bimEngine.scene.children;
+		let models = _Engine.scene.children;
 		for (let i = models.length - 1; i >= 0; i--) {
 			if (models[i].name === "ClippingBox" || models[i].name === "ClippingMesh" || models[i].name ===
 					"TransformControlsClipping-MultiSide") {
-				window.bimEngine.scene.remove(models[i])
+				_Engine.scene.remove(models[i])
 			}
 		}
 	}
@@ -620,8 +624,8 @@ export function ClippingMultiSide(scene, status) {
 }
 
 // 设置高亮模型剖切
-function setHighlightModelClippingPlanes(planes) {
-	let HighLightGroupList = window.bimEngine.scene.children.filter(o => o.name == "HighLightGroup");
+function setHighlightModelClippingPlanes(_Engine, planes) {
+	let HighLightGroupList = _Engine.scene.children.filter(o => o.name == "HighLightGroup");
 	let HighLightGroup = HighLightGroupList[0];
 	for (const group of HighLightGroup.children) {
 		group.children.map(item=>{
@@ -631,27 +635,38 @@ function setHighlightModelClippingPlanes(planes) {
 }
 
 // 设置边线模型剖切
-function setModelEdgesClippingPlanes(planes) {
-	let ModelEdgesList = window.bimEngine.scene.children.filter(o => o.TypeName == "ModelEdges");
+function setModelEdgesClippingPlanes(_Engine, planes) {
+	let ModelEdgesList = _Engine.scene.children.filter(o => o.TypeName == "ModelEdges");
 	for (const ModelEdge of ModelEdgesList) {
 		ModelEdge.material.clippingPlanes = planes ? planes : null
 	}
 }
 	
 // 剖切对象
-export function Clipping(scene) {
+export function Clipping(_Engine, scene) {
 	var _clippingObject = new Object();
+	_clippingObject.Plane = null;
+	_clippingObject.isActive = false; //剖切是否激活
+	_clippingObject.ActiveType = null; //剖切激活类型
   _clippingObject.SingleSideOpen = function(side) {
-    ClippingSingleSide(scene, true, side)
+    ClippingSingleSide(_Engine, scene, true, side)
+		_clippingObject.isActive = true;
+		_clippingObject.ActiveType = side;
   }
   _clippingObject.SingleSideClose = function() {
-    ClippingSingleSide(scene, false)
+    ClippingSingleSide(_Engine, scene, false)
+		_clippingObject.isActive = false;
+		_clippingObject.ActiveType = null;
   }
   _clippingObject.MultiSideOpen = function() {
-    ClippingMultiSide(scene, true)
+    ClippingMultiSide(_Engine, scene, true)
+		_clippingObject.isActive = true;
+		_clippingObject.ActiveType = "MultiSide";
   }
   _clippingObject.MultiSideClose = function() {
-    ClippingMultiSide(scene, false)
+    ClippingMultiSide(_Engine, scene, false)
+		_clippingObject.isActive = false;
+		_clippingObject.ActiveType = null;
   }
 	return _clippingObject;
 }

@@ -1,0 +1,45 @@
+.LoadingMaskContain{
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: rgba($color: #000000, $alpha: 0.4);
+  z-index: 2000;
+  .ProcessContainer{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    .ProcessContain{
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .ProcessDisActiveContain{
+        width: 300px;
+        height: 10px;
+        background: rgb(220, 217, 217);
+        border-radius: 20px;
+        .ProcessActiveContain{
+          height: 100%;
+          width: 0%;
+          background: #409EFF;
+          border-radius: 20px;background-image: -webkit-linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
+          background-image: -o-linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
+          background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
+          -webkit-background-size: 40px 40px;
+          background-size: 40px 40px
+        }
+      }
+      .ProcessText{
+        padding-left: 6px;
+        color: #ffffff;
+      }
+      .ProcessUnit{
+        color: #ffffff;
+      }
+
+    }
+  }
+}

@@ -1,5 +1,5 @@
-.PCView-page-container{
-  .Top-Menu-Container{
+.PCView-page-container {
+  .Top-Menu-Container {
     position: absolute;
     top: 10px;
     left: 50%;
@@ -27,7 +27,7 @@
         }
 
         &:hover {
-          color: #409EFF;
+          color: #409eff;
         }
 
         &:last-child {
@@ -50,25 +50,33 @@
       }
 
       .Actived {
-        color: #409EFF;
+        color: #409eff;
+      }
+      .DisabledItem {
+        background: #acacac !important;
+        color: #ffffff !important;
+
+        &:hover {
+          color: #ffffff !important;
+          cursor: not-allowed;
+        }
       }
     }
   }
-  .Hide-Menu-Contain{
-    .Menu-List{
+  .Hide-Menu-Contain {
+    .Menu-List {
       display: none;
     }
-    .Close-Menu-Btn{
+    .Close-Menu-Btn {
       display: block;
     }
   }
-  .Show-Menu-Contain{
-    .Menu-List{
+  .Show-Menu-Contain {
+    .Menu-List {
       display: flex;
     }
-    .Close-Menu-Btn{
+    .Close-Menu-Btn {
       display: none;
     }
-
   }
 }

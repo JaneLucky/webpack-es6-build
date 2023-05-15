@@ -14,7 +14,7 @@ import {
 	IncludeElement
 } from "../measures/MeasurePink"
 //三维测量标记
-export function SignMeasure(bimEngine) {
+export function SignMeasure(_Engine) {
   require('@/views/tools/style/'+SetDeviceStyle()+'/d3measure.scss')
 	var _signMeasure = new Object();
 	_signMeasure.MouseType = "none";
@@ -24,7 +24,7 @@ export function SignMeasure(bimEngine) {
 	_signMeasure.CurrentMeasure = null;
 	_signMeasure.HighLightMeasure = null;
 	_signMeasure.HighLightControl = null;
-	let _D3Measure = bimEngine.D3Measure;
+	let _D3Measure = _Engine.D3Measure;
 	let AnimationFrame = null;
 
 	function render() {
@@ -47,20 +47,20 @@ export function SignMeasure(bimEngine) {
 	//创建标注
 	_signMeasure.CreatorMeasure = function() {
 		//关闭其他测量
-		bimEngine.Measures.DistanceMeasure.DisActive()
-		bimEngine.Measures.HeightMeasure.DisActive()
-		bimEngine.Measures.PointMeasure.DisActive()
-		bimEngine.Measures.SimpleMeasure.DisActive()
+		_Engine.Measures.DistanceMeasure.DisActive()
+		_Engine.Measures.HeightMeasure.DisActive()
+		_Engine.Measures.PointMeasure.DisActive()
+		_Engine.Measures.SimpleMeasure.DisActive()
 		//关闭其他测量
 		_signMeasure.MouseType = "DrawLine";
-		let plane_ = bimEngine.D3Measure.GetCurrentWorkPlane();
+		let plane_ = _Engine.D3Measure.GetCurrentWorkPlane();
 		let plane = new THREE.Plane(plane_.normal.clone().normalize(), plane_.constant);
 		_signMeasure.CurrentMeasure = {
 			Points: [],
 			Id: guid(),
 			workerPlane: plane
 		};
-		bimEngine.StopClick = true;
+		_Engine.StopClick = true;
 		addEventLicense();
 	}
 	//禁用
@@ -69,7 +69,7 @@ export function SignMeasure(bimEngine) {
 	}
 	//鼠标注册事件
 	function addEventLicense() {
-		var _container = bimEngine.scene.renderer.domElement.parentElement;
+		var _container = _Engine.scene.renderer.domElement.parentElement;
 		_container.addEventListener('pointerdown', onMouseDown);
 		_container.addEventListener('pointerup', onMouseUp);
 		_container.addEventListener('pointermove', onMouseMove);
@@ -79,18 +79,18 @@ export function SignMeasure(bimEngine) {
 	}
 
 	function removeEventLicense() {
-		var _container = bimEngine.scene.renderer.domElement.parentElement;
+		var _container = _Engine.scene.renderer.domElement.parentElement;
 		_container.removeEventListener('pointerdown', onMouseDown);
 		_container.removeEventListener('pointerup', onMouseUp);
 		_container.removeEventListener('pointermove', onMouseMove);
 		_container.removeEventListener('keydown', onKeyDown)
 		//清除一些标记 
-		clearDrawLineModel(bimEngine.scene);
+		clearDrawLineModel(_Engine.scene);
 		let root = document.getElementById("MeasurePoint");
 		if (root != null) {
 			root.remove();
 		}
-		bimEngine.StopClick = false;
+		_Engine.StopClick = false;
 	}
 	//按下ESC按键
 	function onKeyDown(e) {
@@ -100,9 +100,9 @@ export function SignMeasure(bimEngine) {
 			//删除选中的模型
 			let measure = _signMeasure.HighLightMeasure;
 			//删除场景中的模型
-			var index = bimEngine.scene.children.findIndex(x => x.Id == measure.Id);
+			var index = _Engine.scene.children.findIndex(x => x.Id == measure.Id);
 			if (index != -1) {
-				bimEngine.scene.children.splice(index, 1);
+				_Engine.scene.children.splice(index, 1);
 			}
 			//删除列表中的数据
 			var measureIndex = _signMeasure.Measures.findIndex(x => x.Id == measure.Id);
@@ -240,20 +240,20 @@ export function SignMeasure(bimEngine) {
 	}
 	//更新相机位置
 	function CameraUpdate() {
-		if (bimEngine.scene == null) {
+		if (_Engine.scene == null) {
 			return;
 		}
 		const HEIGHT = (window.innerHeight) * window.devicePixelRatio;
-		let basex = bimEngine.scene.camera.viewport.x;
-		let basey = bimEngine.scene.camera.viewport.y;
-		let maxx = basex + bimEngine.scene.camera.viewport.z;
-		let maxy = basey + bimEngine.scene.camera.viewport.w;
+		let basex = _Engine.scene.camera.viewport.x;
+		let basey = _Engine.scene.camera.viewport.y;
+		let maxx = basex + _Engine.scene.camera.viewport.z;
+		let maxy = basey + _Engine.scene.camera.viewport.w;
 		//最后，删除
 
 
 
 		for (let measure of _signMeasure.Measures) {
-			let screenPoint = worldPointToScreenPoint(GetToVector3(measure.interCenter).clone(),bimEngine.scene.camera);
+			let screenPoint = worldPointToScreenPoint(GetToVector3(measure.interCenter).clone(),_Engine.scene.camera);
 			let offy = screenPoint.y;
 			let offx = screenPoint.x;
 			if (offx < 0 || offy < 0) {
@@ -275,16 +275,16 @@ export function SignMeasure(bimEngine) {
 	//鼠标点击位置
 	function mousePosition(event) {
 		var mouse = {};
-		mouse.x = ((event.clientX - bimEngine.scene.camera.viewport.x) / bimEngine.scene.camera.viewport.z) * 2 - 1;
-		mouse.y = -((event.clientY - bimEngine.scene.camera.viewport.y) / bimEngine.scene.camera.viewport.w) * 2 +
+		mouse.x = ((event.clientX - _Engine.scene.camera.viewport.x) / _Engine.scene.camera.viewport.z) * 2 - 1;
+		mouse.y = -((event.clientY - _Engine.scene.camera.viewport.y) / _Engine.scene.camera.viewport.w) * 2 +
 			1; //这里为什么是-号，没有就无法点中
 		return mouse;
 	}
 	//世界坐标转屏幕坐标
 	function get2DVec(vector3) {
-		const stdVector = vector3.project(bimEngine.scene.camera);
-		const a = bimEngine.scene.camera.viewport.z / 2;
-		const b = bimEngine.scene.camera.viewport.w / 2;
+		const stdVector = vector3.project(_Engine.scene.camera);
+		const a = _Engine.scene.camera.viewport.z / 2;
+		const b = _Engine.scene.camera.viewport.w / 2;
 		const x = Math.round(stdVector.x * a + a);
 		const y = Math.round(-stdVector.y * b + b);
 		return new THREE.Vector2(x, y);
@@ -382,12 +382,12 @@ export function SignMeasure(bimEngine) {
 
 		measure.linePoints = linePoints;
 		//场景中子物体
-		let index = bimEngine.scene.children.findIndex(x => x.Id == measure.Id);
+		let index = _Engine.scene.children.findIndex(x => x.Id == measure.Id);
 		let interCenter = inter1.clone().add(inter2.clone()).multiplyScalar(0.5);
 		measure.interCenter = interCenter.clone();
 		if (index != -1) {
 			//已存在图形，更新形状
-			let mesh = bimEngine.scene.children[index];
+			let mesh = _Engine.scene.children[index];
 			for (let i = 0; i < linePoints.length; i++) {
 				mesh.geometry.attributes.position.array[3 * i + 0] = linePoints[i].x;
 				mesh.geometry.attributes.position.array[3 * i + 1] = linePoints[i].y;
@@ -396,10 +396,10 @@ export function SignMeasure(bimEngine) {
 			mesh.geometry.attributes.position.needsUpdate = true;
 			if (measure.MeasureText != null && measure.MeasureText.style != null) {
 				const HEIGHT = (window.innerHeight) * window.devicePixelRatio;
-				let basex = bimEngine.scene.camera.viewport.x;
-				let basey = bimEngine.scene.camera.viewport.y;
-				let maxx = basex + bimEngine.scene.camera.viewport.z;
-				let maxy = basey + bimEngine.scene.camera.viewport.w;
+				let basex = _Engine.scene.camera.viewport.x;
+				let basey = _Engine.scene.camera.viewport.y;
+				let maxx = basex + _Engine.scene.camera.viewport.z;
+				let maxy = basey + _Engine.scene.camera.viewport.w;
 
 				let offy = basey + get2DVec(interCenter.clone()).y
 				let offx = basex + get2DVec(interCenter.clone()).x;
@@ -428,7 +428,7 @@ export function SignMeasure(bimEngine) {
 			var mesh = new THREE.LineSegments(geometry, material);
 			mesh.name = "ViewSection";
 			mesh.Id = measure.Id;
-			bimEngine.scene.add(mesh);
+			_Engine.scene.add(mesh);
 			//获取数据
 			var dom = document.createElement("div");
 			dom.className = "MeasureText";
@@ -439,7 +439,7 @@ export function SignMeasure(bimEngine) {
 			measure.MeasureText = dom;
 			measure.MeasureText.style.top = get2DVec(interCenter.clone()).y + "px";
 			measure.MeasureText.style.left = get2DVec(interCenter.clone()).x + "px";
-			var _container = bimEngine.scene.renderer.domElement.parentElement;
+			var _container = _Engine.scene.renderer.domElement.parentElement;
 			_container.appendChild(dom);
 			dom.addEventListener("click", function(res) {
 				for (let m of _signMeasure.Controls) {
@@ -490,8 +490,8 @@ export function SignMeasure(bimEngine) {
 		let pX = mouse.x;
 		let pY = mouse.y;
 
-		let p = new THREE.Vector3(pX, pY, -1).unproject(bimEngine.scene.camera)
-		let p_ = new THREE.Vector3(pX, pY, -1000000000).unproject(bimEngine.scene.camera);
+		let p = new THREE.Vector3(pX, pY, -1).unproject(_Engine.scene.camera)
+		let p_ = new THREE.Vector3(pX, pY, -1000000000).unproject(_Engine.scene.camera);
 		var point3D = p;
 		var rayCast = new THREE.Raycaster();
 		var rayDir = point3D.clone().sub(p_).setLength(1000000);
@@ -502,18 +502,18 @@ export function SignMeasure(bimEngine) {
 	}
 	//精确测量捕捉**************************************************************************************************************************
 	function Animate_MeasurePointPink(mouseEvent) {
-		let camera = bimEngine.scene.camera;
-		if (bimEngine.D3Measure.MeasurePink_Quadrangle != null) {
-			bimEngine.D3Measure.MeasurePink_Quadrangle.style.display = "none";
+		let camera = _Engine.scene.camera;
+		if (_Engine.D3Measure.MeasurePink_Quadrangle != null) {
+			_Engine.D3Measure.MeasurePink_Quadrangle.style.display = "none";
 		}
-		if (bimEngine.D3Measure.MeasurePink_Triangle != null) {
-			bimEngine.D3Measure.MeasurePink_Triangle.style.display = "none";
+		if (_Engine.D3Measure.MeasurePink_Triangle != null) {
+			_Engine.D3Measure.MeasurePink_Triangle.style.display = "none";
 		}
-		if (bimEngine.D3Measure.MeasurePink_Area != null) {
-			bimEngine.D3Measure.MeasurePink_Area.style.display = "none";
+		if (_Engine.D3Measure.MeasurePink_Area != null) {
+			_Engine.D3Measure.MeasurePink_Area.style.display = "none";
 		}
 
-		clearDrawLineModel(bimEngine.scene)
+		clearDrawLineModel(_Engine.scene)
 		_signMeasure.PINK_DETAILS = {
 			type: "area",
 			val: null,
@@ -528,20 +528,25 @@ export function SignMeasure(bimEngine) {
 		mouse.y = -((mouseEvent.y - document.body.getBoundingClientRect().top) / document.body.offsetHeight) * 2 + 1;
 		//这里为什么是-号，没有就无法点中
 		rayCaster.setFromCamera(mouse, camera);
-		let intersects = rayCaster.intersectObjects(bimEngine.D3Measure.AllModels, true);
+		let intersects = rayCaster.intersectObjects(_Engine.D3Measure.AllModels, true);
 		if (intersects.length) {
 			let intersect = intersects[0]
+			let EdgeInfos=[], EdgeItem=null, EdgeList=[];
 			if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "Mesh-Structure" || intersect.object.TypeName == "PipeMesh") {
 				var clickObj = IncludeElement(intersect.object.ElementInfos, intersect
 					.point); //选中的构建位置信息
 				if (clickObj != null && (intersect.object.hideElements == null || !intersect.object.hideElements
 						.includes(clickObj.dbid))) {
-					let EdgeList = intersect.object.ElementInfos[clickObj.dbid].EdgeList
-					_signMeasure.PINK_DETAILS = getPinkType(bimEngine.scene, intersect, EdgeList)
+					EdgeInfos = _Engine.AllEdgeList.filter(item=>item.Indexs === intersect.object.index)
+					EdgeItem = EdgeInfos && EdgeInfos.length ? EdgeInfos[0] : null
+					EdgeList = EdgeItem && EdgeItem.ElementInfos[clickObj.dbid]?EdgeItem.ElementInfos[clickObj.dbid].EdgeList:[]
+					_signMeasure.PINK_DETAILS = getPinkType(_Engine.scene, intersect, EdgeList)
 				}
 			} else if (intersects[0].object.TypeName == "InstancedMesh" || intersects[0].object.TypeName == "InstancedMesh-Pipe") {
-				let EdgeList = intersect.object.ElementInfos[intersect.instanceId].EdgeList
-				_signMeasure.PINK_DETAILS = getPinkType(bimEngine.scene, intersect, EdgeList)
+				EdgeInfos = _Engine.AllEdgeList.filter(item=>item.Indexs === intersect.object.index)
+				EdgeItem = EdgeInfos && EdgeInfos.length ? EdgeInfos[0] : null
+				EdgeList = EdgeItem && EdgeItem.ElementInfos[intersect.instanceId]?EdgeItem.ElementInfos[intersect.instanceId].EdgeList:[]
+				_signMeasure.PINK_DETAILS = getPinkType(_Engine.scene, intersect, EdgeList)
 			}
 		}
 		switch (_signMeasure.PINK_DETAILS.type) {
@@ -552,12 +557,12 @@ export function SignMeasure(bimEngine) {
 			// 			let p = worldPointToScreenPoint(new THREE.Vector3(item.x, item.y, item.z), camera)
 			// 			return p.x + ',' + p.y
 			// 		})
-			// 		bimEngine.D3Measure.MeasurePink_Area.style.display = "block";
-			// 		bimEngine.D3Measure.MeasurePink_Area.firstChild.setAttribute('points', areaPoints.join(' '))
+			// 		_Engine.D3Measure.MeasurePink_Area.style.display = "block";
+			// 		_Engine.D3Measure.MeasurePink_Area.firstChild.setAttribute('points', areaPoints.join(' '))
 			// 	}
 			// 	break;
 			case "line":
-				drawLine(bimEngine.scene, _signMeasure.PINK_DETAILS.line);
+				drawLine(_Engine.scene, _signMeasure.PINK_DETAILS.line);
 				break;
 				// case "point":
 				// 	if (_signMeasure.PINK_DETAILS.isCenter) {
@@ -590,7 +595,7 @@ export function SignMeasure(bimEngine) {
 				new THREE.Vector3(item.viewPoints[1].x, item.viewPoints[1].y, item.viewPoints[1].z));
 			if (dis < 0.5) {
 				//亮显
-				const fs = bimEngine.scene.children.filter(x => x.name == "ViewMeasure");
+				const fs = _Engine.scene.children.filter(x => x.name == "ViewMeasure");
 				for (let f of fs) {
 					if (f.Id == item.Id) {
 						f.material.color = new THREE.Color(0, 0, 1);
@@ -601,7 +606,7 @@ export function SignMeasure(bimEngine) {
 				return item;
 			}
 		} {
-			const fs = bimEngine.scene.children.filter(x => x.name == "ViewMeasure");
+			const fs = _Engine.scene.children.filter(x => x.name == "ViewMeasure");
 			for (let f of fs) {
 				f.material.color = new THREE.Color(0, 0, 0);
 			}

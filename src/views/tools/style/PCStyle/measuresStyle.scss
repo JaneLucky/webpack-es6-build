@@ -1,5 +1,5 @@
 .PCView-page-container{
-#MeasurePoint{//测量坐标点的样式
+.MeasurePoint, .DrawMeasurePoint{//测量坐标点的样式
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -89,7 +89,7 @@
 	}
 }
 
-#MeasureLine, #MeasureDistance, #MeasureHeight{//测量距离的样式
+.MeasureLine, .DrawMeasureLine, .MeasureDistance, .DrawMeasureDistance, .MeasureHeight, .DrawMeasureHeight{//测量距离的样式
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -206,7 +206,7 @@
 }
 
 
-#HeightMeasuePanel{// 测量标高选择框样式
+.HeightMeasuePanel{// 测量标高选择框样式
 	position: absolute;
 	top: 10px;
 	left: 10px;
@@ -228,7 +228,7 @@
 }
 
 //测量标高样式
-#MeasureElevationHeight{
+.MeasureElevationHeight, .DrawMeasureElevationHeight{
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -237,6 +237,7 @@
 		position: absolute;
 		top: 100px;
 		left: 100px;
+		z-index: 2;
 		.Box{
 			padding: 0 5px;
 			height: 25px;

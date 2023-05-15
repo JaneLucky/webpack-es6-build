@@ -1,39 +1,4 @@
-/* 原点 */
-.OriginPoint {
-	width: 10px;
-	height: 10px;
-	position: absolute;
-	z-index: 1000;
-	background: #F89B00;
-	border-radius: 50%;
-	text-align: center;
-	transform: translateX(-50%) translateY(-50%);
-	-webkit-touch-callout:none;
-	-webkit-user-select:none;
-	-khtml-user-select:none;
-	-moz-user-select:none;
-	-ms-user-select:none;
-	user-select:none;
-}
-
-/* 可视范围 */
-.OriginDirection {
-	background: linear-gradient(-45deg, #FFFFFF 20%, #F89B00 100%);
-	width: 30px;
-	border-radius: 0 0 100% 0;
-	height: 30px;
-	position: absolute;
-	text-align: center;
-	transform-origin: left top;
-	-webkit-touch-callout:none;
-	-webkit-user-select:none;
-	-khtml-user-select:none;
-	-moz-user-select:none;
-	-ms-user-select:none;
-	user-select:none;
-}
-
-.miniMap {
+.miniMapRoot{
 	position: absolute;
 	left: 10px;
 	bottom: 10px;
@@ -44,14 +9,38 @@
 	&:hover{
 		cursor: move;
 	}
-}
+	/* 原点 */
+	.OriginPoint {
+		width: 10px;
+		height: 10px;
+		position: absolute;
+		z-index: 1000;
+		background: #F89B00;
+		border-radius: 50%;
+		text-align: center;
+		transform: translateX(-50%) translateY(-50%);
+		-webkit-touch-callout:none;
+		-webkit-user-select:none;
+		-khtml-user-select:none;
+		-moz-user-select:none;
+		-ms-user-select:none;
+		user-select:none;
+	}
 
-//适配移动端
-.miniMap-Mobile{
-	position: absolute;
-	right: 10px;
-	top: 10px;
-	box-shadow: 0px 0px 4px 0px black;
-	width: 120px;
-	height: 120px;
+	/* 可视范围 */
+	.OriginDirection {
+		background: linear-gradient(-45deg, #FFFFFF 20%, #F89B00 100%);
+		width: 30px;
+		border-radius: 0 0 100% 0;
+		height: 30px;
+		position: absolute;
+		text-align: center;
+		transform-origin: left top;
+		-webkit-touch-callout:none;
+		-webkit-user-select:none;
+		-khtml-user-select:none;
+		-moz-user-select:none;
+		-ms-user-select:none;
+		user-select:none;
+	}
 }

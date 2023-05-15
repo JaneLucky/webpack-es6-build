@@ -6,7 +6,7 @@
 
 const THREE = require('../three.js')
 export class FirstPersonCameraControl {
-	constructor(camera, domElement, rayCastObjects) {
+	constructor(_Engine, camera, domElement, rayCastObjects) {
 		this.camera = camera;
 		this.domElement = domElement;
 		this._isEnabled = false;
@@ -38,9 +38,13 @@ export class FirstPersonCameraControl {
 		this.bindonKeyDown = this.onKeyDown.bind(this);
 		this.bindonKeyUp = this.onKeyUp.bind(this);
 		this.bindMousewheel = this.onMousewheel.bind(this);
+		this.needMousewheel = false //是否需要鼠标滚轮缩放
 		this.moveWheelRun = true;
-        this.moveWheelStop = false;
+    this.moveWheelStop = false;
 		this.wheelClock;
+		this.GetEngine = ()=>{
+			return _Engine
+		}
 	}
 
 	/**
@@ -76,11 +80,12 @@ export class FirstPersonCameraControl {
 		this.domElement.addEventListener("pointerup", this.bindmouseup, false);
 		document.body.addEventListener("keydown", this.bindonKeyDown, false);
 		document.body.addEventListener("keyup", this.bindonKeyUp, false);
-		
-		if (document.addEventListener) {
-			document.addEventListener('DOMMouseScroll', this.bindMousewheel, false);
-		} //Firefox
-		document.body.addEventListener("mousewheel", this.bindMousewheel, false); //IE/Opera/Chrome/Safari
+		if(this.needMousewheel){
+			if (document.addEventListener) {
+				document.addEventListener('DOMMouseScroll', this.bindMousewheel, false);
+			} //Firefox
+			document.body.addEventListener("mousewheel", this.bindMousewheel, false); //IE/Opera/Chrome/Safari
+		}
 	}
 
 	removeEvents() {
@@ -89,10 +94,12 @@ export class FirstPersonCameraControl {
 		document.body.removeEventListener("keydown", this.bindonKeyDown);
 		document.body.removeEventListener("keyup", this.bindonKeyUp);
 		
-		if (document.addEventListener) {
-			document.removeEventListener('DOMMouseScroll', this.bindMousewheel);
-		} //Firefox
-		document.body.removeEventListener("mousewheel", this.bindMousewheel); //IE/Opera/Chrome/Safari
+		if(this.needMousewheel){
+			if (document.addEventListener) {
+				document.removeEventListener('DOMMouseScroll', this.bindMousewheel);
+			} //Firefox
+			document.body.removeEventListener("mousewheel", this.bindMousewheel); //IE/Opera/Chrome/Safari
+		}
 	}
 
 	onMousewheel(event){
@@ -167,7 +174,8 @@ export class FirstPersonCameraControl {
 		this.camera.quaternion.setFromEuler(this._euler);
 		this._prevMouseX = event.screenX;
 		this._prevMouseY = event.screenY;
-		window.bimEngine.movefirst = true;
+		let _Engine = this.GetEngine();
+		_Engine.movefirst = true;
 		var myEvent = new CustomEvent('bimengine:camerachange', {
 			detail: ""
 		});
@@ -175,7 +183,8 @@ export class FirstPersonCameraControl {
 	}
 
 	onMouseUp(event) {
-		window.bimEngine.movefirst = false;
+		let _Engine = this.GetEngine();
+		_Engine.movefirst = false;
 		this.domElement.removeEventListener("pointermove", this.bindmousemove);
 	}
 
@@ -183,7 +192,8 @@ export class FirstPersonCameraControl {
 		var myEvent = new CustomEvent('bimengine:camerachange', {
 			detail: ""
 		});
-	    window.bimEngine.movefirst = true;
+		let _Engine = this.GetEngine()
+	  _Engine.movefirst = true;
 		window.dispatchEvent(myEvent);  
 		switch (event.keyCode) {
 			
@@ -227,7 +237,8 @@ export class FirstPersonCameraControl {
 	}
 
 	onKeyUp(event) {
-		window.bimEngine.movefirst = false;
+		let _Engine = this.GetEngine()
+	  _Engine.movefirst = false;
 		switch (event.keyCode) {
 			case 38: // up
 
@@ -329,7 +340,8 @@ export class FirstPersonCameraControl {
 	}
 
 	collisionTestX() {
-		window.bimEngine.movefirst=true; 
+		let _Engine = this.GetEngine()
+	  _Engine.movefirst = true; 
 		this._tmpVector.setFromMatrixColumn(this.camera.matrix, 0);
 		this._tmpVector.multiplyScalar(this._camerLocalDirection.x);
 		if (this.applyCollision) {
@@ -343,7 +355,8 @@ export class FirstPersonCameraControl {
 	}
 
 	collisionTestZ() {
-		window.bimEngine.movefirst=true; 
+		let _Engine = this.GetEngine()
+	  _Engine.movefirst = true; 
 		this._tmpVector.setFromMatrixColumn(this.camera.matrix, 0);
 		this._tmpVector.crossVectors(this.camera.up, this._tmpVector);
 		this._tmpVector.multiplyScalar(this._camerLocalDirection.z);
@@ -357,7 +370,8 @@ export class FirstPersonCameraControl {
 		this.camera.position.addScaledVector(this._tmpVector, this.moveSpeed);
 	}
 	collisionTestY() {
-		window.bimEngine.movefirst=true; 
+		let _Engine = this.GetEngine()
+	  _Engine.movefirst = true; 
 		this._tmpVector.setFromMatrixColumn(this.camera.matrix, 0);
 		this._tmpVector = new THREE.Vector3(0, 1, 0);
 		this._tmpVector.multiplyScalar(this._camerLocalDirection.y);
@@ -375,8 +389,9 @@ export class FirstPersonCameraControl {
 		const origin = this.camera.position.clone().add(this._rayOriginOffset);
 		this._rayCaster.ray.origin = origin;
 		this._rayCaster.ray.direction = this._tmpVector;
+		let _Engine = this.GetEngine()
 		const intersect = this._rayCaster.intersectObjects(
-			window.bimEngine.GetAllVisibilityModel(),
+			_Engine.GetAllVisibilityModel(),
 			true
 		);
 		// const intersect = this._rayCaster.intersectObjects(

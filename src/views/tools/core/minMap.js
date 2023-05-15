@@ -11,7 +11,7 @@ import {
 //拖拽旋转视图
 
 
-export function MinMap(bimEngine) {
+export function MinMap(_Engine) {
 	require('@/views/tools/style/' + SetDeviceStyle() + '/minMap.scss')
 	var _minMap = new Object();
 	_minMap.visible = false;
@@ -23,11 +23,11 @@ export function MinMap(bimEngine) {
 		//更新相机的位置
 		let camera = _minMap.camera;
 		//相机的位置的X,Z坐标值与场景相机保持一致
-		let position_x = bimEngine.scene.camera.position.x;
-		let position_y = bimEngine.scene.camera.position.y;
-		let position_z = bimEngine.scene.camera.position.z;
+		let position_x = _Engine.scene.camera.position.x;
+		let position_y = _Engine.scene.camera.position.y;
+		let position_z = _Engine.scene.camera.position.z;
 		_minMap.camera.position.set(position_x, position_y, position_z);
-		_minMap.renderer.render(bimEngine.scene, camera);
+		_minMap.renderer.render(_Engine.scene, camera);
 		//通过相机来反应标记点的位置
 		let vector = get2DVec(_minMap.camera.position);
 		let x = vector.x / window.innerWidth * 200;
@@ -37,25 +37,24 @@ export function MinMap(bimEngine) {
 		_minMap.OriginDirection.style.left = x + "px";
 		_minMap.OriginDirection.style.top = y + "px";
 		//旋转角度
-		let dir = bimEngine.scene.camera.getWorldDirection(new THREE.Vector3());
+		let dir = _Engine.scene.camera.getWorldDirection(new THREE.Vector3());
 		dir = new THREE.Vector3(dir.x, 0, dir.z);
 		let dir2 = new THREE.Vector3(0, 0, 1);
 		let angle = dir.angleTo(dir2);
 		let d = dir.clone().cross(dir2).y > 0 ? 1 : -1;
 
 		_minMap.OriginDirection.style.transform = "rotate(" + (45 + d * angle * 57.2974) + "deg)";
-		// console.log(bimEngine.scene.camera.rotation.y)
+		// console.log(_Engine.scene.camera.rotation.y)
 	}
 	//显示
 	_minMap.show = function() {
-		 
 		//判断开关是否开启
-		if (document.getElementById("checkbox_minmap")!=null&&document.getElementById("checkbox_minmap").checked) {
+		if (_Engine.FirstPersonControls.controls.minMap) {
 			_minMap.visible = true;
 			initCamera();
 		}
-		document.getElementById("minimap").addEventListener("pointerdown", function(res) {
-			let sceneCamera = bimEngine.scene.camera;
+		_minMap.renderer && _minMap.renderer.domElement && _minMap.renderer.domElement.addEventListener("pointerdown", function(res) {
+			let sceneCamera = _Engine.scene.camera;
 			let point = getRayPoint({
 				x: res.offsetX,
 				y: res.offsetY
@@ -67,38 +66,33 @@ export function MinMap(bimEngine) {
 	}
 	//隐藏
 	_minMap.close = function() {
+		let _container = _Engine.scene.renderer.domElement.parentElement;
 		_minMap.visible = false;
 		_minMap.camera = null;
-		document.getElementById("miniMapRoot") && document.getElementById("miniMapRoot").remove()
+		_container.getElementsByClassName("miniMapRoot")[0] && _container.getElementsByClassName("miniMapRoot")[0].remove()
 	}
 
 
 	//初始化相机
 	function initCamera() {
-		if (document.getElementById("miniMapRoot") != null) {
+		let _container = _Engine.scene.renderer.domElement.parentElement;
+		if (_container.getElementsByClassName("miniMapRoot")[0] != null) {
 			return;
 		}
 		let domDiv = document.createElement("div");
-		//适配移动端
-		if (bimEngine.DeviceType === "Mobile") {
-			domDiv.className = "miniMap-Mobile";
-		} else {
-			domDiv.className = "miniMap";
-		}
-		domDiv.id = "miniMapRoot";
-		document.body.appendChild(domDiv);
+		domDiv.className = "miniMapRoot";
+		_container.appendChild(domDiv);
 		var htmls = [
-			'<div id="OriginPoint" class="OriginPoint"></div>',
-			'<div id="OriginDirection" class="OriginDirection"></div>'
+			'<div class="OriginPoint"></div>',
+			'<div class="OriginDirection"></div>'
 		].join("");
 		domDiv.innerHTML = htmls;
-		_minMap.OriginPoint = document.getElementById("OriginPoint");
-		_minMap.OriginDirection = document.getElementById("OriginDirection");
+		_minMap.OriginPoint = domDiv.getElementsByClassName("OriginPoint")[0];
+		_minMap.OriginDirection = domDiv.getElementsByClassName("OriginDirection")[0];
 
 		let renderer = new THREE.WebGLRenderer();
 		renderer.setPixelRatio(window.devicePixelRatio);
 		renderer.setSize(domDiv.clientWidth, domDiv.clientHeight);
-		renderer.domElement.id = "minimap";
 		renderer.setClearColor('rgb(200,200,200)', 1.0)
 		_minMap.renderer = renderer;
 		domDiv.appendChild(renderer.domElement)
@@ -107,8 +101,6 @@ export function MinMap(bimEngine) {
 		if (deviceType === "PC") {
 			domDiv.addEventListener("pointerdown", _onMouseDown);
 		}
-
-		let _container = bimEngine.scene.renderer.domElement.parentElement;
 
 		function _onMouseDown(e) {
 			var left = domDiv.offsetLeft;
@@ -167,15 +159,15 @@ export function MinMap(bimEngine) {
 			camera.viewport = new THREE.Vector4(dom.getBoundingClientRect().x, dom.getBoundingClientRect().y, 200, 200);
 
 			//跳转至当先相机位置 
-			let controls = new THREE.OrbitControls(camera, dom);
+			let controls = new THREE.OrbitControls(_Engine, camera, dom);
 			controls.enableRotate = false;
 			//设置控制器
-			let position = bimEngine.scene.camera.position;
+			let position = _Engine.scene.camera.position;
 			let target = position.clone().add(new THREE.Vector3(0, -1, 0));
 			_minMap.camera.position.set(position.x, position.y, position.z);
 			_minMap.camera.lookAt(target);
 			controls.update();
-			// bimEngine.ViewCube.animateCamera(bimEngine.scene.camera.position, position, bimEngine.scene.controls
+			// _Engine.ViewCube.animateCamera(_Engine.scene.camera.position, position, _Engine.scene.controls
 			// .target);
 		}
 		//目标点位置
@@ -191,7 +183,7 @@ export function MinMap(bimEngine) {
 		const stdVector = new THREE.Vector3(x, y, 0.5);
 
 		const worldVector = stdVector.unproject(_minMap.camera);
-		// const worldVector = stdVector.unproject(bimEngine.scene.camera);  
+		// const worldVector = stdVector.unproject(_Engine.scene.camera);  
 		return worldVector
 	}
 
@@ -208,7 +200,7 @@ export function MinMap(bimEngine) {
 		rayCaster.setFromCamera(mouse, _minMap.camera);
 		//获取与射线相交的对象数组， 其中的元素按照距离排序，越近的越靠前。
 		//+true，是对其后代进行查找，这个在这里必须加，因为模型是由很多部分组成的，后代非常多。
-		let intersects = (rayCaster.intersectObjects(bimEngine.GetAllVisibilityModel(), true));
+		let intersects = (rayCaster.intersectObjects(_Engine.GetAllVisibilityModel(), true));
 		if (intersects.length > 0) {
 			return intersects[0].point;
 		} else {

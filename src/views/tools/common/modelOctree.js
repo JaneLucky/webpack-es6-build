@@ -6,7 +6,7 @@ import {
 	IsInScreen
 } from "@/views/tools/common/index.js"
 //判断模型的显隐
-export function ModelOctreeVisible(bimEngine) {
+export function ModelOctreeVisible(_Engine) {
 	window.addEventListener('bimengine:camerachange', debounce(SendMessage, 200));
 	let multipleLimit = 15;
 	let startIndex = 6;
@@ -14,7 +14,7 @@ export function ModelOctreeVisible(bimEngine) {
 
 
 
-	let childrens = bimEngine.scene.children;
+	let childrens = _Engine.scene.children;
 	var defaultMat = new THREE.MeshStandardMaterial({
 		color: new THREE.Color(`rgb(220,0,0)`),
 		side: THREE.DoubleSide,
@@ -23,8 +23,8 @@ export function ModelOctreeVisible(bimEngine) {
 	})
 
 	function SendMessage() {
-		childrens = bimEngine.scene.children;
-		let ModelOctreeBoxs = bimEngine.ModelOctreeBox;
+		childrens = _Engine.scene.children;
+		let ModelOctreeBoxs = _Engine.ModelOctreeBox;
 		if (ModelOctreeBoxs != null) {
 			//判断视锥体
 			hideboxs = [];
@@ -43,12 +43,12 @@ export function ModelOctreeVisible(bimEngine) {
 	}
 
 	function handleInstanceMeshDis() {
-		// const models = bimEngine.scene.children.filter(x => x.name == "rootModel" && x.TypeName == "InstancedMesh");
+		// const models = _Engine.scene.children.filter(x => x.name == "rootModel" && x.TypeName == "InstancedMesh");
 
 		ContainCameraFov()
 
 		function ContainCameraFov() {
-			let ModelInstanceBoxs = bimEngine.ModelInstanceBox
+			let ModelInstanceBoxs = _Engine.ModelInstanceBox
 			if (ModelInstanceBoxs && ModelInstanceBoxs.length) {
 				for (let InstanceBox of ModelInstanceBoxs) {
 					let inside = ViewContainbox_fov(InstanceBox.box);
@@ -56,15 +56,15 @@ export function ModelOctreeVisible(bimEngine) {
 						//在里面，再去判断距离
 						let indis = ViewContainbox_Dis_DensePoint(InstanceBox.box);
 						if (indis) {
-							if(bimEngine.scene.children[startIndex + InstanceBox.i].Treevisible!=false){
-								bimEngine.scene.children[startIndex + InstanceBox.i].visible = true;
-							} 
+							if (_Engine.scene.children[startIndex + InstanceBox.i].Treevisible != false) {
+								_Engine.scene.children[startIndex + InstanceBox.i].visible = true;
+							}
 						} else {
-							bimEngine.scene.children[startIndex + InstanceBox.i].visible = false;
+							_Engine.scene.children[startIndex + InstanceBox.i].visible = false;
 						}
 					} else {
 						//直接隐藏
-						bimEngine.scene.children[startIndex + InstanceBox.i].visible = false;
+						_Engine.scene.children[startIndex + InstanceBox.i].visible = false;
 					}
 				}
 			}
@@ -113,18 +113,18 @@ export function ModelOctreeVisible(bimEngine) {
 	}
 
 	//判断是否在可视范围
-	function ViewContainbox_fov(box) { 
+	function ViewContainbox_fov(box) {
 		let DensePoints = box.DensePoint;
 		let flag = false;
 		for (let point of DensePoints) {
-			if (IsInScreen(point, bimEngine.scene.camera) == true) {
+			if (IsInScreen(point, _Engine.scene.camera) == true) {
 				return true
 			}
-		} 
+		}
 	}
 	//使用密集点计算距离
 	function ViewContainbox_Dis_DensePoint(box) {
-		let cameraPosition = bimEngine.scene.camera.position
+		let cameraPosition = _Engine.scene.camera.position
 		if (cameraPosition.x > box.min.x && cameraPosition.y > box.min.y && cameraPosition.z > box.min.z) {
 			if (cameraPosition.x < box.max.x && cameraPosition.y < box.max.y && cameraPosition.z < box.max.z) {
 				return true
@@ -134,7 +134,7 @@ export function ModelOctreeVisible(bimEngine) {
 		let DensePoints = box.DensePoint;
 		let flag = false;
 		for (let point of DensePoints) {
-			if (point.clone().distanceTo(bimEngine.scene.camera.position) < multipleLimit * box.length*2) {
+			if (point.clone().distanceTo(_Engine.scene.camera.position) < multipleLimit * box.length * 2) {
 				return true
 			}
 		}
@@ -143,7 +143,7 @@ export function ModelOctreeVisible(bimEngine) {
 
 	function ViewContainbox_Dis(box) {
 		//判断在不在box里面
-		let cameraPosition = bimEngine.scene.camera.position
+		let cameraPosition = _Engine.scene.camera.position
 		if (cameraPosition.x > box.min.x && cameraPosition.y > box.min.y && cameraPosition.z > box.min.z) {
 			if (cameraPosition.x < box.max.x && cameraPosition.y < box.max.y && cameraPosition.z < box.max.z) {
 				box.keepFresh = true;
@@ -156,7 +156,7 @@ export function ModelOctreeVisible(bimEngine) {
 		let dis = Math.min(dis1, dis2);
 		if (dis < keepFreshDis) {
 			box.keepFresh = true;
-		}else{
+		} else {
 			box.keepFresh = false;
 		}
 		if (dis > multipleLimit * box.length) {
@@ -224,7 +224,7 @@ export function ModelOctreeVisible(bimEngine) {
 					}
 					if (childrens[startIndex + ele_.i].geometry.groups.length != 0) {
 						childrens[startIndex + ele_.i].geometry.groups[ele_.j].hide = false;
-						childrens[startIndex + ele_.i].geometry.groups[ele_.j].keepFresh = box.keepFresh; 
+						childrens[startIndex + ele_.i].geometry.groups[ele_.j].keepFresh = box.keepFresh;
 					}
 				}
 				if (box.isLeaf == false) {
@@ -238,20 +238,21 @@ export function ModelOctreeVisible(bimEngine) {
 	}
 }
 
-export function ModelOctrees(bimEngine) {
-	 
-	var models_ = bimEngine.GetAllVisibilityModel();
-	ModelInstanceTree(bimEngine);
+export function ModelOctrees(_Engine) {
+
+	var models_ = _Engine.GetAllVisibilityModel();
+	ModelInstanceTree(_Engine);
 	//最小的盒子尺寸
 	const minSize = 50;
 	const DenseSize = 30;
-	const models = bimEngine.scene.children.filter(x => x.name == "rootModel" && (x.TypeName == "Mesh" || x.TypeName ==
-	"Mesh-Structure" || x.TypeName == "PipeMesh"));
-	if (window.idindex == null) {
-		window.idindex = 0;
+	const models = _Engine.scene.children.filter(x => x.name == "rootModel" && (x.TypeName == "Mesh" || x.TypeName ==
+		"Mesh-Structure" || x.TypeName == "PipeMesh"));
+	if (_Engine.idindex == null) {
+		_Engine.idindex = 0;
 	}
 	var boxs = [];
 	//拿到所有的box
+	console.log("准备计算八叉树")
 	for (let i = 0; i < models.length; i++) {
 		if (models_.findIndex(x => x.uuid == models[i].uuid) != -1) {
 			for (let j = 0; j < models[i].ElementInfos.length; j++) {
@@ -262,6 +263,7 @@ export function ModelOctrees(bimEngine) {
 			}
 		}
 	}
+	console.log("开始计算八叉树")
 	if (boxs.length == 0) {
 		return;
 	}
@@ -270,19 +272,20 @@ export function ModelOctrees(bimEngine) {
 	var maxBox = GetMaxBoundingBox(boxs);
 	maxBox = OctreeBOX(maxBox);
 	//判断构件属于哪个盒子
-	if (bimEngine.ModelOctreeBox == null) {
-		bimEngine.ModelOctreeBox = [];
+	if (_Engine.ModelOctreeBox == null) {
+		_Engine.ModelOctreeBox = [];
 	}
-	bimEngine.ModelOctreeBox.push(maxBox);
+	_Engine.ModelOctreeBox.push(maxBox);
 	//计算模型的归属
 	for (let i = 0; i < models.length; i++) {
-		let index = models_.findIndex(x => x.uuid == models[i].uuid);
-		if (index == -1) {
-			continue;
-		}
-		for (let j = 0; j < models[i].ElementInfos.length; j++) {
-			elementContain(models[i].ElementInfos[j], index, j, maxBox);
-		}
+		setTimeout(function() {
+			let index = models_.findIndex(x => x.uuid == models[i].uuid);
+			if (index != -1) {
+				for (let j = 0; j < models[i].ElementInfos.length; j++) {
+					elementContain(models[i].ElementInfos[j], index, j, maxBox);
+				}
+			} 
+		}, 2000)
 	}
 
 	//**************************************************************计算方法***********************************************************//
@@ -314,7 +317,7 @@ export function ModelOctrees(bimEngine) {
 						i: ii,
 						j: jj
 					});
-					if(box.isLeaf){
+					if (box.isLeaf) {
 						//最后的盒子，把构件位置加进去
 						box.DensePoint.push(info.min);
 					}
@@ -324,7 +327,7 @@ export function ModelOctrees(bimEngine) {
 					i: ii,
 					j: jj
 				});
-				if(box.isLeaf){
+				if (box.isLeaf) {
 					//最后的盒子，把构件位置加进去
 					box.DensePoint.push(info.min);
 				}
@@ -416,13 +419,13 @@ export function ModelOctrees(bimEngine) {
 		} else {
 			box.isLeaf = true;
 		}
-		
-		
-		
+
+
+
 		box.DensePoint = DensePoint(box);
 		box.length = box.min.distanceTo(box.max);
-		box.id = window.idindex++;
-		if(box.isLeaf){
+		box.id = _Engine.idindex++;
+		if (box.isLeaf) {
 			box.DensePoint = []
 		}
 		return box;
@@ -488,11 +491,12 @@ export function ModelOctrees(bimEngine) {
 }
 
 // 获得所有InstanceMesh独立外层盒子
-export function ModelInstanceTree(bimEngine) {
-	var models_ = bimEngine.GetAllVisibilityModel();
-	const models = bimEngine.scene.children.filter(x => x.name == "rootModel" && (x.TypeName == "InstancedMesh" || x.TypeName == "InstancedMesh-Pipe"));
-	window.idindex = 0;
-	bimEngine.ModelInstanceBox = [];
+export function ModelInstanceTree(_Engine) {
+	var models_ = _Engine.GetAllVisibilityModel();
+	const models = _Engine.scene.children.filter(x => x.name == "rootModel" && (x.TypeName == "InstancedMesh" || x
+		.TypeName == "InstancedMesh-Pipe"));
+	_Engine.idindex = 0;
+	_Engine.ModelInstanceBox = [];
 	//拿到所有的box
 	for (let i = 0; i < models.length; i++) {
 		var boxs = [];
@@ -521,12 +525,12 @@ export function ModelInstanceTree(bimEngine) {
 			// maxbox.DensePoint.push(b.max);
 			// debugger
 		}
-		maxbox.id = window.idindex++;
+		maxbox.id = _Engine.idindex++;
 		let instanceObj = {
 			i: index,
 			box: maxbox,
 		}
-		bimEngine.ModelInstanceBox.push(instanceObj);
+		_Engine.ModelInstanceBox.push(instanceObj);
 	}
 
 

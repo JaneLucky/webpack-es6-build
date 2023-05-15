@@ -1,4 +1,4 @@
-#viewCube{
+.ViewCube{
 	position: absolute;
 	width: 150px;
 	height: 150px;
@@ -25,7 +25,7 @@
 	}
 }
 @media screen and (max-width: 900px) {
-	#viewCube{
+	.ViewCube{
 		width: 0 !important;
 		height: 0 !important;
 	}
@@ -134,7 +134,7 @@ input[type='checkbox'].switch:checked::after {
 
 
 @media screen and (orientation: landscape) { /*横屏 css*/ 
-	#viewCube{
+	.ViewCube{
 		position: absolute;
 		width: 150px;
 		height: 150px;
@@ -161,7 +161,7 @@ input[type='checkbox'].switch:checked::after {
 		}
 	}
 	@media screen and (max-width: 900px) {
-		#viewCube{
+		.ViewCube{
 			width: 0 !important;
 			height: 0 !important;
 		}

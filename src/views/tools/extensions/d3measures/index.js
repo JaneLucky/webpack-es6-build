@@ -38,13 +38,13 @@ import {
 	SectionMask
 } from "./SectionMask.js"
 //3D测量
-export function D3Measure(bimEngine) {
+export function D3Measure(_Engine) {
   require('@/views/tools/style/'+SetDeviceStyle()+'/d3measure.scss')
 	var _D3Measure = new Object();
-	_D3Measure.SignMeasure = new SignMeasure(bimEngine);
-	_D3Measure.SignLineText = new SignLineText(bimEngine);
-	_D3Measure.SignMeasureLevel = new SignMeasureLevel(bimEngine);
-	_D3Measure.SignText = new SignText(bimEngine);
+	_D3Measure.SignMeasure = new SignMeasure(_Engine);
+	_D3Measure.SignLineText = new SignLineText(_Engine);
+	_D3Measure.SignMeasureLevel = new SignMeasureLevel(_Engine);
+	_D3Measure.SignText = new SignText(_Engine);
 
 
 
@@ -82,7 +82,7 @@ export function D3Measure(bimEngine) {
 	render() //开启动画
 	//更新视图列表
 	_D3Measure.UpdateViewList = function(url) {
-		LoadViewList(bimEngine, url);
+		LoadViewList(_Engine, url);
 	}
 	//更新返回
 	_D3Measure.UpdateCallback = function(callback) {
@@ -115,9 +115,9 @@ export function D3Measure(bimEngine) {
 	//获取相机工作平面
 	_D3Measure.GetCameraWorkPlane = function() {
 		let cameraDir = new THREE.Vector3();
-		bimEngine.scene.camera.getWorldDirection(cameraDir);
+		_Engine.scene.camera.getWorldDirection(cameraDir);
 		//然后是获取位置
-		let point = bimEngine.scene.camera.position;
+		let point = _Engine.scene.camera.position;
 		let dis = GeometricOperation().PointProjectPointDirDis(cameraDir.clone().normalize(), new THREE.Vector3(),
 			point) + 1;
 		//计算方向
@@ -165,32 +165,32 @@ export function D3Measure(bimEngine) {
 		if (index != 1) {
 			_D3Measure.SectionViewLists.splice(index, 1);
 		}
-		let camera_index = bimEngine.ArrayCamera.cameras.findIndex(x => x.Id == id);
+		let camera_index = _Engine.ArrayCamera.cameras.findIndex(x => x.Id == id);
 		if (camera_index != -1) {
-			bimEngine.ArrayCamera.cameras.splice(camera_index, 1);
+			_Engine.ArrayCamera.cameras.splice(camera_index, 1);
 		}
-		let model_index = bimEngine.scene.children.findIndex(x => x.Id == id);
+		let model_index = _Engine.scene.children.findIndex(x => x.Id == id);
 		if (model_index != -1) {
-			bimEngine.scene.children.splice(model_index, 1)
+			_Engine.scene.children.splice(model_index, 1)
 		}
-		if (bimEngine.ArrayCamera.cameras.length > 0) {
+		if (_Engine.ArrayCamera.cameras.length > 0) {
 			//切换到指定视图
-			bimEngine.MultiView.SwitchView(bimEngine, bimEngine.ArrayCamera.cameras[0])
+			_Engine.MultiView.SwitchView(_Engine, _Engine.ArrayCamera.cameras[0])
 		} else {
 			//新增一个视图
-			window.bimEngine.MultiView.New3DPerspective(window.bimEngine);
+			_Engine.MultiView.New3DPerspective(_Engine);
 		}
 		_D3Measure.HighLightView = null;
 		UpdataViewListUI();
 	}
 	//获取当前工作平面
 	_D3Measure.GetCurrentWorkPlane = function() {
-		if (bimEngine.WorkPlane != null) {
-			return bimEngine.WorkPlane;
+		if (_Engine.WorkPlane != null) {
+			return _Engine.WorkPlane;
 		} else {
 			//取相机正对的平面作为工作平面 
 			let plane = _D3Measure.GetCameraWorkPlane();
-			bimEngine.WorkPlane = plane;
+			_Engine.WorkPlane = plane;
 			return plane;
 		}
 	}
@@ -202,8 +202,8 @@ export function D3Measure(bimEngine) {
 		_D3Measure.MeasurePink_Area = pinks.Area;
 		_D3Measure.MouseType = "HandlePlane";
 		addEventLicense();
-		_D3Measure.AllModels = bimEngine.GetAllVisibilityModel();
-		bimEngine.StopClick = true;
+		_D3Measure.AllModels = _Engine.GetAllVisibilityModel();
+		_Engine.StopClick = true;
 	}
 	/*************************************************************获取数据***************************************************************/
 	//更新视图数据
@@ -262,7 +262,7 @@ export function D3Measure(bimEngine) {
 	}
 	//鼠标注册事件
 	function addEventLicense() {
-		var _container = bimEngine.scene.renderer.domElement.parentElement;
+		var _container = _Engine.scene.renderer.domElement.parentElement;
 		_container.addEventListener('pointerdown', onMouseDown);
 		_container.addEventListener('pointerup', onMouseUp);
 		_container.addEventListener('pointermove', onMouseMove);
@@ -272,17 +272,17 @@ export function D3Measure(bimEngine) {
 	}
 
 	function removeEventLicense() {
-		var _container = bimEngine.scene.renderer.domElement.parentElement;
+		var _container = _Engine.scene.renderer.domElement.parentElement;
 		_container.removeEventListener('pointerdown', onMouseDown);
 		// _container.removeEventListener('pointerup', onMouseUp);
 		_container.removeEventListener('pointermove', onMouseMove);
 		//清除一些标记 
-		clearDrawLineModel(bimEngine.scene);
+		clearDrawLineModel(_Engine.scene);
 		let root = document.getElementById("MeasurePoint");
 		if (root != null) {
 			root.remove();
 		}
-		bimEngine.StopClick = false;
+		_Engine.StopClick = false;
 	}
 	//按下键盘事件,按下ESC清空所有事件和UI
 	function onKeyDown(e) {
@@ -305,8 +305,8 @@ export function D3Measure(bimEngine) {
 			//获取鼠标按下数据
 			let mouse = mousePosition(event);
 			let rayCaster = new THREE.Raycaster();
-			rayCaster.setFromCamera(mouse, bimEngine.scene.camera);
-			let intersects = (rayCaster.intersectObjects(bimEngine.GetAllVisibilityModel(), true));
+			rayCaster.setFromCamera(mouse, _Engine.scene.camera);
+			let intersects = (rayCaster.intersectObjects(_Engine.GetAllVisibilityModel(), true));
 			if (intersects.length > 0) {
 				// console.log(intersects);
 				let dis = GeometricOperation().PointProjectPointDirDis(intersects[0].face.normal.clone().normalize(),
@@ -317,7 +317,7 @@ export function D3Measure(bimEngine) {
 				//重新计算面的方向
 				let plane = new THREE.Plane(intersects[0].face.normal.multiplyScalar(dot > 0 ? -1 : 1).clone()
 					.normalize(), dis);
-				bimEngine.WorkPlane = plane;
+				_Engine.WorkPlane = plane;
 				_D3Measure.MouseType = "none";
 				removeEventLicense();
 			}
@@ -342,8 +342,8 @@ export function D3Measure(bimEngine) {
 				//有两个点,绘制第三个点
 				_D3Measure.CurrentView.viewPoints.push(point);
 				_D3Measure.SectionViewLists.push(JSON.parse(JSON.stringify(_D3Measure.CurrentView)));
-				let index = bimEngine.scene.children.findIndex(x => x.Id == "temp");
-				bimEngine.scene.children[index].Id = _D3Measure.CurrentView.Id;
+				let index = _Engine.scene.children.findIndex(x => x.Id == "temp");
+				_Engine.scene.children[index].Id = _D3Measure.CurrentView.Id;
 				_D3Measure.MouseType = "none";
 			}
 			// console.log(_D3Measure.CurrentView.viewPoints)
@@ -586,10 +586,10 @@ export function D3Measure(bimEngine) {
 		linePoints.push(end.clone().add(dirx.clone().setLength(l)).add(diry.clone().setLength(l)));
 		//激活的状态  
 		//首先判断视图中是否存在相应的线条
-		let index = bimEngine.scene.children.findIndex(x => x.Id == id);
+		let index = _Engine.scene.children.findIndex(x => x.Id == id);
 		if (index != -1) {
 			//已存在图形，更新形状
-			let mesh = bimEngine.scene.children[index];
+			let mesh = _Engine.scene.children[index];
 			for (let i = 0; i < linePoints.length; i++) {
 				mesh.geometry.attributes.position.array[3 * i + 0] = linePoints[i].x;
 				mesh.geometry.attributes.position.array[3 * i + 1] = linePoints[i].y;
@@ -617,7 +617,7 @@ export function D3Measure(bimEngine) {
 			var mesh = new THREE.Line(geometry, material);
 			mesh.name = "ViewSection";
 			mesh.Id = id;
-			bimEngine.scene.add(mesh);
+			_Engine.scene.add(mesh);
 		}
 		//更新UI控制按钮及文字 
 		return null;
@@ -669,7 +669,7 @@ export function D3Measure(bimEngine) {
 		control.appendChild(handleRange);
 		_D3Measure.Controls.push(handleRange);
 		//获取数据***********************************************************
-		var _container = bimEngine.scene.renderer.domElement.parentElement;
+		var _container = _Engine.scene.renderer.domElement.parentElement;
 		_container.appendChild(control);
 		//注册拖拽事件 
 		control_top.addEventListener("mousedown", function(res) {
@@ -768,10 +768,10 @@ export function D3Measure(bimEngine) {
 		// console.log(_D3Measure.HighLightView.diry, angel)
 		// 上
 		const HEIGHT = (window.innerHeight) * window.devicePixelRatio;
-		let basex = bimEngine.scene.camera.viewport.x;
-		let basey = bimEngine.scene.camera.viewport.y;
-		let maxx = basex + bimEngine.scene.camera.viewport.z;
-		let maxy = basey + bimEngine.scene.camera.viewport.w;
+		let basex = _Engine.scene.camera.viewport.x;
+		let basey = _Engine.scene.camera.viewport.y;
+		let maxx = basex + _Engine.scene.camera.viewport.z;
+		let maxy = basey + _Engine.scene.camera.viewport.w;
 
 		let offx = basex + (get2DVec(point_left.clone()).y * 0.5 + get2DVec(point_right.clone()).y *
 			0.5)
@@ -831,7 +831,7 @@ export function D3Measure(bimEngine) {
 		var mesh = new THREE.Mesh(geometry, material); //网格模型对象
 		mesh.name = "ViewMask";
 		mesh.view = view;
-		bimEngine.scene.add(mesh);
+		_Engine.scene.add(mesh);
 		//绘制视图范围边线
 		renderMaskSide([p1, p2, p2, p3, p3, p4, p4, p1]);
 	}
@@ -854,7 +854,7 @@ export function D3Measure(bimEngine) {
 		var mesh = new THREE.Mesh(geometry, material); //网格模型对象
 		mesh.name = "ViewMask";
 		mesh.view = view;
-		bimEngine.scene.add(mesh);
+		_Engine.scene.add(mesh);
 	}
 	//渲染遮罩边线
 	function renderMaskSide(points) {
@@ -884,7 +884,7 @@ export function D3Measure(bimEngine) {
 			end: points[7]
 		})
 		var lines = new THREE.Line(geometry, material_, THREE.LinePieces);
-		bimEngine.scene.add(lines);
+		_Engine.scene.add(lines);
 	}
 	//创建视图操纵柄
 	function CreatorViewControl(dom) {
@@ -903,7 +903,7 @@ export function D3Measure(bimEngine) {
 	}
 	//获取视图类型
 	function GetCurrentViewType() {
-		let cameraType = bimEngine.scene.camera.ControlType;
+		let cameraType = _Engine.scene.camera.ControlType;
 		if (cameraType == "D3") {
 			return "D3";
 		} else {
@@ -913,8 +913,8 @@ export function D3Measure(bimEngine) {
 	//鼠标点击位置
 	function mousePosition(event) {
 		var mouse = {};
-		mouse.x = ((event.clientX - bimEngine.scene.camera.viewport.x) / bimEngine.scene.camera.viewport.z) * 2 - 1;
-		mouse.y = -((event.clientY - bimEngine.scene.camera.viewport.y) / bimEngine.scene.camera.viewport.w) * 2 +
+		mouse.x = ((event.clientX - _Engine.scene.camera.viewport.x) / _Engine.scene.camera.viewport.z) * 2 - 1;
+		mouse.y = -((event.clientY - _Engine.scene.camera.viewport.y) / _Engine.scene.camera.viewport.w) * 2 +
 			1; //这里为什么是-号，没有就无法点中
 		return mouse;
 	}
@@ -922,9 +922,9 @@ export function D3Measure(bimEngine) {
 
 	//世界坐标转屏幕坐标 
 	function get2DVec(vector3) {
-		const stdVector = vector3.project(bimEngine.scene.camera);
-		const a = bimEngine.scene.camera.viewport.z / 2;
-		const b = bimEngine.scene.camera.viewport.w / 2;
+		const stdVector = vector3.project(_Engine.scene.camera);
+		const a = _Engine.scene.camera.viewport.z / 2;
+		const b = _Engine.scene.camera.viewport.w / 2;
 		const x = Math.round(stdVector.x * a + a);
 		const y = Math.round(-stdVector.y * b + b);
 		return new THREE.Vector2(x, y);
@@ -935,11 +935,11 @@ export function D3Measure(bimEngine) {
 	}
 	//展示捕捉的位置
 	function Animate_MeasurePointPink(mouseEvent) {
-		let camera = bimEngine.scene.camera;
+		let camera = _Engine.scene.camera;
 		_D3Measure.MeasurePink_Quadrangle.style.display = "none";
 		_D3Measure.MeasurePink_Triangle.style.display = "none";
 		_D3Measure.MeasurePink_Area.style.display = "none";
-		clearDrawLineModel(bimEngine.scene)
+		clearDrawLineModel(_Engine.scene)
 		let PINK_DETAILS = {
 			type: "area",
 			val: null,
@@ -957,17 +957,22 @@ export function D3Measure(bimEngine) {
 		let intersects = rayCaster.intersectObjects(_D3Measure.AllModels, true);
 		if (intersects.length) {
 			let intersect = intersects[0]
+			let EdgeInfos=[], EdgeItem=null, EdgeList=[];
 			if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "Mesh-Structure" || intersect.object.TypeName == "PipeMesh") {
 				var clickObj = IncludeElement(intersect.object.ElementInfos, intersect
 					.point); //选中的构建位置信息
 				if (clickObj != null && (intersect.object.hideElements == null || !intersect.object.hideElements
 						.includes(clickObj.dbid))) {
-					let EdgeList = intersect.object.ElementInfos[clickObj.dbid].EdgeList
-					PINK_DETAILS = getPinkType(bimEngine.scene, intersect, EdgeList)
+					EdgeInfos = _Engine.AllEdgeList.filter(item=>item.Indexs === intersect.object.index)
+					EdgeItem = EdgeInfos && EdgeInfos.length ? EdgeInfos[0] : null
+					EdgeList = EdgeItem && EdgeItem.ElementInfos[clickObj.dbid]?EdgeItem.ElementInfos[clickObj.dbid].EdgeList:[]
+					PINK_DETAILS = getPinkType(_Engine.scene, intersect, EdgeList)
 				}
 			} else if (intersects[0].object.TypeName == "InstancedMesh" || intersects[0].object.TypeName == "InstancedMesh-Pipe") {
-				let EdgeList = intersect.object.ElementInfos[intersect.instanceId].EdgeList
-				PINK_DETAILS = getPinkType(bimEngine.scene, intersect, EdgeList)
+				EdgeInfos = _Engine.AllEdgeList.filter(item=>item.Indexs === intersect.object.index)
+				EdgeItem = EdgeInfos && EdgeInfos.length ? EdgeInfos[0] : null
+				EdgeList = EdgeItem && EdgeItem.ElementInfos[intersect.instanceId]?EdgeItem.ElementInfos[intersect.instanceId].EdgeList:[]
+				PINK_DETAILS = getPinkType(_Engine.scene, intersect, EdgeList)
 			}
 		}
 		switch (PINK_DETAILS.type) {
@@ -987,7 +992,7 @@ export function D3Measure(bimEngine) {
 	//获取射线选择的点
 	function GetRayWorldPoint(mouse) {
 		let rayCaster = new THREE.Raycaster();
-		rayCaster.setFromCamera(mouse, bimEngine.scene.camera);
+		rayCaster.setFromCamera(mouse, _Engine.scene.camera);
 		let intersects = (rayCaster.intersectObjects(_D3Measure.GetCurrentWorkPlane(), true));
 		if (intersects.length > 0) {
 			let pp = intersects[0].point.clone();
@@ -998,7 +1003,7 @@ export function D3Measure(bimEngine) {
 	function GetRayWorldPointPlane(mouse) {
 		let plane = _D3Measure.GetCurrentWorkPlane();
 		// let rayCaster = new THREE.Raycaster();
-		// rayCaster.setFromCamera(mouse, bimEngine.scene.camera);
+		// rayCaster.setFromCamera(mouse, _Engine.scene.camera);
 		// var startPickPoint = rayCaster.ray.intersectPlane(plane);
 		// return startPickPoint;
 
@@ -1006,8 +1011,8 @@ export function D3Measure(bimEngine) {
 		let pX = mouse.x;
 		let pY = mouse.y;
 
-		let p = new THREE.Vector3(pX, pY, -1).unproject(bimEngine.scene.camera)
-		let p_ = new THREE.Vector3(pX, pY, -1000000000).unproject(bimEngine.scene.camera);
+		let p = new THREE.Vector3(pX, pY, -1).unproject(_Engine.scene.camera)
+		let p_ = new THREE.Vector3(pX, pY, -1000000000).unproject(_Engine.scene.camera);
 		var point3D = p;
 		var rayCast = new THREE.Raycaster();
 		var rayDir = point3D.clone().sub(p_).setLength(1000000);
@@ -1074,7 +1079,7 @@ export function D3Measure(bimEngine) {
 				new THREE.Vector3(item.viewPoints[1].x, item.viewPoints[1].y, item.viewPoints[1].z));
 			if (dis < 0.5) {
 				//亮显
-				const fs = bimEngine.scene.children.filter(x => x.name == "ViewSection");
+				const fs = _Engine.scene.children.filter(x => x.name == "ViewSection");
 				for (let f of fs) {
 					if (f.Id == item.Id) {
 						f.material.color = new THREE.Color(0, 0, 1);
@@ -1085,7 +1090,7 @@ export function D3Measure(bimEngine) {
 				return item;
 			}
 		} {
-			const fs = bimEngine.scene.children.filter(x => x.name == "ViewSection");
+			const fs = _Engine.scene.children.filter(x => x.name == "ViewSection");
 			for (let f of fs) {
 				f.material.color = new THREE.Color(0, 0, 0);
 			}

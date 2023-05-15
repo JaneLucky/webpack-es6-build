@@ -12,7 +12,7 @@ import {
 import {
 	worldPointToScreenPoint
 } from "@/views/tools/common/index.js"
-THREE.OrbitControls = function(object, domElement) {
+THREE.OrbitControls = function(_Engine, object, domElement) {
 
 	if (domElement === undefined) console.warn(
 		'THREE.OrbitControls: The second parameter "domElement" is now mandatory.');
@@ -267,7 +267,7 @@ THREE.OrbitControls = function(object, domElement) {
 
 			if (cha.x == 0 && cha.y == 0 && cha.z == 0 && (sphericalDelta.theta != 0 || sphericalDelta
 					.phi != 0)) {
-				let camera = window.bimEngine.scene.camera;
+				let camera = _Engine.scene.camera;
 				let dis = camera.position.distanceTo(scope.origin.clone());
 				let direction = camera.position.clone().sub(scope.origin.clone())
 				camera.position.copy(scope.origin.clone());
@@ -296,8 +296,8 @@ THREE.OrbitControls = function(object, domElement) {
 				// scope.object.lookAt(scope.target); 
 				// console.log("旋转",offset,scope.target)
 			} else {
-				// if(window.bimEngine!=null){
-				// 	let camera = window.bimEngine.scene.camera;
+				// if(_Engine!=null){
+				// 	let camera = _Engine.scene.camera;
 				// 	scope.target = camera.position
 				// }
 				let c_dir = new THREE.Vector3()
@@ -307,8 +307,8 @@ THREE.OrbitControls = function(object, domElement) {
 							position.copy(scope.target).add(offset);
 							scope.object.lookAt(scope.target);
 						} else {
-							if (window.bimEngine != null) {
-								let camera = window.bimEngine.scene.camera;
+							if (_Engine != null) {
+								let camera = _Engine.scene.camera;
 								// scope.target = camera.position 
 								if (position.distanceTo(scope.target.clone().add(offset)) > 0.01) {
 									position.add(camera.getWorldDirection(c_dir).multiplyScalar(scope.object
@@ -644,11 +644,11 @@ THREE.OrbitControls = function(object, domElement) {
 		dollyDelta.subVectors(dollyEnd, dollyStart);
 
 		if (dollyDelta.y > 0) { // 缩小
-			!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "zoom-out")
+			!_Engine.Measures.isActive && (scope.domElement.style.cursor = "zoom-out")
 			dollyOut(getZoomScale());
 
 		} else if (dollyDelta.y < 0) { // 放大
-			!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "zoom-in")
+			!_Engine.Measures.isActive && (scope.domElement.style.cursor = "zoom-in")
 			dollyIn(getZoomScale());
 
 		}
@@ -926,7 +926,7 @@ THREE.OrbitControls = function(object, domElement) {
 	}
 
 	function onPointerUp(event) {
-		!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "auto")
+		!_Engine.Measures.isActive && (scope.domElement.style.cursor = "auto")
 
 		switch (event.pointerType) {
 
@@ -948,22 +948,21 @@ THREE.OrbitControls = function(object, domElement) {
 
 		// 旋转中心为源点时，设置鼠标点下去打到的第一个元素的位置为源点
 		if (scope.showOriginIcon) {
-			// if (window.bimEngine && (!window.bimEngine.CurrentSelect || (window.bimEngine.CurrentSelect && !window
-			// 		.bimEngine.CurrentSelect.dbid))) {
+			// if (_Engine && (!_Engine.CurrentSelect || (_Engine.CurrentSelect && !_Engine.CurrentSelect.dbid))) {
 			// 	// scope.origin = new THREE.Vector3(0, 0, 0);
 			// 	let rayCaster = new THREE.Raycaster();
 			// 	let mouse = new THREE.Vector2();
-			// 	mouse.x = ((event.clientX - window.bimEngine.scene.camera.viewport.x) / window.bimEngine.scene
+			// 	mouse.x = ((event.clientX - _Engine.scene.camera.viewport.x) / _Engine.scene
 			// 		.camera.viewport.z) * 2 - 1;
-			// 	mouse.y = -((event.clientY - window.bimEngine.scene.camera.viewport.y) / window.bimEngine.scene
+			// 	mouse.y = -((event.clientY - _Engine.scene.camera.viewport.y) / _Engine.scene
 			// 		.camera.viewport.w) * 2 + 1;
-			// 	rayCaster.setFromCamera(mouse, window.bimEngine.scene.camera);
-			// 	let intersects = (rayCaster.intersectObjects(window.bimEngine.GetAllVisibilityModel(), true));
+			// 	rayCaster.setFromCamera(mouse, _Engine.scene.camera);
+			// 	let intersects = (rayCaster.intersectObjects(_Engine.GetAllVisibilityModel(), true));
 			// 	if (intersects.length > 0) {
 			// 		scope.origin = intersects[0].point
 			// 	}
 			// }
-			scope.originPosition = worldPointToScreenPoint(scope.origin.clone(), window.bimEngine.scene.camera)
+			scope.originPosition = worldPointToScreenPoint(scope.origin.clone(), _Engine.scene.camera)
 		}
 
 		// Manually set the focus since calling preventDefault above
@@ -1081,7 +1080,7 @@ THREE.OrbitControls = function(object, domElement) {
 
 				if (scope.enableRotate === false) return;
 
-				!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "alias")
+				!_Engine.Measures.isActive && (scope.domElement.style.cursor = "alias")
 				handleMouseMoveRotate(event);
 
 				if (scope.showOriginIcon) { // 显示旋转中心
@@ -1106,7 +1105,7 @@ THREE.OrbitControls = function(object, domElement) {
 			case STATE.PAN: //平移
 
 				if (scope.enablePan === false) return;
-				!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "move")
+				!_Engine.Measures.isActive && (scope.domElement.style.cursor = "move")
 				handleMouseMovePan(event);
 
 				break;
@@ -1116,7 +1115,7 @@ THREE.OrbitControls = function(object, domElement) {
 	}
 
 	function onMouseUp(event) {
-		!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "auto")
+		!_Engine.Measures.isActive && (scope.domElement.style.cursor = "auto")
 
 
 		if (scope.showOriginIcon) { // 隐藏旋转中心	
@@ -1143,23 +1142,31 @@ THREE.OrbitControls = function(object, domElement) {
 
 	//创建旋转中心图标
 	function getOriginIcon() {
-		let icon = document.getElementById("Three_OrbitControls_OriginIcon")
-		if (!icon) {
-			let icon = CreateSvg("icon-baxin")
-			icon.id = "Three_OrbitControls_OriginIcon"
-			icon.style.display = "none"
-			icon.style.position = "absolute"
-			icon.style.width = "30px"
-			icon.style.height = "30px"
-			icon.style.pointerEvents = "none";
-			scope.domElement.parentElement.appendChild(icon)
+		if(scope.domElement.parentElement){
+			let icon = scope.domElement.parentElement.getElementsByClassName("Three_OrbitControls_OriginIcon")[0]
+			if (!icon) {
+				icon = document.createElement("div");
+				icon.className = "Three_OrbitControls_OriginIcon"
+				icon.style.display = "none"
+				icon.style.position = "absolute"
+				icon.style.width = "30px"
+				icon.style.height = "30px"
+				icon.style.pointerEvents = "none";
+				let icon_svg = CreateSvg("icon-baxin")
+				icon.appendChild(icon_svg)
+				icon_svg.style.width = "100%"
+				icon_svg.style.height = "100%"
+				scope.domElement.parentElement.appendChild(icon)
+			}
+			return icon
+		}else{
+			return null
 		}
-		return icon
 	}
 
 	function onStopWheel(){
 		if(scope.moveWheel2){
-			!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "auto")
+			!_Engine.Measures.isActive && (scope.domElement.style.cursor = "auto")
 			scope.moveWheel2 = false;
 			scope.moveWheel1 = true;
 		}
@@ -1181,9 +1188,9 @@ THREE.OrbitControls = function(object, domElement) {
 		if(scope.moveWheel1){
 			if(event.wheelDelta){
 				if(event.wheelDelta > 0) {
-					!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "zoom-in")
+					!_Engine.Measures.isActive && (scope.domElement.style.cursor = "zoom-in")
 				}else if(event.wheelDelta < 0){
-					!window.bimEngine.Measures.isActive && (scope.domElement.style.cursor = "zoom-out")
+					!_Engine.Measures.isActive && (scope.domElement.style.cursor = "zoom-out")
 				}
 			}
 			scope.moveWheel1 = false;

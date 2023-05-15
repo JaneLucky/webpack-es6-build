@@ -2,7 +2,7 @@ const THREE = require('@/three/three.js')
 import {
 	worldPointToScreenPoint
 } from "@/views/tools/common/index.js"
-export function SectionMask(bimEngine) {
+export function SectionMask(_Engine) {
 	var _sectionMask = new Object();
 	_sectionMask.Controls = [];
 	_sectionMask.MouseType = "none";
@@ -14,11 +14,11 @@ export function SectionMask(bimEngine) {
 	//禁用
 	_sectionMask.DisActive = function() {
 		_sectionMask.CurrentView = null;
-		let models = bimEngine.scene.children.filter(x => x.name == "ViewMask");
+		let models = _Engine.scene.children.filter(x => x.name == "ViewMask");
 		for (let model of models) {
-			let index = bimEngine.scene.children.findIndex(x => x.Id == model.Id);
+			let index = _Engine.scene.children.findIndex(x => x.Id == model.Id);
 			if (index != -1) {
-				bimEngine.scene.children.splice(index, 1);
+				_Engine.scene.children.splice(index, 1);
 			}
 		}
 		_sectionMask.Controls[4].style.visibility = "hidden";
@@ -34,14 +34,14 @@ export function SectionMask(bimEngine) {
 	/*************************************事件***************************************/
 	//添加事件监听
 	function addEventLicense() {
-		var _container = bimEngine.scene.renderer.domElement.parentElement;
+		var _container = _Engine.scene.renderer.domElement.parentElement;
 		_container.addEventListener('pointerdown', onMouseDown);
 		_container.addEventListener('pointerup', onMouseUp);
 		_container.addEventListener('pointermove', onMouseMove);
 	}
 	//移除事件监听
 	function removeEventLicense() {
-		var _container = bimEngine.scene.renderer.domElement.parentElement;
+		var _container = _Engine.scene.renderer.domElement.parentElement;
 		_container.removeEventListener('pointerdown', onMouseDown);
 		_container.removeEventListener('pointermove', onMouseMove);
 	}
@@ -203,7 +203,7 @@ export function SectionMask(bimEngine) {
 		mesh.name = "ViewMask";
 		mesh.view = view;
 		mesh.Id = guid();
-		bimEngine.scene.add(mesh);
+		_Engine.scene.add(mesh);
 		//绘制视图范围边线
 		renderMaskSide([p1, p2, p2, p3, p3, p4, p4, p1]);
 	}
@@ -227,7 +227,7 @@ export function SectionMask(bimEngine) {
 		mesh.name = "ViewMask";
 		mesh.view = view;
 		mesh.Id = guid();
-		bimEngine.scene.add(mesh);
+		_Engine.scene.add(mesh);
 	}
 
 	function guid() {

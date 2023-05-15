@@ -44,7 +44,7 @@ export function SenceZoom(scene) {
     //监听相机移动-模型显隐处理
     let rootmodels = scene.children.filter(o => o.name == "rootModel" && (o.type == "Mesh" || o.type == "Mesh-Structure"))
     for (let rootmodel of rootmodels) {
-      for (let i=0;i<rootmodel.meshs.length;i++) {
+      for (let i=0;i<rootmodel.ElementInfos.length;i++) {
         let model = rootmodel.ElementInfos[i]
         let targetPosition = model.center;
         let flag = IsInScreen(targetPosition, scene.camera)

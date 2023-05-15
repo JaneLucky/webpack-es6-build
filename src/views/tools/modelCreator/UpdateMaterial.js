@@ -4,7 +4,7 @@
  * @param {*} param //材质属性
  */
 export function UpdateMaterialAttribute(material, param) {
-  console.log(param)
+  // console.log(param)
   material.transparent = param.transparent //是否透明
   material.opacity = param.opacity //透明度
   material.side = THREE[param.side] //渲染面

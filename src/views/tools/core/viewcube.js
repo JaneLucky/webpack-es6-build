@@ -9,41 +9,45 @@ import {
 	InitRenender,
 	InitOthers
 } from "../initialize/InitThreejsSence.js"
-import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
+import {
+	SetDeviceStyle
+} from "@/views/tools/style/deviceStyleSet.js"
 import "three/"
 import {
 	GetBoundingBox
 } from "@/views/tools/common/index.js"
-import { getScreenAspect } from "@/views/tools/common/screenReset.js"
+import {
+	getScreenAspect
+} from "@/views/tools/common/screenReset.js"
 // import {
 // 	push
 // } from "core-js/library/core/array";
-export function ViewCube(scene, domid) {
-  require('@/views/tools/style/'+SetDeviceStyle()+'/mainstyle.scss')
+export function ViewCube(_Engine, scene, domid) {
+	require('@/views/tools/style/' + SetDeviceStyle() + '/mainstyle.scss')
 	var _ViewCube = new Object();
 	_ViewCube.scene = scene;
+	let dom
 	_ViewCube.init = function() {
-		var dom = document.createElement("div");
-		dom.id = "viewCube";
+		dom = document.createElement("div");
 		dom.className = "ViewCube";
-		document.getElementById(domid).appendChild(dom);
+		domid.appendChild(dom);
 		var home = document.createElement("div");
 		home.className = "homeViewWrapper";
 		home.addEventListener("click", function() {
 			console.log("回归");
 			_ViewCube.cameraGoHome();
-			window.bimEngine.loadedDoneFun()
+			_Engine.loadedDoneFun()
 		})
 		dom.appendChild(home);
 
 		var sceneOrtho = InitScene();
-		var aspect = getScreenAspect();//窗口宽高比 
+		var aspect = getScreenAspect(); //窗口宽高比 
 		var frustumSize = 200; //三维场景显示范围控制系数，系数越大，显示的范围越大
 		_ViewCube.cameraOrtho = new THREE.OrthographicCamera(frustumSize * aspect / -2, frustumSize * aspect / 2,
 			2 * frustumSize / 2,
 			1.4 * frustumSize / -2, 0, 10000);
-		var width = document.getElementById(dom.id).clientWidth; //窗口宽度
-		var height = document.getElementById(dom.id).clientHeight; //窗口高度
+		var width = dom.clientWidth; //窗口宽度
+		var height = dom.clientHeight; //窗口高度
 		var renderer = new THREE.WebGLRenderer({
 			alpha: true
 		}); //创建渲染器
@@ -51,7 +55,7 @@ export function ViewCube(scene, domid) {
 		renderer.setClearAlpha(0);
 		_ViewCube.renderer = renderer;
 		sceneOrtho.renderer = renderer;
-		InitOthers(dom.id, renderer)
+		InitOthers(dom, renderer)
 		//环境光的颜色以及强弱
 		let ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
 		sceneOrtho.add(ambientLight);
@@ -126,6 +130,12 @@ export function ViewCube(scene, domid) {
 				intersects[0].object.material.opacity = 0.2;
 			}
 		})
+	}
+	_ViewCube.Hide = function() {
+		dom.style.display = "none"
+	}
+	_ViewCube.Show = function() {
+		dom.style.display = "block"
 	}
 	//渲染场景
 	_ViewCube.renderScene = function() {
@@ -206,7 +216,7 @@ export function ViewCube(scene, domid) {
 		} else if (dir == "button_back_left") {
 			normal = new THREE.Vector3(-1, -1, -1);
 		}
-		var box = _ViewCube.getBoundingBox();
+		var box = _ViewCube.getBoundingBox(_Engine);
 		var min = box.min;
 		var max = box.max;
 		var target = min.clone().add(max.clone()).multiplyScalar(0.5);
@@ -230,7 +240,7 @@ export function ViewCube(scene, domid) {
 		return cameraData;
 	}
 	//还原相机姿态
-	_ViewCube.ReductionCameraPose = function(cameraData) {
+	_ViewCube.ReductionCameraPose = function(cameraData, time = 1000, callback) {
 		//先转动
 		var quaternion = new THREE.Quaternion(cameraData.quaternion._x, cameraData.quaternion._y, cameraData
 			.quaternion._z, cameraData.quaternion._w);
@@ -239,13 +249,51 @@ export function ViewCube(scene, domid) {
 
 
 		_ViewCube.animateCamera(_ViewCube.scene.camera.position, position, _ViewCube.scene.controls.target
-			.clone(), target, _ViewCube.scene.camera.quaternion, quaternion)
+			.clone(), target, _ViewCube.scene.camera.quaternion, quaternion, time, (res) => {
+				callback && callback(res)
+			})
 	}
 	//相机回归正位
 	_ViewCube.cameraGoHome = function() {
-		var box = _ViewCube.getBoundingBox();
-		var min = box.min;
-		var max = box.max;
+		var box = _ViewCube.getBoundingBox(_Engine);
+		//直接取所有的
+		var rootmodels = _Engine.scene.children.filter(o => o.name == "rootModel");
+		var min = new THREE.Vector3();
+		var max = new THREE.Vector3();
+		var minX = Infinity,
+			minY = Infinity,
+			minZ = Infinity,
+			maxX = -Infinity,
+			maxY = -Infinity,
+			maxZ = -Infinity;
+		for (let rootmodel of rootmodels) {
+			for (let model of rootmodel.ElementInfos) {
+				let point = model.center.clone();
+				if (point.x < minX) {
+					minX = point.x;
+				}
+				if (point.y < minY) {
+					minY = point.y;
+				}
+				if (point.z < minZ) {
+					minZ = point.z;
+				}
+				if(point.x > maxX){
+					maxX = point.x;
+				} 
+				if(point.y > maxY){
+					maxY = point.y;
+				} 
+				if(point.z > maxZ){
+					maxZ = point.z;
+				} 
+				min = new THREE.Vector3(minX,minY,minZ);
+				max = new THREE.Vector3(maxX,maxY,maxZ);
+			}
+		}
+
+
+
 		var target = min.clone().add(max.clone()).multiplyScalar(0.5);
 		// target=target.clone().add(min.clone());
 		let dir = new THREE.Vector3(1, 1, 1);
@@ -261,9 +309,9 @@ export function ViewCube(scene, domid) {
 	// target2 新的controls的target
 	// current3 相机当前quaternion
 	// target3 相机的目标quaternion
-	_ViewCube.animateCamera = function(current1, target1, current2, target2, current3, target3) {
+	_ViewCube.animateCamera = function(current1, target1, current2, target2, current3, target3, time = 1000, callback) {
 		var tween
-		if(current3 && target3){
+		if (current3 && target3) {
 			tween = new TWEEN.Tween({
 				x1: current1.x, // 相机当前位置x
 				y1: current1.y, // 相机当前位置y
@@ -287,9 +335,9 @@ export function ViewCube(scene, domid) {
 				_y: target3._y, // 新的相机quaternion
 				_z: target3._z, // 新的相机quaternion
 				_w: target3._w // 新的相机quaternion
-			}, 1000);
+			}, time);
 
-		}else{
+		} else {
 			tween = new TWEEN.Tween({
 				x1: current1.x, // 相机当前位置x
 				y1: current1.y, // 相机当前位置y
@@ -305,15 +353,15 @@ export function ViewCube(scene, domid) {
 				x2: target2.x, // 新的控制中心点位置x
 				y2: target2.y, // 新的控制中心点位置x
 				z2: target2.z, // 新的控制中心点位置x
-			}, 1000);
+			}, time);
 		}
 		tween.onUpdate(function(res) {
-			if(current3 && target3){
+			if (current3 && target3) {
 				_ViewCube.scene.camera.quaternion._x = res._x
 				_ViewCube.scene.camera.quaternion._y = res._y
 				_ViewCube.scene.camera.quaternion._z = res._z
 				_ViewCube.scene.camera.quaternion._w = res._w
-			}else{
+			} else {
 				_ViewCube.scene.controls.auto = true;
 			}
 			_ViewCube.scene.camera.position.x = res.x1;
@@ -325,8 +373,10 @@ export function ViewCube(scene, domid) {
 			_ViewCube.scene.controls.update();
 			_ViewCube.renderScene();
 		})
-		tween.onComplete(function(res){
+		tween.onComplete(function(res) {
 			_ViewCube.scene.controls.auto = false;
+			_ViewCube.renderScene();
+			callback && callback(true)
 		})
 		tween.easing(TWEEN.Easing.Cubic.InOut);
 

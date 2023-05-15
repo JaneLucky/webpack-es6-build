@@ -21,7 +21,7 @@ import {
 import {
 	SSAOShader
 } from "@/three/shaders/SSAOShader.js"
-export function RenderSAO(bimengine) {
+export function RenderSAO(_Engine) {
 	var _renderSAO = new Object();
 	//设置参数
 
@@ -48,7 +48,7 @@ export function RenderSAO(bimengine) {
 
 
 	// _renderSAO.enableRenderSAO = function(enable) {
-	// 	var scene = bimengine.scene;
+	// 	var scene = _Engine.scene;
 	// 	var camera = scene.camera;
 	// 	const ssaoPass = new SSAOPass(scene, camera);
 	// 	ssaoPass.kernelRadius = 16;
@@ -58,12 +58,12 @@ export function RenderSAO(bimengine) {
 	// }
 	// _renderSAO.render = function() {
 	// 	if (_renderSAO.ssaoPass != null) { 
-	// 		_renderSAO.ssaoPass.render(bimengine.scene.renderer);
+	// 		_renderSAO.ssaoPass.render(_Engine.scene.renderer);
 	// 	}
 	// }
 	//设置参数
 	_renderSAO.enableRenderSAO = function(enable) {
-		// var scene = bimengine.scene;
+		// var scene = _Engine.scene;
 		// var camera = scene.camera;
 		// var renderer = scene.renderer;
 
@@ -107,11 +107,11 @@ export function RenderSAO(bimengine) {
 
 
 
-		var scene = bimengine.scene;
+		var scene = _Engine.scene;
 		var renderer = scene.renderer;
 		var camera = scene.camera;
 		if (enable == false) {
-			bimengine.RenderSAO.saoPass.enabled = false
+			_Engine.RenderSAO.saoPass.enabled = false
 			return;
 		}
 		var composer = new EffectComposer(renderer);

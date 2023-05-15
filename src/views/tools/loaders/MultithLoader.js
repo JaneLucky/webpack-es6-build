@@ -2,7 +2,7 @@ const THREE = require('@/three/three.js')
 import * as BufferGeometryUtils from "@/three/utils/BufferGeometryUtils.js"
 
 //批量加载glb模型，json - 大量相同模型合并
-export function MultithLoadGlbJsonList(Scene, rootPath, relativePath, type, option) {
+export function MultithLoadGlbJsonList(_Engine, Scene, rootPath, relativePath, type, option) {
   console.log(new Date().getMinutes() + ":"+ new Date().getSeconds())
   //计算边线-并存储，用于测量捕捉
   var worker = new Worker('static/js/load.worker.js');
@@ -50,7 +50,7 @@ export function MultithLoadGlbJsonList(Scene, rootPath, relativePath, type, opti
         break;
       case 'allModelLoad':
         // 待所有模型处理完成，销毁线程
-        window.bimEngine.ViewCube.cameraGoHome();
+        _Engine.ViewCube.cameraGoHome();
         worker.terminate()
         break;
     }
@@ -71,9 +71,9 @@ export function MultithLoadGlbJsonList(Scene, rootPath, relativePath, type, opti
 		for (var o of meshs) {
 			if (o.geometry != null && o.matrix != null) {
 				let matrixWorldGeometry = o.geometry.clone().applyMatrix4(o.matrix.clone());
-				let MaterialMapList = window.bimEngine.MaterialMapList.filter(item=>item.path === relativePath)
+				let MaterialMapList = _Engine.MaterialMapList.filter(item=>item.path === relativePath)
 				let materialMap = MaterialMapList.length?MaterialMapList[0].mapList.filter(item=>item.glb === path)[0]:null
-				let paramMaterial = materialMap?window.bimEngine.MaterialList.filter(item=>item.Id === materialMap.materialId)[0]:null
+				let paramMaterial = materialMap?_Engine.MaterialList.filter(item=>item.Id === materialMap.materialId)[0]:null
 
 				if(materialMap && materialMap.meshId === o.userData.name && paramMaterial && paramMaterial.Param){
 					setMaterialAttribute(o.material, paramMaterial.Param)
@@ -99,11 +99,6 @@ export function MultithLoadGlbJsonList(Scene, rootPath, relativePath, type, opti
 					max: max,
 					center: center,
 					dbid: ElementInfoArray.length,
-					IsMerge: o.IsMerge,
-					MergeIndex: o.MergeIndex,
-					MergeCount: o.MergeCount,
-					MergeName: o.MergeName,
-					EdgeList:[], 
 					basePath:rootPath+relativePath,
 					relativePath:relativePath
 				});

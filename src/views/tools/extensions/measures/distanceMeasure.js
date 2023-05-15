@@ -4,11 +4,12 @@ import {
 } from "@/views/tools/common/index.js"
 import { IncludeElement } from "@/views/tools/initialize/InitEvents.js" //监听函数
 import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js"
-export function distanceMeasure(bimengine) {
+import { getRootDom, guidId } from './index.js'
+export function distanceMeasure(_Engine) {
   require('@/views/tools/style/'+SetDeviceStyle()+'/measuresStyle.scss')
 	var _distanceMeasure = new Object();
-	var _container = bimengine.scene.renderer.domElement.parentElement;
-	var camera = bimengine.scene.camera;
+	var _container = _Engine.scene.renderer.domElement.parentElement;
+	var camera = _Engine.scene.camera;
 	let CurrentDom; //当前选中的dom
   let MeasureDomeId = "MeasureDistance";//捕捉dom的根节点
 	_distanceMeasure.TotalMeasures = []; //所有测量点集合
@@ -17,23 +18,28 @@ export function distanceMeasure(bimengine) {
 	let CAMERA_POSITION;
 	let isInit = false
 	let Pink;//初始化标记点
+	let tempName = "temp_"+guidId()
 	_distanceMeasure.currentMeasure;
+	let DrawDomeId; // 视点绘画捕捉dom的根节点
+	_distanceMeasure.PinkClick = true; // 标记点是否点击
 	//激活
-	_distanceMeasure.Active = function() {
-		bimengine.CaptureMark.Active()
-		_distanceMeasure.models = bimengine.GetAllVisibilityModel();
-		// if(bimengine.EngineRay){
-		// 	bimengine.EngineRay.Active()
+	_distanceMeasure.Active = function(dom) {
+		_distanceMeasure.PinkClick = true;
+		DrawDomeId = dom
+		_Engine.CaptureMark.Active()
+		_distanceMeasure.models = _Engine.GetAllVisibilityModel();
+		// if(_Engine.EngineRay){
+		// 	_Engine.EngineRay.Active()
 		// 	_distanceMeasure.models = _distanceMeasure.models.filter(o => o.TypeName == "InstancedMesh" || o
 		// 		.TypeName == "InstancedMesh-Pipe");
-		// 		_distanceMeasure.models.push(bimengine.scene.children[5]);
+		// 		_distanceMeasure.models.push(_Engine.scene.children[5]);
 		// }
 		Pink = CreatePinkDom(MeasureDomeId)
 		_container.addEventListener('pointerdown', onMouseDown);
 		_container.addEventListener('pointermove', onMouseMove);
 		_container.addEventListener('pointerup', onMouseUp);
 		window.addEventListener('keydown', DeleteMeasureItem);//监听键盘delete
-		bimengine.StopClick = true
+		_Engine.StopClick = true
 
 		function render() {
 			AnimationFrame = requestAnimationFrame(render);
@@ -45,18 +51,59 @@ export function distanceMeasure(bimengine) {
 	}
 	//关闭
 	_distanceMeasure.DisActive = function() {
-		bimengine.CaptureMark.DisActive()
-		var root = getRootDom(MeasureDomeId);
+		_Engine.CaptureMark.DisActive()
 		_distanceMeasure.TotalMeasures = []
+		var root = getRootDom(_container, MeasureDomeId, false);
 		root && root.remove() //删除坐标点dom
+		DrawDomeId && ResetCurrentDom()
 		_container.removeEventListener('pointerdown', onMouseDown);
 		_container.removeEventListener('pointermove', onMouseMove);
 		_container.removeEventListener('pointerup', onMouseUp);
 		window.removeEventListener('keydown',DeleteMeasureItem)
-		bimengine.StopClick = false
+		_Engine.StopClick = false
 		cancelAnimationFrame(AnimationFrame) //清除动画
 		_distanceMeasure.isActive = false
 		_distanceMeasure.TotalMeasures = [];
+	}
+	
+	//创建测量标记
+	_distanceMeasure.CreateMeasureDom = function(dom, list) {
+		DrawDomeId = dom
+		_distanceMeasure.PinkClick = false
+		list.map(item=>{
+			if(item.start){
+				item.start = new THREE.Vector3(item.start.x, item.start.y, item.start.z)
+			}
+			if(item.end){
+				item.end = new THREE.Vector3(item.end.x, item.end.y, item.end.z)
+			}
+			return item
+		})
+		Animate_MeasureLines(list, false)
+	}
+
+	// 开启监听键盘delete
+	_distanceMeasure.OpenDrawDeleteListener = function() {
+		CurrentDom = null
+		_distanceMeasure.PinkClick = true
+		window.addEventListener('keydown', DeleteDrawMeasureItem);
+	}
+
+	//清除键盘delete
+	_distanceMeasure.CloseDrawDeleteListener = function() {
+		_distanceMeasure.PinkClick = false
+		window.removeEventListener('keydown',DeleteDrawMeasureItem);
+	}
+
+	// 视点中-选中标记点-点击delete可删除
+	function DeleteDrawMeasureItem(e) {
+		if(!_distanceMeasure.isActive){
+			if (e.key === "Delete" && CurrentDom) {
+				var root = getRootDom(_container, DrawDomeId, false)
+				root && root.removeChild(CurrentDom)
+				ResetCurrentDom()
+			}
+		}
 	}
 
 	//鼠标按下
@@ -71,19 +118,19 @@ export function distanceMeasure(bimengine) {
 	function onMouseMove(event) {
 		if(isInit){
 			Pink.style.display = 'none'
-			let Position = bimengine.CaptureMark.Position
+			let Position = _Engine.CaptureMark.Position
 			if (Position) {
 				let point = new THREE.Vector3(Position.worldPoint.x, Position.worldPoint.y, Position.worldPoint.z)
 				let normal = new THREE.Vector3(Position.capture.faceNormal.x, Position.capture.faceNormal.y, Position.capture.faceNormal.z);
 				let results = rayDirectResult(point, normal);
-				let temDom = document.getElementById('temp')
+				let temDom = document.getElementById(tempName)
 				if (results != null) {
 					temDom && (temDom.style.display = "block")
 					_distanceMeasure.currentMeasure = {
 						start: point,
 						end: results.point,
 						dis: point.distanceTo(results.point),
-						id: "temp"
+						id: tempName
 					};
 				}else{
 					temDom && (temDom.style.display = "none")
@@ -94,10 +141,10 @@ export function distanceMeasure(bimengine) {
 			// 之前
 			// let rayCaster = new THREE.Raycaster();
 			// let mouse = new THREE.Vector2();
-			// mouse.x = ((event.clientX - bimengine.scene.camera.viewport.x) / bimengine.scene.camera.viewport.z) * 2 - 1;
-			// mouse.y = -((event.clientY - bimengine.scene.camera.viewport.y) / bimengine.scene.camera.viewport.w) * 2 + 1;
+			// mouse.x = ((event.clientX - _Engine.scene.camera.viewport.x) / _Engine.scene.camera.viewport.z) * 2 - 1;
+			// mouse.y = -((event.clientY - _Engine.scene.camera.viewport.y) / _Engine.scene.camera.viewport.w) * 2 + 1;
 			// //这里为什么是-号，没有就无法点中
-			// rayCaster.setFromCamera(mouse, bimengine.scene.camera);
+			// rayCaster.setFromCamera(mouse, _Engine.scene.camera);
 			// let intersects = rayCaster.intersectObjects(_distanceMeasure.models, true);
 			// if(intersects && intersects.length){
 			// 	let intersect = intersects[0]
@@ -135,22 +182,24 @@ export function distanceMeasure(bimengine) {
 		ResetCurrentDom()
 		if (event.button === 0) {
 			if (Math.abs(event.x - CAMERA_POSITION.x) < 2 && Math.abs(event.y - CAMERA_POSITION.y) < 2) {
-				if(bimengine.CaptureMark.Position){
-					let Position = JSON.parse(JSON.stringify(bimengine.CaptureMark.Position))
+				if(_Engine.CaptureMark.Position){
+					let Position = JSON.parse(JSON.stringify(_Engine.CaptureMark.Position))
 					let point = new THREE.Vector3(Position.worldPoint.x, Position.worldPoint.y, Position.worldPoint.z)
-					window.bimEngine.scene.controls.origin = point;
+					_Engine.scene.controls.origin = point;
 				}
-				if(!isInit && bimengine.CaptureMark.Position){
+				if(!isInit && _Engine.CaptureMark.Position){
 					Pink.style.display = 'block'
 					Pink.style.left = event.x + 'px'
 					Pink.style.top = event.y + 'px'
 					isInit = true
 				}else if(isInit && _distanceMeasure.currentMeasure){
 					let item = JSON.parse(JSON.stringify(_distanceMeasure.currentMeasure))
-					item.id = guid()
+					item.id = guidId()
 					_distanceMeasure.TotalMeasures.push(item)
-					let temDom = document.getElementById('temp')
-					document.getElementById(MeasureDomeId).removeChild(temDom)
+					let DomeId = DrawDomeId?DrawDomeId:MeasureDomeId
+					var root = getRootDom(_container, DomeId, false)
+					let temDom = document.getElementById(tempName)
+					temDom && root.removeChild(temDom)
 					_distanceMeasure.currentMeasure = null
 					isInit = false
 				}
@@ -166,7 +215,7 @@ export function distanceMeasure(bimengine) {
 			let bkIntersect = null
 			for (let intersect of intersects) {
 				if (intersect.object.TypeName == "Mesh" || intersect.object.TypeName == "Mesh-Structure" || intersect.object.TypeName == "PipeMesh") {
-					var clickObj = IncludeElement(intersect.object, intersect.point); //选中的构建位置信息
+					var clickObj = IncludeElement(_Engine, intersect.object, intersect.point); //选中的构建位置信息
 					if(clickObj && intersect.object.geometry.groups[clickObj.dbid].visibility !== false){
 						bkIntersect = intersect
 						break;
@@ -184,11 +233,12 @@ export function distanceMeasure(bimengine) {
 
 	//鼠标移动更新标记点位置标
 	//鼠标移动更新标记线位置
-	function Animate_MeasureLines(TotalMeasures) {
+	function Animate_MeasureLines(TotalMeasures, active = true) {
 		if (TotalMeasures.length == 0) {
 			return;
 		}
-		var root = getRootDom(MeasureDomeId)
+		let DomeId = DrawDomeId?DrawDomeId:MeasureDomeId
+		var root = getRootDom(_container, DomeId)
 		for (var measure of TotalMeasures) {
 			if (measure.start == null) {
 				continue;
@@ -220,9 +270,11 @@ export function distanceMeasure(bimengine) {
 					//新增坐标点
 					line_item = document.createElement("div");
 					line_item.id = measure.id;
-					line_item.className = "LineItem Temporary LineFinal Actived"
+					let itemClassName = active?"LineItem Temporary LineFinal Actived":"LineItem Temporary LineFinal";
+					line_item.className = itemClassName;
 					line_item.dataset.dataId = measure.id;
-					line_item.dataset.cameraId = bimengine.scene.camera.type+"_"+bimengine.scene.camera.Id;
+					line_item.dataset.cameraId = _Engine.scene.camera.type+"_"+_Engine.scene.camera.Id;
+					line_item.dataset.dataInfo = JSON.stringify(measure);
 					line_item.addEventListener('click', (e) => {
 						if(e.target.dataset.dataId){//选择标记
 							ResetCurrentDom(e.target.dataset.dataId)
@@ -295,13 +347,23 @@ export function distanceMeasure(bimengine) {
 		if (e.key === "Delete" && CurrentDom) {
 			let index = _distanceMeasure.TotalMeasures.findIndex(item => item.id === CurrentDom.id);
 			_distanceMeasure.TotalMeasures.splice(index, 1)
-			document.getElementById(MeasureDomeId).removeChild(CurrentDom)
+			let DomeId = DrawDomeId?DrawDomeId:MeasureDomeId
+			var root = getRootDom(_container, DomeId, false)
+			root && root.removeChild(CurrentDom)
 			ResetCurrentDom()
 		}
 	}
 
 	function ResetCurrentDom(id){
-		let DomList = document.getElementById(MeasureDomeId).children
+		if (!_distanceMeasure.isActive && !_distanceMeasure.PinkClick){
+			return
+		}
+		let DomeId = DrawDomeId?DrawDomeId:MeasureDomeId
+		var root = getRootDom(_container, DomeId, false)
+		if(!root){
+			return
+		}
+		let DomList = root.children
 		for (let item of DomList) {
 			if(item.id){
 				item.className = "LineItem Temporary LineFinal"
@@ -321,7 +383,7 @@ export function distanceMeasure(bimengine) {
 
 	// 创建激活点
 	function CreatePinkDom(domName){
-    var root = getRootDom(domName)
+		var root = getRootDom(_container, domName);
     let Pink_Mark = document.createElement("div");
     Pink_Mark.className = "PointMark";
     root.appendChild(Pink_Mark);
@@ -331,7 +393,8 @@ export function distanceMeasure(bimengine) {
 	// 创建测量线
 	function Render_MeasureLine() {
 		if(_distanceMeasure.currentMeasure.start && _distanceMeasure.currentMeasure.end && _distanceMeasure.currentMeasure.dis){
-			var root = getRootDom(MeasureDomeId)
+			let DomeId = DrawDomeId?DrawDomeId:MeasureDomeId
+			var root = getRootDom(_container, DomeId)
 			//获取起点和终点 
 			var line_item = document.getElementById(_distanceMeasure.currentMeasure.id);
 			if (line_item == null) {
@@ -366,8 +429,8 @@ export function distanceMeasure(bimengine) {
 				var dom_end = children[1];
 				var dom_line = children[2];
 				var dom_text = children[3];
-				let start =  worldPointToScreenPoint(_distanceMeasure.currentMeasure.start .clone(), bimengine.scene.camera)
-				let end = worldPointToScreenPoint(_distanceMeasure.currentMeasure.end.clone(), bimengine.scene.camera)
+				let start =  worldPointToScreenPoint(_distanceMeasure.currentMeasure.start .clone(), _Engine.scene.camera)
+				let end = worldPointToScreenPoint(_distanceMeasure.currentMeasure.end.clone(), _Engine.scene.camera)
 
 				dom_start.style.top = (start.y) + "px";
 				dom_start.style.left = (start.x) + "px";
@@ -389,25 +452,5 @@ export function distanceMeasure(bimengine) {
 			}
 		}
 	}
-
-	//获得点标记的dom根节点
-	function getRootDom(domName) {
-    var root = document.getElementById(domName);
-    if (root == null) { //不存在点标记包裹div
-      root = document.createElement("div");
-      root.id = domName;
-      _container.appendChild(root);
-    }
-    return root
-	}
-	//生成随机字符串id
-	function guid() {
-		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-			var r = Math.random() * 16 | 0,
-				v = c == 'x' ? r : (r & 0x3 | 0x8);
-			return v.toString(16);
-		});
-	}
-	
 	return _distanceMeasure;
 }

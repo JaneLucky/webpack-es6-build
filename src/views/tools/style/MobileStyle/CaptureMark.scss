@@ -1,4 +1,4 @@
-#CaptureMarkContain{
+.CaptureMarkContain{
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -35,7 +35,7 @@
 
 
 @media screen and (orientation: landscape) { /*横屏 css*/ 
-  #CaptureMarkContain{
+  .CaptureMarkContain{
     position: absolute;
     top: 0;
     left: 0;
