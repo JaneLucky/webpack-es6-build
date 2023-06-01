@@ -66,28 +66,21 @@ export function GetBoundingBox(_Engine, list, isRequireModel = false) {
   if (list) {
     for (let select of list) {
       for (let rootmodel of rootmodels) {
-        if (rootmodel && rootmodel.material.length) {
-          let hasSet = false;
+        if (rootmodel.index === select[0]) {
           for (let model of rootmodel.ElementInfos) {
-            if (!isRequireModel && model.name === select) {
-              let point = model.center.clone();
-              allPointsX.push(point.x);
-              allPointsY.push(point.y);
-              allPointsZ.push(point.z);
-              hasSet = true;
-              break;
-            } else if (isRequireModel && GetTwoCharCenterStr(model.name)[0] === select) {
-              let point = model.center.clone();
-              allPointsX.push(point.x);
-              allPointsY.push(point.y);
-              allPointsZ.push(point.z);
-              hasSet = true;
+            if (!isRequireModel && model.dbid === select[1]) {
+              let pointMin = model.min.clone();
+              allPointsX.push(pointMin.x);
+              allPointsY.push(pointMin.y);
+              allPointsZ.push(pointMin.z);
+              let pointMax = model.max.clone();
+              allPointsX.push(pointMax.x);
+              allPointsY.push(pointMax.y);
+              allPointsZ.push(pointMax.z);
               break;
             }
           }
-          if (hasSet) {
-            break;
-          }
+          break;
         }
       }
     }

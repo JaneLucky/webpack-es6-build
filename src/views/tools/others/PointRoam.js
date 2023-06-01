@@ -1,101 +1,111 @@
-const THREE = require('@/three/three.js')
-export function PointRoam() { // 点的坐标数据
-	var _pointRoam = new Object();
-  _pointRoam.curveCamera = null //相机位置曲线
-  _pointRoam.curveTarget = null //目标点位置曲线
-  _pointRoam.isPaused = false //是否暂停
-  _pointRoam.isCancle = false //是否取消
+const THREE = require("@/three/three.js");
+import TWEEN from "@tweenjs/tween.js";
+export function PointRoam(_Engine) {
+  // 点的坐标数据
+  var _pointRoam = new Object();
+  let AnimationFrame;
+  _pointRoam.AnimateTween = null;
+  _pointRoam.isPaused = false; //是否暂停
+  _pointRoam.isCancle = false; //是否取消
 
-  //生成漫游曲线
-  _pointRoam.SetPointRoam = function (list) {
-    // 目标的坐标数组转为点数组
-    let pointsTarget = [];
-    // 相机的坐标数组转为点数组
-    let pointsCamera = [];
-    for(let i=0;i<list.length;i++){
-      pointsTarget.push(new THREE.Vector3(
-        list[i].target.x,
-        list[i].target.y,
-        list[i].target.z,
-      ));
-      pointsCamera.push(new THREE.Vector3(
-        list[i].position.x,
-        list[i].position.y,
-        list[i].position.z,
-      ));
-    }
-    // 目标的位置3D样条曲线
-    _pointRoam.curveTarget = new THREE.CatmullRomCurve3(pointsTarget); //通过类CatmullRomCurve3创建一个3D样条曲线
-    // 相机的位置3D样条曲线
-    _pointRoam.curveCamera = new THREE.CatmullRomCurve3(pointsCamera); //通过类CatmullRomCurve3创建一个3D样条曲线
-  }
-
-  //开始执行动画
-  _pointRoam.RunAnimation = function (camera,time=5){
-    _pointRoam.isCancle = false //是否取消
-    let t = 0; // 计算当前时间进度百分比
-    let AnimationFrame;
-    function render() {
-      AnimationFrame = window.requestAnimationFrame(render);
-      function changeLookAt() {
-        // 相机点在线条上的位置
-        const positionCamera = _pointRoam.curveCamera.getPointAt(t);
-        // 目标点在线条上的位置
-        const positionTarget = _pointRoam.curveTarget.getPointAt(t);
-        // 目标点的三维切线向量
-        var nPos = new THREE.Vector3(positionTarget.x, positionTarget.y, positionTarget.z);
-        // 目标点t在曲线上位置切线向量
-        const tangent = _pointRoam.curveTarget.getTangentAt(t);
-        // 位置向量和切线向量相加即为所需朝向的标点向量
-        const lookAtVec = tangent.add(nPos);
-        //更新相机位置
-        camera.position.set(positionCamera.x, positionCamera.y, positionCamera.z)
-        //更新相机的看向
-        camera.lookAt(lookAtVec);
-        t = t + 1/(60*time)
-      }
-      if(_pointRoam.isCancle){
-        window.cancelAnimationFrame(AnimationFrame)
-        AnimationFrame = null
-      }else{
-        if(!_pointRoam.isPaused){
-          if(_pointRoam.curveCamera && _pointRoam.curveTarget && t<=1){
-            changeLookAt()
-          }else{
-            window.cancelAnimationFrame(AnimationFrame)
-            AnimationFrame = null
-          }
-        }
-      }
-    }
-    render()
-  }
-  
   //更新动画
-  _pointRoam.StartAnimation = function (list,camera,time){
+  _pointRoam.StartAnimation = function (list, time) {
     //取消现有动画
-    _pointRoam.CancleAnimation() 
-    //重新生成漫游取消
-    _pointRoam.SetPointRoam(list)
-    //重新执行动画
-    _pointRoam.RunAnimation(camera,time)
-  }
+    _pointRoam.CancleAnimation();
+    //加载模型
+    let AnimateInOrder = async () => {
+      let AnimateItem = async i => {
+        return new Promise((resolve, reject) => {
+          _pointRoam.RunAnimation(list[i], list[i + 1], time * 1000, () => {
+            _pointRoam.CancleAnimation();
+            resolve();
+          });
+        });
+      };
+      //for循环调接口
+      for (let i = 0; i < list.length - 1; i++) {
+        await AnimateItem(i);
+      }
+    };
+    AnimateInOrder();
+  };
+
+  _pointRoam.RunAnimation = function (currentParams, nextParams, time = 1000, callback) {
+    _pointRoam.AnimateTween = new TWEEN.Tween({
+      x1: currentParams.position.x, // 相机当前位置x
+      y1: currentParams.position.y, // 相机当前位置y
+      z1: currentParams.position.z, // 相机当前位置z
+      x2: currentParams.target.x, // 控制当前的中心点x
+      y2: currentParams.target.y, // 控制当前的中心点y
+      z2: currentParams.target.z, // 控制当前的中心点z
+      _x: currentParams.quaternion._x, // 相机当前quaternion
+      _y: currentParams.quaternion._y, // 相机当前quaternion
+      _z: currentParams.quaternion._z, // 相机当前quaternion
+      _w: currentParams.quaternion._w // 相机当前quaternion
+    });
+    _pointRoam.AnimateTween.to(
+      {
+        x1: nextParams.position.x, // 新的相机位置x
+        y1: nextParams.position.y, // 新的相机位置y
+        z1: nextParams.position.z, // 新的相机位置z
+        x2: nextParams.target.x, // 新的控制中心点位置x
+        y2: nextParams.target.y, // 新的控制中心点位置x
+        z2: nextParams.target.z, // 新的控制中心点位置x
+        _x: nextParams.quaternion._x, // 新的相机quaternion
+        _y: nextParams.quaternion._y, // 新的相机quaternion
+        _z: nextParams.quaternion._z, // 新的相机quaternion
+        _w: nextParams.quaternion._w // 新的相机quaternion
+      },
+      time
+    );
+    _pointRoam.AnimateTween.onUpdate(function (res) {
+      _Engine.scene.camera.position.x = res.x1;
+      _Engine.scene.camera.position.y = res.y1;
+      _Engine.scene.camera.position.z = res.z1;
+      _Engine.scene.controls.target.x = res.x2;
+      _Engine.scene.controls.target.y = res.y2;
+      _Engine.scene.controls.target.z = res.z2;
+      _Engine.scene.camera.quaternion._x = res._x;
+      _Engine.scene.camera.quaternion._y = res._y;
+      _Engine.scene.camera.quaternion._z = res._z;
+      _Engine.scene.camera.quaternion._w = res._w;
+      _Engine.scene.controls.update();
+      _Engine.ViewCube.renderScene();
+    });
+    _pointRoam.AnimateTween.onComplete(function (res) {
+      _Engine.scene.controls.auto = false;
+      _Engine.ViewCube.renderScene();
+      callback && callback(true);
+    });
+    function animate(time) {
+      AnimationFrame = requestAnimationFrame(animate);
+      _pointRoam.AnimateTween && _pointRoam.AnimateTween.update();
+    }
+    _pointRoam.AnimateTween.start();
+    animate();
+  };
 
   // 暂停动画
-  _pointRoam.PausedAnimation = function(){
-    _pointRoam.isPaused = true
-  }
+  _pointRoam.PausedAnimation = function () {
+    _pointRoam.AnimateTween && _pointRoam.AnimateTween.pause();
+    _pointRoam.isPaused = true;
+  };
   // 继续动画
-  _pointRoam.ContinueAnimation = function(){
-    _pointRoam.isPaused = false
-  }
+  _pointRoam.ContinueAnimation = function () {
+    _pointRoam.AnimateTween && _pointRoam.AnimateTween.resume();
+    _pointRoam.isPaused = false;
+  };
   // 取消动画
-  _pointRoam.CancleAnimation = function(){
-    _pointRoam.curveCamera = null //相机位置曲线
-    _pointRoam.curveTarget = null //目标点位置曲线
-    _pointRoam.isPaused = false //是否暂停
-    _pointRoam.isCancle = true  //是否取消
-  }
+  _pointRoam.CancleAnimation = function () {
+    if (_pointRoam.AnimateTween) {
+      cancelAnimationFrame(AnimationFrame); //清除动画
+      AnimationFrame = null;
+      _pointRoam.AnimateTween.stop();
+    }
+    _pointRoam.AnimateTween = null;
+    _pointRoam.isPaused = false; //是否暂停
+    _pointRoam.isCancle = true; //是否取消
+  };
 
-	return _pointRoam;
+  return _pointRoam;
 }

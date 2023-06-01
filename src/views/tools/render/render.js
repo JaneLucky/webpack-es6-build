@@ -1,5 +1,5 @@
 const THREE = require("@/three/three.js");
-import SceneEffectSet from "@/views/components/PCView/DialogView/LeftDialog/SceneEffectSet.vue";
+import SceneEffectSet from "@/views/tools/components/SceneEffectSet.vue";
 import { create } from "@/utils/create";
 
 //渲染相关
@@ -30,7 +30,7 @@ export function Render(_Engine) {
   _render.DisplayEdge = function (enable) {
     if (enable) {
       let material = new THREE.LineBasicMaterial({
-        color: "#999999"
+        color: "#000000"
       });
       let EdgeList = _Engine.AllEdgeList;
       for (const Edge of EdgeList) {

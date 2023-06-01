@@ -4,7 +4,7 @@ import { GetModelNameWithUrl } from "@/api/ModelShare.js";
 import { CutString } from "@/utils/common.js";
 import { GetModelJsonFile } from "./index.js";
 export function ModelTree(_Engine, relativePath) {
-  let fileName = "ModelTreeList_V1_1";
+  let fileName = "ModelTreeList_V1_2";
   let TreeKey = 0;
   // TreeRename(relativePath);
   // return;
@@ -222,7 +222,6 @@ export function ModelTree(_Engine, relativePath) {
             delete item.ModelId;
             delete item.Isleaf;
             delete item.children;
-            delete item.key;
             return item;
           })
         : [];

@@ -2,7 +2,7 @@
   <div class="Render-Set-Dialog" v-show="dialogVisible" v-drag>
     <div class="Feader-Contain">
       <div class="Title">引擎设置</div>
-      <div class="Close-Btn" @click="Close()">×</div>
+      <div class="Close-Btn" @click="Close()" v-if="DeviceOS !== 'Phone'">×</div>
     </div>
     <div class="Main-Contain">
       <div class="Module-Header">
@@ -59,7 +59,7 @@
           ></el-slider>
         </div>
       </div>
-      <div class="Form_Item">
+      <div class="Form_Item Inside_List">
         <div class="Form_Item_Label">光照颜色</div>
         <div class="light-color-list">
           <div
@@ -85,15 +85,15 @@
         <div class="Icon"></div>
         <div class="Title">背景效果</div>
       </div>
-      <div class="Form_Item">
+      <div class="Form_Item Switch_contain">
         <el-switch
           v-model="effectForm.displayBgImg"
-          active-text="背景图片"
-          inactive-text="背景颜色"
+          active-text="图片"
+          inactive-text="颜色"
           @change="onSwitchChange('displayBgImg')"
         ></el-switch>
       </div>
-      <div class="Form_Item">
+      <div class="Form_Item Inside_List">
         <div class="Form_Item_Label Img_Label">背景颜色</div>
         <div class="bg-color-list">
           <div
@@ -105,7 +105,7 @@
           ></div>
         </div>
       </div>
-      <div class="Form_Item">
+      <div class="Form_Item Inside_List">
         <div class="Form_Item_Label Img_Label">背景图片</div>
         <div class="bg-img-list">
           <div
@@ -124,6 +124,7 @@
 
 <script>
 import drag from "@/directive/drag.js";
+import { getDeviceOS } from "@/utils/device";
 export default {
   props: {
     _Engine: {
@@ -137,6 +138,7 @@ export default {
   },
   data() {
     return {
+      DeviceOS: "PC",
       dialogVisible: true,
       effectForm: {
         shadowGround: false,
@@ -253,38 +255,38 @@ export default {
           status: false
         }
       ],
-      // ambientMapList: [
-      //   {
-      //     id: "1",
-      //     img: require("@/assets/logo.png"),
-      //     status: false
-      //   },
-      //   {
-      //     id: "2",
-      //     img: require("@/assets/logo.png"),
-      //     status: false
-      //   },
-      //   {
-      //     id: "3",
-      //     img: require("@/assets/zt.png"),
-      //     status: false
-      //   },
-      //   {
-      //     id: "4",
-      //     img: require("@/assets/logo.png"),
-      //     status: false
-      //   },
-      //   {
-      //     id: "5",
-      //     img: require("@/assets/logo.png"),
-      //     status: false
-      //   },
-      //   {
-      //     id: "6",
-      //     img: require("@/assets/logo.png"),
-      //     status: false
-      //   }
-      // ]
+      ambientMapList: [
+        {
+          id: "1",
+          img: require("@/assets/logo.png"),
+          status: false
+        },
+        {
+          id: "2",
+          img: require("@/assets/logo.png"),
+          status: false
+        },
+        {
+          id: "3",
+          img: require("@/assets/zt.png"),
+          status: false
+        },
+        {
+          id: "4",
+          img: require("@/assets/logo.png"),
+          status: false
+        },
+        {
+          id: "5",
+          img: require("@/assets/logo.png"),
+          status: false
+        },
+        {
+          id: "6",
+          img: require("@/assets/logo.png"),
+          status: false
+        }
+      ]
     };
   },
   watch: {
@@ -297,7 +299,9 @@ export default {
       this._Engine.Render.SetAmbientLightColor(val);
     }
   },
-  mounted() {},
+  mounted() {
+    this.DeviceOS = getDeviceOS();
+  },
   methods: {
     onBgImgChange(val) {
       this.effectForm.bgImg = val;
@@ -346,169 +350,349 @@ export default {
       }
     },
     Close() {
-      this._Engine && this._Engine.TopMenu.ClickItem("引擎设置");
+      this.Clear();
+      this._Engine && this._Engine.TopMenu && this._Engine.TopMenu.ClickItem("引擎设置");
+    },
+    Clear() {
+      const nodeList = document.querySelectorAll(".el-tooltip__popper");
+      for (var i = 0; i < nodeList.length; i++) {
+        nodeList[i].remove();
+      }
     }
   }
 };
 </script>
 
 <style lang="scss" scoped>
-.Render-Set-Dialog {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 360px;
-  height: max-content;
-  background: #ffffff;
-  box-sizing: border-box;
-  display: block;
-  z-index: 1;
-  border: 1px solid #dddddd;
-  .Feader-Contain {
-    width: 100%;
-    height: 34px;
-    padding: 10px;
-    border-bottom: 1px solid #dddddd;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    .Title {
-      font-size: 16px;
-      font-weight: 600;
-      padding-right: 50px;
-    }
-    .Close-Btn {
-      cursor: pointer;
-      font-size: 20px;
-    }
-  }
-  .Main-Contain {
+.PCView-page-container {
+  .Render-Set-Dialog {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 360px;
     height: max-content;
-    padding: 5px 15px 15px;
+    background: #ffffff;
     box-sizing: border-box;
-    .Module-Header {
+    display: block;
+    z-index: 11;
+    border: 1px solid #dddddd;
+    .Feader-Contain {
+      width: 100%;
+      height: 34px;
+      padding: 10px;
+      border-bottom: 1px solid #dddddd;
+      box-sizing: border-box;
       display: flex;
-      justify-content: flex-start;
+      justify-content: space-between;
       align-items: center;
-      margin-top: 10px;
-      .Icon {
-        width: 4px;
-        height: 16px;
-        background: #409eff;
-        margin-right: 8px;
-      }
       .Title {
         font-size: 16px;
         font-weight: 600;
-        line-height: 32px;
+        padding-right: 50px;
+      }
+      .Close-Btn {
+        cursor: pointer;
+        font-size: 20px;
       }
     }
-    .Form_Item {
-      display: flex;
-      padding: 5px 0 5px 15px;
-    }
-    .Form_Item_Label {
-      padding-right: 10px;
-    }
-    .Img_Label {
-      line-height: 40px;
-    }
-    .Slider-Label {
-      line-height: 38px;
-    }
-    .Slider-Contain {
-      flex: 1;
-      padding: 0 10px 0 5px;
-    }
-    .input_number_contain {
-      display: flex;
-      .inputtext {
-        margin: 0 10px;
-        width: fit-content;
-        text-align: center;
+    .Main-Contain {
+      height: max-content;
+      padding: 5px 15px 15px;
+      box-sizing: border-box;
+      .Module-Header {
         display: flex;
+        justify-content: flex-start;
         align-items: center;
+        margin-top: 10px;
+        .Icon {
+          width: 4px;
+          height: 16px;
+          background: #409eff;
+          margin-right: 8px;
+        }
+        .Title {
+          font-size: 16px;
+          font-weight: 600;
+          line-height: 32px;
+        }
       }
-      .Btn_Contain {
-        border: 1px solid #aaaaaa;
-        font-size: 10px;
+      .Form_Item {
         display: flex;
-        align-items: center;
-        color: #666666;
+        padding: 5px 0 5px 15px;
       }
-    }
+      .Form_Item_Label {
+        padding-right: 10px;
+      }
+      .Img_Label {
+        line-height: 40px;
+      }
+      .Slider-Label {
+        line-height: 38px;
+      }
+      .Slider-Contain {
+        flex: 1;
+        padding: 0 10px 0 5px;
+      }
+      .input_number_contain {
+        display: flex;
+        .inputtext {
+          margin: 0 10px;
+          width: fit-content;
+          text-align: center;
+          display: flex;
+          align-items: center;
+        }
+        .Btn_Contain {
+          border: 1px solid #aaaaaa;
+          font-size: 10px;
+          display: flex;
+          align-items: center;
+          color: #666666;
+        }
+      }
 
-    .bg-color-list {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      height: 40px;
-      align-items: center;
-      .item {
-        width: fit-content;
-        width: 40px;
-        height: 28px;
-        box-sizing: border-box;
-        border: 2px solid #dddddd;
-        cursor: pointer;
-      }
-      .actived {
-        border: 3px solid #409eff;
-      }
-    }
-    .light-color-list {
-      flex: 1;
-      display: flex;
-      flex-wrap: wrap;
-      .item {
-        width: 50%;
+      .bg-color-list {
+        flex: 1;
         display: flex;
-        margin-bottom: 10px;
-        cursor: pointer;
-        .legened {
+        align-items: center;
+        height: 40px;
+        align-items: center;
+        .item {
+          width: fit-content;
           width: 40px;
           height: 28px;
           box-sizing: border-box;
-          border-radius: 4px;
+          border: 2px solid #dddddd;
+          cursor: pointer;
         }
-        .title {
-          line-height: 28px;
-          padding-left: 10px;
+        .actived {
+          border: 3px solid #409eff;
         }
       }
-      .actived {
-        .legened {
-          border: 2px solid #409eff;
+      .light-color-list {
+        flex: 1;
+        display: flex;
+        flex-wrap: wrap;
+        .item {
+          width: 50%;
+          display: flex;
+          margin-bottom: 10px;
+          cursor: pointer;
+          .legened {
+            width: 40px;
+            height: 28px;
+            box-sizing: border-box;
+            border-radius: 4px;
+          }
+          .title {
+            line-height: 28px;
+            padding-left: 10px;
+          }
         }
-        .title {
-          color: #409eff;
+        .actived {
+          .legened {
+            border: 2px solid #409eff;
+          }
+          .title {
+            color: #409eff;
+          }
+        }
+      }
+      .bg-img-list {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        height: 40px;
+        align-items: center;
+        .item {
+          width: fit-content;
+          width: 34px;
+          height: 26px;
+          box-sizing: border-box;
+          border: 2px solid #ffffff;
+          cursor: pointer;
+          margin: 0 2px;
+          img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            overflow: hidden;
+          }
+        }
+        .actived {
+          border: 3px solid #409eff;
         }
       }
     }
-    .bg-img-list {
-      flex: 1;
+  }
+}
+.MobileView-page-container {
+  .Render-Set-Dialog {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    max-height: 100%;
+    overflow-x: scroll;
+    background: #ffffff;
+    box-sizing: border-box;
+    display: block;
+    z-index: 1;
+    border: 1px solid #dddddd;
+    .Feader-Contain {
+      width: 100%;
+      height: 34px;
+      padding: 10px;
+      border-bottom: 1px solid #dddddd;
+      box-sizing: border-box;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      height: 40px;
-      align-items: center;
-      .item {
-        width: fit-content;
-        width: 34px;
-        height: 26px;
-        box-sizing: border-box;
-        border: 2px solid #ffffff;
+      .Title {
+        font-size: 16px;
+        font-weight: 600;
+        padding-right: 50px;
+      }
+      .Close-Btn {
         cursor: pointer;
-        margin: 0 2px;
-        img {
-          width: 100%;
-          height: 100%;
-          display: block;
-          overflow: hidden;
+        font-size: 20px;
+      }
+    }
+    .Main-Contain {
+      height: max-content;
+      padding: 5px 15px 15px;
+      box-sizing: border-box;
+      overflow-y: scroll;
+      .Module-Header {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin-top: 10px;
+        .Icon {
+          width: 4px;
+          height: 16px;
+          background: #409eff;
+          margin-right: 8px;
+        }
+        .Title {
+          font-size: 16px;
+          font-weight: 600;
+          line-height: 32px;
         }
       }
-      .actived {
-        border: 3px solid #409eff;
+      .Form_Item_Label {
+        padding-right: 10px;
+      }
+      .Img_Label {
+        line-height: 32px;
+      }
+      .Slider-Label {
+        line-height: 38px;
+      }
+      .Slider-Contain {
+        flex: 1;
+        padding: 0 10px 0 5px;
+      }
+      .input_number_contain {
+        display: flex;
+        .inputtext {
+          margin: 0 10px;
+          width: fit-content;
+          text-align: center;
+          display: flex;
+          align-items: center;
+        }
+        .Btn_Contain {
+          border: 1px solid #aaaaaa;
+          font-size: 10px;
+          display: flex;
+          align-items: center;
+          color: #666666;
+        }
+      }
+      .Switch_contain {
+        margin-bottom: 5px;
+      }
+
+      .bg-color-list {
+        flex: 1;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        height: 32px;
+        align-items: center;
+        .item {
+          width: fit-content;
+          width: 32px;
+          height: 24px;
+          box-sizing: border-box;
+          border: 2px solid #dddddd;
+          cursor: pointer;
+        }
+        .actived {
+          border: 3px solid #409eff;
+        }
+      }
+      .light-color-list {
+        margin-top: 10px;
+        flex: 1;
+        display: flex;
+        flex-wrap: wrap;
+        .item {
+          width: 50%;
+          display: flex;
+          margin-bottom: 10px;
+          align-items: center;
+          cursor: pointer;
+          .legened {
+            width: 32px;
+            height: 24px;
+            box-sizing: border-box;
+            border-radius: 4px;
+          }
+          .title {
+            width: calc(100% - 40px);
+            line-height: 24px;
+            padding-left: 10px;
+            font-size: 14px;
+            overflow: hidden; //超出的文本隐藏
+            text-overflow: ellipsis; //溢出用省略号显示
+            display: -webkit-box;
+            -webkit-line-clamp: 1; // 超出多少行
+            -webkit-box-orient: vertical;
+          }
+        }
+        .actived {
+          .legened {
+            border: 2px solid #409eff;
+          }
+          .title {
+            color: #409eff;
+          }
+        }
+      }
+      .bg-img-list {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        .item {
+          width: fit-content;
+          width: 32px;
+          height: 24px;
+          box-sizing: border-box;
+          border: 2px solid #ffffff;
+          cursor: pointer;
+          margin: 0 2px;
+          img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            overflow: hidden;
+          }
+        }
+        .actived {
+          border: 3px solid #409eff;
+        }
       }
     }
   }

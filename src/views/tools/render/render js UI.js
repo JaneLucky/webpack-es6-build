@@ -173,8 +173,8 @@ export function Render(_Engine) {
     header_close.innerText = "×";
     header_close.onclick = () => {
       // _render.DisActive()
-      let item = _Engine.TopMenu.MenuList.filter(item => item.label === "引擎设置")[0];
-      item.domEl.click();
+      let item = _Engine.TopMenu && _Engine.TopMenu.MenuList.filter(item => item.label === "引擎设置")[0];
+      item && item.domEl.click();
     };
     header_contain.appendChild(header_title);
     header_contain.appendChild(header_close);

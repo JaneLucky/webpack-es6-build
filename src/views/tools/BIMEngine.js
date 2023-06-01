@@ -13,7 +13,7 @@ import {
 } from "./initialize/InitThreejsSence.js"; //threejs场景加载
 import { setEventsMouse, setControl, setTransformControls } from "./initialize/InitEvents.js"; //监听函数
 import { SceneResize } from "@/views/tools/common/screenResize.js";
-import { LoadGLB, LoadGlbJsonList, LoadModelBeforeStart, CreateHighLightGroup, mergeModel } from "./loaders/Loader.js"; //模型加载
+import { LoadGLB, LoadGlbJsonList, CreateHighLightGroup } from "./loaders/Loader.js"; //模型加载
 import { CreatorPipe } from "./modelCreator/MEPModel.js"; //模型管道、桥梁等
 import { CreatorStructureModel } from "./modelCreator/StructureModel.js";
 import { selectBox } from "./others/SelectionBox.js"; //框选
@@ -50,11 +50,12 @@ import { HandleModelSelect, HandleRequestModelSelect } from "@/views/tools/handl
 import { HandleHighlightModelSelect_, HandleRequestModelSelect_ } from "./handleModels/index";
 
 import { CaptureMark } from "./extensions/measures/captureMark.js";
-import { getDeviceType } from "@/utils/device";
+import { getDeviceOS } from "@/utils/device";
 import { GetZipFile } from "@/utils/files.js"; //模型加载
 import { SenceZoom } from "@/views/tools/handleModels/senceZoom.js";
 import { ModelOctreeVisible, ModelOctree, ModelOctrees } from "@/views/tools/common/modelOctree.js";
 import { ModelTree } from "@/views/tools/common/modelTree.js";
+import { ResetModelMaterial } from "@/views/tools/common/modelMaterial.js";
 import { CreatorInstancePipe } from "./modelCreator/PipeInstanceModel.js"; //模型管道、桥梁等
 import { CreatorRebarModel } from "./modelCreator/RebarModel.js"; //钢筋模型
 
@@ -70,6 +71,8 @@ import { LoadingMask } from "@/views/tools/loading/index.js";
 
 import { GetPathEdgeList } from "./common/index.js";
 
+import { OriginalHandle } from "@/views/tools/common/originalHandle.js";
+import { GetModelElevation } from "@/views/tools/common/modelElevation.js";
 // BIM引擎封装
 export function BIMEngine(parentDomId, options, GLTFLoader) {
   var _bimEngine = new Object();
@@ -79,11 +82,9 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
   _bimEngine.ModelSelection = new ModelSelection(_bimEngine);
   _bimEngine.MinMap = new MinMap(_bimEngine);
   _bimEngine.D3Measure = new D3Measure(_bimEngine);
-  _bimEngine.PointRoam = new PointRoam(); //定点漫游
   _bimEngine.ControlButtons = new ControlButtons(); //按钮管理
   _bimEngine.scene = null;
   _bimEngine.GLTFLoader = GLTFLoader;
-  console.log(GLTFLoader)
   _bimEngine.StopClick = false; //是否禁用单击
   _bimEngine.RightClickActive = true; //是否显示鼠标右键列表
   _bimEngine.ModelPaths = []; //所有模型加载的路径
@@ -108,13 +109,19 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
     ShowProgress: false, //是否显示进度条
     AllLoadPathSize: 0, //加载的所有模型路径长度
     AllProgress: 0, //整体加载进度
-    Key: 0 //用于模型loading的className的唯一性
+    Key: 0, //用于模型loading的className的唯一性
+    AllDone: false // 是否一切准备就绪
   };
   _bimEngine.handleLoadDoneFunOnce = false; //模型加载完成需要执行的函数-只能执行一次，是否已经执行
   _bimEngine.FPS = 60; // 设置渲染频率为1FBS，也就是每秒调用渲染器render方法大约1次
-  _bimEngine.DeviceType = getDeviceType(); //显示的设备类型
+  _bimEngine.DeviceType = getDeviceOS(); //显示的设备类型
   _bimEngine.SetBuild = false; //是否用于打包
   _bimEngine.SaveJsonSize = 20000000; // 存储JSON文件的字符串长度限制
+  _bimEngine.OriginalData = {
+    cameraPosition: null,
+    clip: null
+  };
+  _bimEngine.ElevationList = []; //模型标高列表
   window.THREE = THREE;
   sessionStorage.removeItem("SelectedSingleModelInfo"); //刷新清空当前选中构建
   sessionStorage.removeItem("RootMenuSelect");
@@ -129,10 +136,10 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
     sceneDom.className = "threejs-sence-container";
     rootDom.appendChild(sceneDom);
     // 适配PC端和移动端样式
-    if (_bimEngine.DeviceType === "PC") {
+    if (_bimEngine.DeviceType === "PC" || _bimEngine.DeviceType === "Pad") {
       document.body.className = document.body.className + " PCView-page-container";
       rootDom.className = rootDom.className + " PCView-page-container";
-    } else if (_bimEngine.DeviceType === "Mobile") {
+    } else if (_bimEngine.DeviceType === "Phone") {
       document.body.className = document.body.className + " MobileView-page-container";
       rootDom.className = rootDom.className + " MobileView-page-container";
     }
@@ -157,7 +164,7 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
     scene.controls = controls;
     _bimEngine.controls = controls;
     let stats;
-    if (process.env.NODE_ENV !== "production") {
+    if (process.env.NODE_ENV == "development") {
       //开发环境
       // 创建辅助坐标轴
       InitAxesHelper(_bimEngine.scene);
@@ -185,7 +192,7 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
     if (_bimEngine.SetBuild) {
       _bimEngine.TopMenu = new CreateTopMenu(_bimEngine);
     } else {
-      _bimEngine.TopMenu = _bimEngine.DeviceType === "PC" ? new CreateTopMenu(_bimEngine) : null; //顶部menu列表
+      _bimEngine.TopMenu = _bimEngine.DeviceType !== "Phone" ? new CreateTopMenu(_bimEngine) : null; //顶部menu列表
     }
     // _bimEngine.TopMenu = new CreateTopMenu(_bimEngine)
     _bimEngine.EventName = _bimEngine.EventName ? _bimEngine.EventName : "bimengine";
@@ -291,6 +298,7 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
     _bimEngine.SelectionBox = new selectBox(_bimEngine); //框选对象
     _bimEngine.FirstPersonControls = new firstPersonControls(_bimEngine); //漫游
     _bimEngine.Loading = new LoadingMask(_bimEngine);
+    _bimEngine.PointRoam = new PointRoam(_bimEngine); //定点漫游
     // _bimEngine.SenceZoom = new SenceZoom(scene); //场景放缩移动-模型显隐
     // _bimEngine.SenceZoom.Active()
     //加载TransformControls控制器-用于模型剖切
@@ -326,6 +334,13 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
       if (index === -1) {
         _bimEngine.ModelPaths.push(list[i]);
         _bimEngine.PathOff.push(off[i] ? off[i] : null);
+        _bimEngine.ElevationList.push({
+          value: list[i],
+          path: list[i],
+          label: "",
+          children: [],
+          load: false
+        });
       }
     }
     console.log(_bimEngine.ModelPaths);
@@ -366,33 +381,32 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
         back: false //是否回调（用于加载下一套）
       });
       _bimEngine.D3Measure.UpdateViewList(url); //更新视图数据
-      LoadModelBeforeStart(_bimEngine, url).then(res => {
-        //加载材质映射列表及材质列表
-        LoadGlbJsonList(_bimEngine, scene, relativePath, url, option, () => {
-          _bimEngine.UpdateLoadStatus(true, "glbModelsLoadedNum", relativePath, () => {
-            callback();
-          });
-        }); //加载glb模型
-        CreatorStructureModel(_bimEngine, scene, relativePath, url, option, () => {
-          _bimEngine.UpdateLoadStatus(true, "structureModelsLoadedNum", relativePath, () => {
-            callback();
-          });
-        }); //语义化模型
-        CreatorInstancePipe(_bimEngine, scene, relativePath, url, option, () => {
-          _bimEngine.UpdateLoadStatus(true, "pipeModelsLoadedNum", relativePath, () => {
-            callback();
-          });
-        }); // 加载管道模型InstanceMesh合并
-        // CreatorRebarModel(_bimEngine, scene, relativePath, url) //钢筋模型
+      //加载材质映射列表及材质列表
+      LoadGlbJsonList(_bimEngine, scene, relativePath, url, option, () => {
+        _bimEngine.UpdateLoadStatus(true, "glbModelsLoadedNum", relativePath, url, () => {
+          callback();
+        });
+      }); //加载glb模型
+      CreatorStructureModel(_bimEngine, scene, relativePath, url, option, () => {
+        _bimEngine.UpdateLoadStatus(true, "structureModelsLoadedNum", relativePath, url, () => {
+          callback();
+        });
+      }); //语义化模型
+      CreatorInstancePipe(_bimEngine, scene, relativePath, url, option, () => {
+        _bimEngine.UpdateLoadStatus(true, "pipeModelsLoadedNum", relativePath, url, () => {
+          callback();
+        });
+      }); // 加载管道模型InstanceMesh合并
+      // CreatorRebarModel(_bimEngine, scene, relativePath, url) //钢筋模型
 
-        _bimEngine.LoadQuantitiesList(); //获得工程量列表
-      });
+      _bimEngine.LoadQuantitiesList(); //获得工程量列表
       // 一套模型超过10秒没有加载完成，直接回调，加载下一套
       setTimeout(() => {
         _bimEngine.UpdateLoadStatus(
           true,
           "",
           relativePath,
+          url,
           () => {
             callback();
           },
@@ -403,7 +417,7 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
   };
 
   //模型加载完成状态监测
-  _bimEngine.UpdateLoadStatus = function (modelLoad = true, type, relativePath, callback, timeout = false) {
+  _bimEngine.UpdateLoadStatus = function (modelLoad = true, type, relativePath, url, callback, timeout = false) {
     let CurrentLoadList = _bimEngine.LoadedWatcher.List.filter(item => item.relativePath === relativePath);
     if (CurrentLoadList && CurrentLoadList.length) {
       let LoadItem = CurrentLoadList[0];
@@ -444,11 +458,12 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
               callback();
             }
             _bimEngine.GetAllVisibilityModel();
+            ResetModelMaterial(_bimEngine, url, relativePath); // 更新模型材质
             ModelTree(_bimEngine, relativePath); //加载模型树
             GetModelEdges(_bimEngine, relativePath); //worker加载模型边线
             // GetPathEdgeList(_bimEngine, relativePath); //同步加载模型边线
             setTimeout(function () {
-              _bimEngine.EngineRay.AddModels();
+              _bimEngine.EngineRay && _bimEngine.EngineRay.AddModels();
             }, 2000);
             if (_bimEngine.LoadedWatcher.DoneNum === _bimEngine.ModelPaths.length) {
               console.log(new Date().getMinutes() + ":" + new Date().getSeconds(), "所有模型加载完成------------");
@@ -456,7 +471,11 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
             }
             if (_bimEngine.cameraGoHome == null) {
               _bimEngine.cameraGoHome = 1;
-              _bimEngine.ViewCube.cameraGoHome();
+              if (_bimEngine.OriginalData.cameraPosition) {
+                OriginalHandle(_bimEngine);
+              } else {
+                _bimEngine.ViewCube.cameraGoHome();
+              }
             }
           }
         } else {
@@ -481,6 +500,7 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
   // 更新加载进度
   _bimEngine.UpdateProgress = function () {
     let progress = 0;
+    _bimEngine.UpdateRender();
     for (let item of _bimEngine.LoadedWatcher.List) {
       progress += item.progress * (1 / _bimEngine.LoadedWatcher.List.length);
     }
@@ -491,9 +511,11 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
       _bimEngine.Loading.isActive &&
       _bimEngine.Loading.StartAnimate("_" + (_bimEngine.LoadedWatcher.Key + 1), _bimEngine.LoadedWatcher.AllProgress * 100, progress * 100);
     _bimEngine.LoadedWatcher.AllProgress = progress;
-    if (progress === 1) {
+    if (progress === 1 && !_bimEngine.LoadedWatcher.AllDone) {
       console.log(new Date().getMinutes() + ":" + new Date().getSeconds(), "一切准备就绪");
+      _bimEngine.LoadedWatcher.AllDone = true;
       _bimEngine.LoadedWatcher.ShowProgress && _bimEngine.Loading.EndAnimate();
+      _bimEngine.LoadModelElevation();
     }
   };
 
@@ -511,6 +533,18 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
   _bimEngine.LoadModelTree = function (list) {
     ModelTree(_bimEngine, list);
   };
+  _bimEngine.LoadModelElevation = function () {
+    GetModelElevation(_bimEngine); //获得标高列表
+  };
+
+  // 清除原始数据
+  _bimEngine.ClearOriginalData = function () {
+    _bimEngine.OriginalData = {
+      cameraPosition: null,
+      clip: null
+    };
+  };
+
   //注册事件
   //事件枚举，回调
   _bimEngine.addEventListener = function (callback) {};
@@ -545,7 +579,6 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
         }
       });
     }
-    mergeModel(_bimEngine.scene);
   };
   //获取当前所有的模型
   _bimEngine.GetAllVisibilityModel = function () {
@@ -583,6 +616,7 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
         break;
       case "highlight":
         _bimEngine.SelectedModels.indexesModels = list;
+        window.WatcherSelectModel && (window.WatcherSelectModel.Num = list.length);
         HandleHighlightModelSelect_(_bimEngine, list, val, color);
         break;
     }

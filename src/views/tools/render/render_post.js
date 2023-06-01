@@ -55,9 +55,9 @@ export function RenderPost(_Engine) {
 		}
 	}
 	_renderPost.render = function() {
-		if (_renderPost.composer != null) {
-			_renderPost.composer.render();
-		}
+		// if (_renderPost.composer != null) {
+		// 	_renderPost.composer.render();
+		// }
 	}
 	return _renderPost;
 }

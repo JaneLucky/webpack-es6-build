@@ -1,8 +1,6 @@
 const THREE = require("@/three/three.js");
-import { LoadZipJson, LoadJSON } from "@/utils/LoadJSON.js";
+import { LoadZipJson } from "@/utils/LoadJSON.js";
 import * as BufferGeometryUtils from "@/three/utils/BufferGeometryUtils.js";
-import { ModelOctrees } from "@/views/tools/common/modelOctree.js";
-import { UpdateMaterialAttribute } from "@/views/tools/modelCreator/UpdateMaterial.js";
 import { StringSort } from "@/utils/common.js";
 export function LoadGLB(_Engine, Scene, relativePath, basePath, path, option, callback) {
   _Engine.GLTFLoader.load(
@@ -11,7 +9,6 @@ export function LoadGLB(_Engine, Scene, relativePath, basePath, path, option, ca
       gltf.scene.scale.set(1, 1, 1); //  设置模型大小缩放
       var models = StringSort(gltf.scene.children);
       let allMeshs = [];
-      let mergeModelDatas = [];
       for (let model of models) {
         if (model.type === "Group") {
           if (model.children && model.children.length) {
@@ -65,27 +62,6 @@ export function LoadGLB(_Engine, Scene, relativePath, basePath, path, option, ca
       } else if (option && option.name === "instanceList") {
         let instanceMeshs = [];
         let instanceModels = [];
-        let MaterialMapList = _Engine.MaterialMapList.filter(item => item.path === relativePath);
-        let materialMapChild = MaterialMapList.length ? MaterialMapList[0].mapList.filter(item => item.glb === path) : [];
-
-        if (materialMapChild.length) {
-          for (const materialMap of materialMapChild) {
-            for (let inst of allMeshs) {
-              if (materialMap.materialName === inst.material.name) {
-                if (materialMap && materialMap.Param) {
-                  UpdateMaterialAttribute(inst.material, materialMap.Param);
-                  inst.material.materialMap = {
-                    Id: materialMap.materialId,
-                    Name: materialMap.Param.name,
-                    Img: materialMap.Img,
-                    Param: materialMap.Param
-                  };
-                  break;
-                }
-              }
-            }
-          }
-        }
 
         for (let item of option.children) {
           for (var i = 0; i < allMeshs.length; i++) {
@@ -221,6 +197,7 @@ export function LoadGLB(_Engine, Scene, relativePath, basePath, path, option, ca
                   _childs.TypeName = "InstancedMesh";
                   _childs.MeshId = item.meshId;
                   _childs.cloneMaterialArray = allMeshs[i].material.clone();
+                  _childs.originalMaterial = allMeshs[i].material.clone();
                   _childs.basePath = basePath;
                   _childs.relativePath = relativePath;
                   let copyMeshs = [];
@@ -333,6 +310,7 @@ export function LoadGLB(_Engine, Scene, relativePath, basePath, path, option, ca
         const singleMergeMesh = new THREE.Mesh(mergedGeometries, mat);
         singleMergeMesh.ElementInfos = ins_;
         singleMergeMesh.cloneMaterialArray = mat.clone();
+        singleMergeMesh.originalMaterial = mat.clone();
         singleMergeMesh.name = "rootModel";
         singleMergeMesh.TypeName = "Mesh";
         singleMergeMesh.meshs = copyMeshs; //ms_
@@ -382,26 +360,8 @@ export function LoadGLB(_Engine, Scene, relativePath, basePath, path, option, ca
     for (var o of meshs) {
       if (o.geometry != null && o.matrix != null) {
         let matrixWorldGeometry = o.geometry.clone().applyMatrix4(o.matrix.clone());
-        let MaterialMapList = _Engine.MaterialMapList.filter(item => item.path === relativePath);
-        let materialMapChild = MaterialMapList.length ? MaterialMapList[0].mapList.filter(item => item.glb === path) : [];
 
         o.material.side = THREE.DoubleSide;
-        if (materialMapChild.length) {
-          for (const materialMap of materialMapChild) {
-            if (materialMap.materialName === o.material.name) {
-              if (materialMap && materialMap.Param) {
-                UpdateMaterialAttribute(o.material, materialMap.Param);
-                o.material.materialMap = {
-                  Id: materialMap.materialId,
-                  Name: materialMap.Param.name,
-                  Img: materialMap.Img,
-                  Param: materialMap.Param
-                };
-                break;
-              }
-            }
-          }
-        }
 
         geometryArray.push(matrixWorldGeometry);
         materialArray.push(o.material);
@@ -437,6 +397,7 @@ export function LoadGLB(_Engine, Scene, relativePath, basePath, path, option, ca
     const singleMergeMesh = new THREE.Mesh(mergedGeometries, materialArray[0]);
     singleMergeMesh.ElementInfos = ElementInfoArray;
     singleMergeMesh.cloneMaterialArray = cloneMaterialArray[0];
+    singleMergeMesh.originalMaterial = cloneMaterialArray[0].clone();
     singleMergeMesh.name = "rootModel";
     singleMergeMesh.TypeName = "Mesh";
     singleMergeMesh.meshs = copyMeshs; //meshs
@@ -446,49 +407,6 @@ export function LoadGLB(_Engine, Scene, relativePath, basePath, path, option, ca
     singleMergeMesh.sortid = path + "_" + m_name;
     Scene.add(singleMergeMesh);
   }
-}
-//合并模型
-export function mergeModel(Scene) {
-  var models = Scene.children.filter(o => o.name == "rootModel");
-  var meshs = [];
-  for (var model of models) {
-    for (var o of model.meshs) {
-      meshs.push(o);
-    }
-    Scene.remove(model);
-  }
-  let geometryArray = []; // 将你的要合并的多个geometry放入到该数组
-  let materialArray = []; // 将你的要赋值的多个material放入到该数组
-  let cloneMaterialArray = []; // 将你的要赋值的多个material放入到该数组
-  let ElementInfoArray = []; // 将你的要赋值的多个material放入到该数组
-
-  for (var o of meshs) {
-    let matrixWorldGeometry = o.geometry.clone().applyMatrix4(o.matrix.clone());
-    geometryArray.push(matrixWorldGeometry);
-    materialArray.push(o.material);
-    cloneMaterialArray.push(o.material.clone());
-    let _min = o.geometry.boundingBox.min.clone().applyMatrix4(o.matrix.clone());
-    let _max = o.geometry.boundingBox.max.clone().applyMatrix4(o.matrix.clone());
-    let min = new THREE.Vector3(Math.min(_min.x, _max.x), Math.min(_min.y, _max.y), Math.min(_min.z, _max.z));
-    let max = new THREE.Vector3(Math.max(_min.x, _max.x), Math.max(_min.y, _max.y), Math.max(_min.z, _max.z));
-    let center = min.clone().add(max.clone()).multiplyScalar(0.5);
-    ElementInfoArray.push({
-      name: o.name,
-      min: min,
-      max: max,
-      center: center,
-      dbid: ElementInfoArray.length
-    });
-  }
-  //加载模型
-  const mergedGeometries = THREE.BufferGeometryUtils.mergeBufferGeometries(geometryArray, true);
-  const singleMergeMesh = new THREE.Mesh(mergedGeometries, materialArray);
-  singleMergeMesh.ElementInfos = ElementInfoArray;
-  singleMergeMesh.cloneMaterialArray = cloneMaterialArray;
-  singleMergeMesh.name = "rootModel";
-  singleMergeMesh.meshs = meshs;
-  Scene.add(singleMergeMesh);
-  // console.log("加载完成")
 }
 
 //批量加载glb模型，json - 大量相同模型合并
@@ -598,105 +516,9 @@ export function LoadGlbJsonList(_Engine, Scene, relativePath, path = "/file/gis/
     //同一个目录下的模型加载完成
     if (loadCompleteSize == 2) {
       _Engine.doneModels.push(path);
-      // _Engine.UpdateLoadStatus(true, "glbModelsLoadedNum", relativePath);
       callback();
     }
   }
-}
-
-export function LoadModelBeforeStart(_Engine, path) {
-  //模型加载之前-获得材质映射
-  _Engine.MaterialMapList = _Engine.MaterialMapList ? _Engine.MaterialMapList : [];
-  return new Promise((resolve, reject) => {
-    LoadJSON(path + "/materialMapList.json", result => {
-      //加载模型材质映射列表
-      if (result) {
-        let MapList = JSON.parse(result);
-        MapList = MapList.map(item => {
-          if (item.mapList && item.mapList.length) {
-            item.mapList.map(map => {
-              if (map.Param) {
-                map.Param = JSON.parse(map.Param);
-              }
-              return map;
-            });
-          }
-          return item;
-        });
-        _Engine.MaterialMapList = [..._Engine.MaterialMapList, ...MapList];
-        console.log(_Engine.MaterialMapList);
-        // _Engine.MaterialMapList = [
-        // 	{
-        // 		path: "glbs/2",
-        // 		mapList:[
-        // 			// {
-        // 			// 	glb: "file/glbs/qq/semantics.json",
-        // 			// 	materialId: "409858960632317189",
-        // 			// 	meshId: "楼板-200mm[634203][a4a3816d-3f82-4c50-b852-b5aeeb6e77af-0009ad5b]",
-        // 			// 	materialName: "619355"
-        // 			// },
-        // 			{
-        // 				glb: "file/glbs/2/familyinstance/ad44bace-1e4f-46eb-9641-c58b559f2357.glb",
-        // 				materialId: "409858960632317191",
-        // 				meshId:  "30mm厚毛面石材（米白色）镜像后 [1867191][bfe119c2-85a2-4ea7-89b9-9d4a0847a99c-001c7db7]",
-        // 				materialName: "1634159",
-        // 				Img: "/materialFile/Image/material/20230327_409877721166906629.jpg",
-        // 				Param: {
-        // 					color: "rgb(255,0,0)",
-        // 					emissive: "rgb(255,0,0)",
-        // 					emissiveIntensity: 0,
-        // 					metalness: 0,
-        // 					name: "木纹-01",
-        // 					normalScale: 1,
-        // 					opacity: 1,
-        // 					roughness: 0.5,
-        // 					side: "DoubleSide",
-        // 					transparent: false,
-        // 					//贴图
-        // 					map: {
-        // 						url: "",
-        // 						repeat: {
-        // 							u: 1,
-        // 							v: 1
-        // 						},
-        // 						offset: {
-        // 							u: 0,
-        // 							v: 0
-        // 						}
-        // 					}, //纹理贴图
-        // 					normalMap: {
-        // 						url: '',
-        // 						repeat: {
-        // 							u: 1,
-        // 							v: 1
-        // 						},
-        // 						offset: {
-        // 							u: 0,
-        // 							v: 0
-        // 						}
-        // 					}, //法线贴图
-        // 					roughnessMap: {
-        // 						url: '',
-        // 						repeat: {
-        // 							u: 1,
-        // 							v: 1
-        // 						},
-        // 						offset: {
-        // 							u: 0,
-        // 							v: 0
-        // 						}
-        // 					}, //粗糙贴图
-        // 				}
-        // 			}
-        // 		]
-        // 	}
-        // ]
-        resolve("材质映射列表不为空");
-      } else {
-        resolve("材质映射列表为空");
-      }
-    });
-  });
 }
 
 export function CreateHighLightGroup(scene) {

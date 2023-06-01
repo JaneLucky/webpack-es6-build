@@ -1,6 +1,6 @@
 import { CreateSvg } from "@/views/tools/common/index.js";
 import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js";
-import { getDeviceType } from "@/utils/device";
+import { getDeviceOS } from "@/utils/device";
 import { handleScreenResize } from "@/views/tools/common/screenResize.js";
 
 export function CreateTopMenu(_Engine) {
@@ -22,7 +22,7 @@ export function CreateTopMenu(_Engine) {
       label: "视角",
       icon: "icon-View-All",
       status: false,
-      showType: "Mobile",
+      showType: "Phone",
       disabled: false,
       children: [
         {
@@ -87,7 +87,7 @@ export function CreateTopMenu(_Engine) {
       label: "漫游",
       icon: "icon-roam",
       status: false,
-      showType: "PC Mobile",
+      showType: "PC Pad Phone",
       disabled: false
     },
     {
@@ -96,7 +96,7 @@ export function CreateTopMenu(_Engine) {
       label: "框选",
       icon: "icon-kuangxuan",
       status: false,
-      showType: "PC",
+      showType: "PC Pad",
       disabled: false
     },
     {
@@ -105,7 +105,7 @@ export function CreateTopMenu(_Engine) {
       label: "截面分析",
       icon: "icon-pouqie",
       status: false,
-      showType: "PC Mobile",
+      showType: "PC Pad Phone",
       disabled: false,
       children: [
         {
@@ -148,7 +148,7 @@ export function CreateTopMenu(_Engine) {
       label: "测量",
       icon: "icon-celianggongju",
       status: false,
-      showType: "PC Mobile",
+      showType: "PC Pad Phone",
       disabled: false,
       children: [
         {
@@ -195,11 +195,20 @@ export function CreateTopMenu(_Engine) {
     },
     {
       pId: "0",
+      value: "7",
+      label: "版本对比",
+      icon: "icon-window-restore",
+      status: false,
+      showType: "PC",
+      disabled: false
+    },
+    {
+      pId: "0",
       value: "4",
       label: "引擎设置",
       icon: "icon-setting",
       status: false,
-      showType: "PC Mobile",
+      showType: "PC Pad Phone",
       disabled: false
     },
     {
@@ -208,25 +217,16 @@ export function CreateTopMenu(_Engine) {
       label: "锁定视图",
       icon: "icon-lock-screen",
       status: false,
-      showType: "Mobile",
-      disabled: false
-    },
-    {
-      pId: "0",
-      value: "7",
-      label: "版本对比",
-      icon: "icon-window-restore",
-      status: false,
-      showType: "PC",
+      showType: "Phone",
       disabled: false
     }
   ];
-  let DeviceType = getDeviceType();
+  let DeviceOS = getDeviceOS();
   _topMenu.MenuList = AllMenuList.filter(item => {
     if (item.value === "7" || item.value === "1" || item.value === "2" || item.value === "3") {
-      return item.showType.includes(DeviceType) && _Engine.IsMainScene;
+      return item.showType.includes(DeviceOS) && _Engine.IsMainScene;
     } else {
-      return item.showType.includes(DeviceType);
+      return item.showType.includes(DeviceOS);
     }
   });
 
@@ -248,7 +248,7 @@ export function CreateTopMenu(_Engine) {
   //     label: '视角',
   //     icon: 'icon-View-All',
   //     status: false,
-  //     showType: 'Mobile',
+  //     showType: 'Phone',
   //     callback : (val)=>{
   //      //执行点击操作
   //     },
@@ -284,9 +284,7 @@ export function CreateTopMenu(_Engine) {
     itemMenuList = _topMenu.MenuList.filter(menu => menu.label === pLabel);
     let itemParent = itemMenuList && itemMenuList.length ? itemMenuList[0] : null;
     if (cLabel) {
-      let itemMenuChildList = itemParent
-        ? itemParent.children.filter(menu => menu.label === cLabel)
-        : null;
+      let itemMenuChildList = itemParent ? itemParent.children.filter(menu => menu.label === cLabel) : null;
       itemMenu = itemMenuChildList && itemMenuChildList.length ? itemMenuChildList[0] : null;
     } else {
       itemMenu = itemParent;
@@ -302,9 +300,7 @@ export function CreateTopMenu(_Engine) {
       itemParent && itemParent.domEl && itemParent.domEl.click();
     }
     if (cLabel) {
-      let itemMenuChildList = itemParent
-        ? itemParent.children.filter(menu => menu.label === cLabel)
-        : null;
+      let itemMenuChildList = itemParent ? itemParent.children.filter(menu => menu.label === cLabel) : null;
       itemMenu = itemMenuChildList && itemMenuChildList.length ? itemMenuChildList[0] : null;
     } else {
       itemMenu = itemParent;
@@ -366,6 +362,7 @@ export function CreateTopMenu(_Engine) {
     item_contain.appendChild(icon);
     menuItem.domEl = item;
     item.onclick = e => {
+      Clear();
       e.stopPropagation();
       if (menuItem.disabled) {
         return;
@@ -385,11 +382,7 @@ export function CreateTopMenu(_Engine) {
           window.VersionCompareWatcher.List = false;
         }
         handleScreenResize(_Engine);
-      } else if (
-        menuItem.label === "漫游" &&
-        !_Engine.FirstPersonControls.isActive &&
-        closeOtherActive()
-      ) {
+      } else if (menuItem.label === "漫游" && !_Engine.FirstPersonControls.isActive && closeOtherActive()) {
         // 设置漫游和视点互斥
         return;
       } else {
@@ -412,13 +405,11 @@ export function CreateTopMenu(_Engine) {
         child_list.appendChild(child_item);
         let child_item_contain = document.createElement("div");
         child_item_contain.className = "Icon-Contain";
-        child_item_contain.dataset.value =
-          menuItem.children[j].pId + "," + menuItem.children[j].value;
+        child_item_contain.dataset.value = menuItem.children[j].pId + "," + menuItem.children[j].value;
         child_item.appendChild(child_item_contain);
         let child_icon = CreateSvg(menuItem.children[j].icon);
         child_icon.dataset.value = menuItem.children[j].pId + "," + menuItem.children[j].value;
-        child_icon.children[0].dataset.value =
-          menuItem.children[j].pId + "," + menuItem.children[j].value;
+        child_icon.children[0].dataset.value = menuItem.children[j].pId + "," + menuItem.children[j].value;
         child_item_contain.appendChild(child_icon);
         menuItem.children[j].domEl = child_item;
         child_item.onclick = e => {
@@ -514,6 +505,7 @@ export function CreateTopMenu(_Engine) {
   }
 
   function handelEvent() {
+    _Engine.Clipping && _Engine.Clipping.clearOtherActived();
     if (beforeBtn !== currentBtn) {
       switch (beforeBtn) {
         case "1": //漫游
@@ -587,16 +579,19 @@ export function CreateTopMenu(_Engine) {
           window.WatcherScreenLock.Lock = true;
           break;
         case "31": //剖切多面
-          _Engine.Clipping && _Engine.Clipping.MultiSideOpen();
+          _Engine.Clipping && _Engine.Clipping.MultiSideOpen(_Engine.OriginalData.clip && _Engine.OriginalData.clip.data);
           break;
         case "32": //添加X平面
-          _Engine.Clipping && _Engine.Clipping.SingleSideOpen("X轴");
+          _Engine.Clipping &&
+            _Engine.Clipping.SingleSideOpen("X轴", _Engine.OriginalData.clip && _Engine.OriginalData.clip.data[0].constant);
           break;
         case "33": //添加Y平面
-          _Engine.Clipping && _Engine.Clipping.SingleSideOpen("Y轴");
+          _Engine.Clipping &&
+            _Engine.Clipping.SingleSideOpen("Y轴", _Engine.OriginalData.clip && _Engine.OriginalData.clip.data[0].constant);
           break;
         case "34": //添加Z平面
-          _Engine.Clipping && _Engine.Clipping.SingleSideOpen("Z轴");
+          _Engine.Clipping &&
+            _Engine.Clipping.SingleSideOpen("Z轴", _Engine.OriginalData.clip && _Engine.OriginalData.clip.data[0].constant);
           break;
         case "4": //
           _Engine.Render && _Engine.Render.Active();
@@ -624,8 +619,8 @@ export function CreateTopMenu(_Engine) {
       }
     }
 
-    let DeviceType = getDeviceType();
-    if (DeviceType === "Mobile") {
+    let DeviceOS = getDeviceOS();
+    if (DeviceOS === "Phone") {
       if (
         currentBtn &&
         currentBtn !== "81" &&
@@ -647,15 +642,10 @@ export function CreateTopMenu(_Engine) {
       if (_topMenu.MenuList[i].value == "7") {
         continue;
       }
-      _topMenu.MenuList[i].domEl.className = _topMenu.MenuList[i].domEl.className.replace(
-        "Actived",
-        ""
-      );
+      _topMenu.MenuList[i].domEl.className = _topMenu.MenuList[i].domEl.className.replace("Actived", "");
       if (_topMenu.MenuList[i].children && _topMenu.MenuList[i].children.length) {
         for (let j = 0; j < _topMenu.MenuList[i].children.length; j++) {
-          _topMenu.MenuList[i].children[j].domEl.className = _topMenu.MenuList[i].children[
-            j
-          ].domEl.className.replace("Actived", "");
+          _topMenu.MenuList[i].children[j].domEl.className = _topMenu.MenuList[i].children[j].domEl.className.replace("Actived", "");
         }
       }
     }
@@ -668,6 +658,14 @@ export function CreateTopMenu(_Engine) {
       return true;
     }
     return false;
+  }
+
+  // 清除不需要的信息
+  function Clear() {
+    const nodeList = document.querySelectorAll(".el-tooltip__popper");
+    for (var i = 0; i < nodeList.length; i++) {
+      nodeList[i].remove();
+    }
   }
 
   return _topMenu;

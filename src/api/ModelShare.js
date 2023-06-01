@@ -24,3 +24,12 @@ export function ModelVisit(path){
 		method: 'get'
 	})
 }
+
+//创建模型共享
+export function CreatorModelUrlsShare(data) {
+	return request({
+		url: `/api/ModelShare/CreatorModelUrlsShare`,
+		method: 'post',
+		data
+	})
+}

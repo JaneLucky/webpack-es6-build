@@ -364,7 +364,6 @@ export function CreatorRebarModel(_Engine, scene, relativePath, url, infos) {
     rebarLoadNum = rebarLoadNum + 1;
     if (rebarLoadNum === 2) {
       _Engine.doneModels.push(path);
-      _Engine.UpdateLoadStatus(true, "pipeModelsLoadedNum", relativePath);
     }
   }
 }

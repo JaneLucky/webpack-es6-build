@@ -242,16 +242,32 @@ export function getModelInfoClick(_Engine, select) {
   let rootmodels = _Engine.scene.children;
   let selectModelList = [];
   let rootmodel = rootmodels[select.indexs[0]];
-  let currentModel = {
-    meshMaterial: null,
-    cloneMaterial: null,
-    modelType: null,
-    indexs: select.indexs
-  };
-  currentModel.meshMaterial = rootmodel.material;
-  currentModel.cloneMaterial = rootmodel.cloneMaterialArray;
-  currentModel.modelType = select.TypeName;
-  selectModelList.push(currentModel);
+  // let currentModel = {
+  //   meshMaterial: null,
+  //   cloneMaterial: null,
+  //   modelType: null,
+  //   indexs: select.indexs
+  // };
+  // currentModel.meshMaterial = rootmodel.material;
+  // currentModel.cloneMaterial = rootmodel.cloneMaterialArray;
+  // currentModel.modelType = select.TypeName;
+  // selectModelList.push(currentModel);
+  let sameMaterialModel = rootmodels.filter(
+    o => o.name == "rootModel" && o.basePath == rootmodel.basePath && o.material.name == rootmodel.material.name
+  );
+  sameMaterialModel.map(item => {
+    let currentModel = {
+      meshMaterial: null,
+      cloneMaterial: null,
+      modelType: null,
+      indexs: select.indexs
+    };
+    currentModel.meshMaterial = item.material;
+    currentModel.cloneMaterial = item.cloneMaterialArray;
+    currentModel.originalMaterial = item.originalMaterial;
+    currentModel.modelType = select.TypeName;
+    selectModelList.push(currentModel);
+  });
   return selectModelList;
 }
 //拆分数组
@@ -429,6 +445,7 @@ export function HandleHighlightModelSelect_(_Engine, list, highlight, color) {
   let HighLightGroupList = _Engine.scene.children.filter(o => o.name == "HighLightGroup");
   let HighLightGroup = HighLightGroupList[0];
   HighLightGroup.children = [];
+  _Engine.RenderUpdate();
   var sliceList = splitArray(list, 10000);
   sliceList.forEach(x => {
     HandleHighlightModelSelect_slice(_Engine, x, highlight, color);

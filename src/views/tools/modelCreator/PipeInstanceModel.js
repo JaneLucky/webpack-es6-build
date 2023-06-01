@@ -1,6 +1,5 @@
 const THREE = require("@/three/three.js");
 import { LoadZipJson } from "@/utils/LoadJSON.js";
-import { UpdateMaterialAttribute } from "@/views/tools/modelCreator/UpdateMaterial.js";
 //绘制管道
 export function CreatorInstancePipe(_Engine, scene, relativePath, url, option, callback) {
   let off_x = parseFloat(option.off != null ? option.off.split(",")[0] : 0);
@@ -103,7 +102,6 @@ export function CreatorInstancePipe(_Engine, scene, relativePath, url, option, c
     pipeLoadNum = pipeLoadNum + 1;
     if (pipeLoadNum === 3) {
       _Engine.doneModels.push(path);
-      // _Engine.UpdateLoadStatus(true, "pipeModelsLoadedNum", relativePath);
       callback();
     }
   }
@@ -204,44 +202,6 @@ export function CreatorInstancePipe(_Engine, scene, relativePath, url, option, c
     }
 
     if (mesh) {
-      // _Engine.MaterialMapList = [
-      // 	{
-      // 		path: "glbs/18",
-      // 		mapList:[
-      // 			{
-      // 				glb: "file/glbs/18/sysmodelList.zip/Bridge",
-      // 				materialId: "409858960632317189",
-      // 				meshId: "EL-强电-动力桥架-槽式[2379177][acdb157a-2cc2-4fb3-b5e7-f94ec792093c-00244da9]"
-      // 			},
-      // 			{
-      // 				glb: "file/glbs/18/sysmodelList.zip/Circle",
-      // 				materialId: "409858960632317181",
-      // 				meshId: "PD-喷淋（P）[2369893][acdb157a-2cc2-4fb3-b5e7-f94ec792093c-00242965]"
-      // 			},
-      // 			{
-      // 				glb: "file/glbs/18/sysmodelList.zip/Rect",
-      // 				materialId: "409858960632317182",
-      // 				meshId: "AC-矩形-新风[2412053][acdb157a-2cc2-4fb3-b5e7-f94ec792093c-0024ce15]"
-      // 			}
-      // 		]
-      // 	}
-      // ]
-      let MaterialMapList = _Engine.MaterialMapList.filter(item => item.path === relativePath);
-      let materialMap = MaterialMapList.length ? MaterialMapList[0].mapList.filter(item => item.glb === path + "/" + type)[0] : null;
-      if (materialMap && materialMap.Param) {
-        for (let item of meshs) {
-          if (materialMap && materialMap.meshId === item.name) {
-            UpdateMaterialAttribute(mesh.material, materialMap.Param);
-            mesh.material.materialMap = {
-              Id: materialMap.materialId,
-              Name: materialMap.Param.name,
-              Img: materialMap.Img,
-              Param: materialMap.Param
-            };
-            needSetColor = false;
-          }
-        }
-      }
       instancedMesh = new THREE.InstancedMesh(mesh.geometry, mesh.material, meshs.length);
     }
 
@@ -349,7 +309,7 @@ export function CreatorInstancePipe(_Engine, scene, relativePath, url, option, c
     instancedMesh.PipeType = type;
     instancedMesh.MeshId = null;
     instancedMesh.cloneMaterialArray = instancedMesh.material.clone();
-    instancedMesh.cloneMaterialArray.materialMap = instancedMesh.material.materialMap;
+    instancedMesh.originalMaterial = instancedMesh.material.clone();
     instancedMesh.basePath = url;
     instancedMesh.relativePath = relativePath;
     let copyMeshs = [];

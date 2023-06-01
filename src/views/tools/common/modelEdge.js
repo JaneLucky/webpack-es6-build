@@ -6,6 +6,14 @@ export function GetModelEdges(_Engine, relativePath) {
   let modelsList;
   let size = 500;
   let count = 0;
+  let pathIndex = _Engine.ModelPaths.findIndex(item => item === relativePath);
+  let positionOff = pathIndex > -1 ? (_Engine.PathOff[pathIndex] ? _Engine.PathOff[pathIndex] : null) : null;
+  if (positionOff) {
+    positionOff = positionOff.split(",");
+    positionOff = positionOff.map(item => {
+      return Number(item);
+    });
+  }
   for (let i = 0; i < _Engine.scene.children.length; i++) {
     _Engine.scene.children[i].index = i;
   }
@@ -24,6 +32,15 @@ export function GetModelEdges(_Engine, relativePath) {
             for (let rootmodel of rootmodelsAll) {
               if (rootmodel.sortid === element.sortid) {
                 element.Indexs = rootmodel.index;
+                if (positionOff && positionOff.length == 3) {
+                  for (const edgeItem of element.ElementInfos) {
+                    for (let i = 0; i < edgeItem.EdgeList.length; i = i + 3) {
+                      edgeItem.EdgeList[i] = edgeItem.EdgeList[i] + positionOff[0];
+                      edgeItem.EdgeList[i + 1] = edgeItem.EdgeList[i + 1] + positionOff[2];
+                      edgeItem.EdgeList[i + 2] = edgeItem.EdgeList[i + 2] + positionOff[1];
+                    }
+                  }
+                }
                 break;
               }
             }
@@ -178,7 +195,17 @@ export function GetModelEdges(_Engine, relativePath) {
               _Engine.AllEdgeList.map(item => {
                 if (item.path === relativePath) {
                   delete item.path;
-                  pathList.push(item);
+                  let copyItem = JSON.parse(JSON.stringify(item));
+                  if (positionOff && positionOff.length == 3) {
+                    for (const edgeItem of copyItem.ElementInfos) {
+                      for (let i = 0; i < edgeItem.EdgeList.length; i = i + 3) {
+                        edgeItem.EdgeList[i] = edgeItem.EdgeList[i] - positionOff[0];
+                        edgeItem.EdgeList[i + 1] = edgeItem.EdgeList[i + 1] - positionOff[2];
+                        edgeItem.EdgeList[i + 2] = edgeItem.EdgeList[i + 2] - positionOff[1];
+                      }
+                    }
+                  }
+                  pathList.push(copyItem);
                 }
                 return item;
               });

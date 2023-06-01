@@ -75,6 +75,13 @@ export function CreateRightClickMenu(_Engine) {
           label: "同类同层构件"
         }
       ]
+    },
+    {
+      value: "8",
+      label: "构件框",
+      domItem: null,
+      childContain: null,
+      alwaysShow: false
     }
   ];
   _rightClickMenu.Actived = [];
@@ -126,7 +133,18 @@ export function CreateRightClickMenu(_Engine) {
       right_click_menu_container.style.left = leftSize + "px";
       for (let i = 0; i < _rightClickMenu.MenuList.length; i++) {
         if (!_rightClickMenu.MenuList[i].alwaysShow) {
-          _rightClickMenu.MenuList[i].domItem.style.display = _Engine.SelectedModels.indexesModels.length ? "block" : "none";
+          if (_rightClickMenu.MenuList[i].value === "8") {
+            _rightClickMenu.MenuList[i].domItem.style.display =
+              _Engine.SelectedModels.indexesModels.length || (_Engine.Clipping && _Engine.Clipping.isActive && !_Engine.Clipping.AllClip)
+                ? "block"
+                : "none";
+            _rightClickMenu.MenuList[i].domItem.innerText = "构件框";
+            if (_Engine.Clipping.isActive && !_Engine.Clipping.AllClip) {
+              _rightClickMenu.MenuList[i].domItem.innerText = "取消构件框";
+            }
+          } else {
+            _rightClickMenu.MenuList[i].domItem.style.display = _Engine.SelectedModels.indexesModels.length ? "block" : "none";
+          }
         }
       }
       _rightClickMenu.Show = true;
@@ -343,6 +361,37 @@ export function CreateRightClickMenu(_Engine) {
           let SameLevelList = getSameTypeOrLevelModels("SameLevel");
           let NoRepeatSameList = removedup(SameTypeList, SameLevelList);
           _Engine.ResetSelectedModels_("highlight", NoRepeatSameList, true);
+        }
+        break;
+      case "8": //隐藏
+        if (_Engine.Clipping) {
+          let domItem = _rightClickMenu.MenuList.filter(item => item.value == val)[0].domItem;
+          if (_Engine.Clipping.isActive) {
+            if (_Engine.Clipping.AllClip) {
+              switch (_Engine.Clipping.ActiveType) {
+                case "MultiSide":
+                  _Engine.TopMenu.ClickItem("截面分析", "剖切");
+                  break;
+                case "X轴":
+                  _Engine.TopMenu.ClickItem("截面分析", "添加X平面");
+                  break;
+                case "Y轴":
+                  _Engine.TopMenu.ClickItem("截面分析", "添加Y平面");
+                  break;
+                case "Z轴":
+                  _Engine.TopMenu.ClickItem("截面分析", "添加Z平面");
+                  break;
+              }
+              _Engine.Clipping.MultiSideOpen(null, false);
+              domItem.innerText = "取消构件框";
+            } else {
+              _Engine.Clipping.MultiSideClose();
+              domItem.innerText = "构件框";
+            }
+          } else {
+            _Engine.Clipping.MultiSideOpen(null, false);
+            domItem.innerText = "取消构件框";
+          }
         }
         break;
       default:

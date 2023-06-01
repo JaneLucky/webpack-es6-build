@@ -1,6 +1,5 @@
 const THREE = require("@/three/three.js");
 import { LoadZipJson } from "@/utils/LoadJSON.js";
-import { UpdateMaterialAttribute } from "@/views/tools/modelCreator/UpdateMaterial.js";
 export function CreatorStructureModel(_Engine, scene, relativePath, url, option, callback) {
   //加载json文件
   var currentMaterials = [];
@@ -78,7 +77,6 @@ export function CreatorStructureModel(_Engine, scene, relativePath, url, option,
       }
     }
     _Engine.doneModels.push(url + "/semantics.json");
-    // _Engine.UpdateLoadStatus(true, "structureModelsLoadedNum", relativePath);
     callback();
   });
 
@@ -87,7 +85,10 @@ export function CreatorStructureModel(_Engine, scene, relativePath, url, option,
     for (var i = 0; i < eles.length; i++) {
       var material = new THREE.MeshStandardMaterial({
         color: new THREE.Color(`rgb(${eles[i].color})`),
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
+        polygonOffset: true,
+        polygonOffsetFactor: 0.001,
+        polygonOffsetUnits: 10
         // depthTest: true
       });
       material.name = eles[i].Id;
@@ -266,76 +267,9 @@ export function CreatorStructureModel(_Engine, scene, relativePath, url, option,
 }
 
 function mergeBufferModel(_Engine, scene, meshs, path, basePath, relativePath, currentMaterials, sortid) {
-  // _Engine.MaterialMapList = [
-  // 	{
-  // 		path: "glbs/qq",
-  // 		mapList:[
-  // 			// {
-  // 			// 	glb: "file/glbs/qq/semantics.json",
-  // 			// 	materialId: "409858960632317189",
-  // 			// 	meshId: "楼板-200mm[634203][a4a3816d-3f82-4c50-b852-b5aeeb6e77af-0009ad5b]",
-  // 			// 	materialName: "619355"
-  // 			// },
-  // 			{
-  // 				glb: "file/glbs/qq/semantics.json",
-  // 				materialId: "409858960632317191",
-  // 				meshId:  "楼板-200mm[634203][a4a3816d-3f82-4c50-b852-b5aeeb6e77af-0009ad5b]",
-  // 				materialName: "619355",
-  // 				Img: "/materialFile/Image/material/20230327_409877721166906629.jpg",
-  // 				param: {
-  // 					color: "rgb(255,255,255)",
-  // 					emissive: "rgb(255,255,255)",
-  // 					emissiveIntensity: 0,
-  // 					metalness: 0,
-  // 					name: "木纹-01",
-  // 					normalScale: 1,
-  // 					opacity: 1,
-  // 					roughness: 0.5,
-  // 					side: "DoubleSide",
-  // 					transparent: false,
-  // 					//贴图
-  // 					map: {
-  // 						url: "",
-  // 						repeat: {
-  // 							u: 1,
-  // 							v: 1
-  // 						},
-  // 						offset: {
-  // 							u: 0,
-  // 							v: 0
-  // 						}
-  // 					}, //纹理贴图
-  // 					normalMap: {
-  // 						url: '',
-  // 						repeat: {
-  // 							u: 1,
-  // 							v: 1
-  // 						},
-  // 						offset: {
-  // 							u: 0,
-  // 							v: 0
-  // 						}
-  // 					}, //法线贴图
-  // 					roughnessMap: {
-  // 						url: '',
-  // 						repeat: {
-  // 							u: 1,
-  // 							v: 1
-  // 						},
-  // 						offset: {
-  // 							u: 0,
-  // 							v: 0
-  // 						}
-  // 					}, //粗糙贴图
-  // 				}
-  // 			}
-  // 		]
-  // 	}
-  // ]
   let geometryArray = []; // 将你的要合并的多个geometry放入到该数组
   let materialArray = []; // 将你的要赋值的多个material放入到该数组
   let ElementInfoArray = []; // 将你的要赋值的多个material放入到该数组
-  let MaterialMapList = _Engine.MaterialMapList.filter(item => item.path === relativePath);
   let copyMeshs = [];
   //对mesh位置进行偏移
   for (var i = 0; i < meshs.length; i++) {
@@ -350,17 +284,6 @@ function mergeBufferModel(_Engine, scene, meshs, path, basePath, relativePath, c
       let matrixWorldGeometry = o.geometry.clone().applyMatrix4(matrix.clone());
 
       o.material.side = THREE.DoubleSide;
-
-      let materialMap = MaterialMapList.length ? MaterialMapList[0].mapList.filter(item => item.meshId === o.name)[0] : null;
-      if (materialMap && materialMap.Param) {
-        UpdateMaterialAttribute(o.material, materialMap.Param);
-        o.material.materialMap = {
-          Id: materialMap.materialId,
-          Name: materialMap.Param.name,
-          Img: materialMap.Img,
-          Param: materialMap.Param
-        };
-      }
 
       geometryArray.push(matrixWorldGeometry);
       materialArray.push(o.material);
@@ -402,14 +325,13 @@ function mergeBufferModel(_Engine, scene, meshs, path, basePath, relativePath, c
   let cloneMaterial;
   if (matIndex == -1) {
     cloneMaterial = meshs[0].material.clone();
-    cloneMaterial.materialMap = meshs[0].material.materialMap;
   } else {
     cloneMaterial = currentMaterials[matIndex].clone();
-    cloneMaterial.materialMap = currentMaterials[matIndex].materialMap;
   }
 
   singleMergeMesh.ElementInfos = ElementInfoArray;
   singleMergeMesh.cloneMaterialArray = cloneMaterial;
+  singleMergeMesh.originalMaterial = cloneMaterial.clone();
   singleMergeMesh.relativePath = relativePath;
   singleMergeMesh.name = "rootModel";
   singleMergeMesh.TypeName = "Mesh";
