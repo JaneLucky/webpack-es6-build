@@ -336,12 +336,12 @@ export function CreateRightClickMenu(_Engine) {
       case "5": //显示全部
         indexesList = _Engine.GetAllIndexesModel();
         indexesList.length && _Engine.ResetSelectedModels_("visible", indexesList, true);
-        window.WatcherAllModelShow.Type = "all";
+        window.WatcherAllModelShow && (window.WatcherAllModelShow.Type = "all");
         break;
       case "6": //隐藏全部
         indexesList = _Engine.GetAllIndexesModel();
         indexesList.length && _Engine.ResetSelectedModels_("visible", indexesList, false);
-        window.WatcherAllModelShow.Type = "none";
+        window.WatcherAllModelShow && (window.WatcherAllModelShow.Type = "none");
         break;
       case "71": //同类构件
         if (_Engine.SelectedModels.indexesModels.length && _Engine.ModelClassify.length) {
