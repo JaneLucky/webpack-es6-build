@@ -513,7 +513,7 @@ export function CreateTopMenu(_Engine) {
           break;
         case "2": //框选
           _Engine.SelectionBox && _Engine.SelectionBox.DisActive();
-          window.WatcherScreenLock.Lock = false;
+          window.WatcherScreenLock && (window.WatcherScreenLock.Lock = false);
           break;
         case "31": //
           _Engine.Clipping && _Engine.Clipping.MultiSideClose();
@@ -576,7 +576,7 @@ export function CreateTopMenu(_Engine) {
           break;
         case "2": //框选
           _Engine.SelectionBox && _Engine.SelectionBox.Active();
-          window.WatcherScreenLock.Lock = true;
+          window.WatcherScreenLock && (window.WatcherScreenLock.Lock = true);
           break;
         case "31": //剖切多面
           _Engine.Clipping && _Engine.Clipping.MultiSideOpen(_Engine.OriginalData.clip && _Engine.OriginalData.clip.data);
