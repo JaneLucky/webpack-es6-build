@@ -25,7 +25,7 @@ export function SenceZoom(scene) {
 
   // 创建 worker
   function createWorker() {
-    let worker = new Worker("static/js/zoom.worker.js");
+    let worker = new Worker("bimCDN/js/zoom.worker.js");
     worker.onmessage = function (e) {
       console.log(e.data);
       // handlerShowHide(e.data)

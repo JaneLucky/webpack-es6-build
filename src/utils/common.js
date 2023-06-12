@@ -1,3 +1,36 @@
+// 验证图片链接是否有效
+export function ValidateImage(url) {
+  var xmlHttp;
+  if (window.ActiveXObject) {
+    xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+  } else if (window.XMLHttpRequest) {
+    xmlHttp = new XMLHttpRequest();
+  }
+  xmlHttp.open("Get", url, false);
+  xmlHttp.send();
+  if (xmlHttp.status == 404) return false;
+  else return true;
+}
+
+// 获取2个数组不同的部分
+export function getArrDifference(arr1, arr2) {
+  return arr1.concat(arr2).filter(function (v, i, arr) {
+    return arr.indexOf(v) === arr.lastIndexOf(v);
+  });
+}
+
+// 获取2个数组相同的部分
+export function getArrSame(arr1, arr2) {
+  return arr1.filter(item => {
+    return arr2.some(i => item == i);
+  });
+}
+
+// 取arr1不在arr2里面的元素
+export function getArrNotIn(arr1, arr2) {
+  return [...new Set(arr1)].filter(item => !arr2.includes(item));
+}
+
 // 数组去重
 export function ListDuplicate(list, key) {
   // 根据key字段重复去重

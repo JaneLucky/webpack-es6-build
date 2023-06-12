@@ -71,7 +71,7 @@ export function Render(_Engine) {
     _Engine.RenderUpdate();
     if (name) {
       let cubeTextureLoader = new THREE.CubeTextureLoader();
-      cubeTextureLoader.setPath("static/img/skybox/" + name + "/");
+      cubeTextureLoader.setPath("bimCDN/img/skybox/" + name + "/");
       let cubeTexture = cubeTextureLoader.load(["px.png", "nx.png", "py.png", "ny.png", "pz.png", "nz.png"], () => {
         _Engine.RenderUpdate();
       });

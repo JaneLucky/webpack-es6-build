@@ -265,6 +265,7 @@ export function getModelInfoClick(_Engine, select) {
     currentModel.meshMaterial = item.material;
     currentModel.cloneMaterial = item.cloneMaterialArray;
     currentModel.originalMaterial = item.originalMaterial;
+    currentModel.path = item.url.substring(0, item.url.lastIndexOf("/"));
     currentModel.modelType = select.TypeName;
     selectModelList.push(currentModel);
   });

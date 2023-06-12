@@ -146,7 +146,7 @@ export default {
         displayEdge: false,
         showAmbientLight: true,
         cameraType: "透视",
-        shadowIntensity: 1,
+        shadowIntensity: 0.2,
         exposureIntensity: 0.6,
         bgColor: "",
         lightColor: "",
@@ -226,32 +226,32 @@ export default {
       bgImgList: [
         {
           id: "cloudy",
-          img: "static/img/skybox/cloudy/pz.png",
+          img: "bimCDN/img/skybox/cloudy/pz.png",
           status: false
         },
         {
           id: "star",
-          img: "static/img/skybox/star/pz.png",
+          img: "bimCDN/img/skybox/star/pz.png",
           status: false
         },
         {
           id: "city",
-          img: "static/img/skybox/city/pz.png",
+          img: "bimCDN/img/skybox/city/pz.png",
           status: false
         },
         {
           id: "city02",
-          img: "static/img/skybox/city02/pz.png",
+          img: "bimCDN/img/skybox/city02/pz.png",
           status: false
         },
         {
           id: "sky01",
-          img: "static/img/skybox/sky01/pz.png",
+          img: "bimCDN/img/skybox/sky01/pz.png",
           status: false
         },
         {
           id: "sky02",
-          img: "static/img/skybox/sky02/pz.png",
+          img: "bimCDN/img/skybox/sky02/pz.png",
           status: false
         }
       ],

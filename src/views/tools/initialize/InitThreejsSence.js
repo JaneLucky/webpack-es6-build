@@ -111,7 +111,7 @@ export function InitRenender(dom) {
 
 //初始背景图场景
 export function InitBackgroundScene(scene) {
-  new RGBELoader().setPath("static/img/").load("quarry_01_1k.hdr", function (texture) {
+  new RGBELoader().setPath("bimCDN/img/").load("quarry_01_1k.hdr", function (texture) {
     texture.mapping = THREE.EquirectangularReflectionMapping;
     // scene.background = texture; //背景图
     scene.environment = texture; //环境图

@@ -60,23 +60,36 @@ export function GetBoundingBox_Index(_Engine, list) {
 // 获得模型构建的包围矩形
 export function GetBoundingBox(_Engine, list, isRequireModel = false) {
   var rootmodels = _Engine.scene.children.filter(o => o.name == "rootModel");
-  var allPointsX = [];
-  var allPointsY = [];
-  var allPointsZ = [];
+  var minX = null,
+    minY = null,
+    minZ = null,
+    maxX = null,
+    maxY = null,
+    maxZ = null;
   if (list) {
     for (let select of list) {
       for (let rootmodel of rootmodels) {
         if (rootmodel.index === select[0]) {
           for (let model of rootmodel.ElementInfos) {
             if (!isRequireModel && model.dbid === select[1]) {
-              let pointMin = model.min.clone();
-              allPointsX.push(pointMin.x);
-              allPointsY.push(pointMin.y);
-              allPointsZ.push(pointMin.z);
-              let pointMax = model.max.clone();
-              allPointsX.push(pointMax.x);
-              allPointsY.push(pointMax.y);
-              allPointsZ.push(pointMax.z);
+              if (!minX || model.min.x < minX) {
+                minX = model.min.x;
+              }
+              if (!minY || model.min.y < minY) {
+                minY = model.min.y;
+              }
+              if (!minZ || model.min.z < minZ) {
+                minZ = model.min.z;
+              }
+              if (!maxX || model.max.x > maxX) {
+                maxX = model.max.x;
+              }
+              if (!maxY || model.max.y > maxY) {
+                maxY = model.max.y;
+              }
+              if (!maxZ || model.max.z > maxZ) {
+                maxZ = model.max.z;
+              }
               break;
             }
           }
@@ -87,43 +100,29 @@ export function GetBoundingBox(_Engine, list, isRequireModel = false) {
   } else {
     for (let rootmodel of rootmodels) {
       for (let model of rootmodel.ElementInfos) {
-        let point = model.center.clone();
-        allPointsX.push(point.x);
-        allPointsY.push(point.y);
-        allPointsZ.push(point.z);
+        if (!minX || model.min.x < minX) {
+          minX = model.min.x;
+        }
+        if (!minY || model.min.y < minY) {
+          minY = model.min.y;
+        }
+        if (!minZ || model.min.z < minZ) {
+          minZ = model.min.z;
+        }
+        if (!maxX || model.max.x > maxX) {
+          maxX = model.max.x;
+        }
+        if (!maxY || model.max.y > maxY) {
+          maxY = model.max.y;
+        }
+        if (!maxZ || model.max.z > maxZ) {
+          maxZ = model.max.z;
+        }
       }
     }
   }
-
-  allPointsX.sort((a, b) => {
-    if (a < b) {
-      return -1;
-    }
-    if (a > b) {
-      return 1;
-    }
-    return 0;
-  });
-  allPointsY.sort((a, b) => {
-    if (a < b) {
-      return -1;
-    }
-    if (a > b) {
-      return 1;
-    }
-    return 0;
-  });
-  allPointsZ.sort((a, b) => {
-    if (a < b) {
-      return -1;
-    }
-    if (a > b) {
-      return 1;
-    }
-    return 0;
-  });
-  var min = new THREE.Vector3(allPointsX[0], allPointsY[0], allPointsZ[0]);
-  var max = new THREE.Vector3(allPointsX[allPointsX.length - 1], allPointsY[allPointsY.length - 1], allPointsZ[allPointsZ.length - 1]);
+  var min = new THREE.Vector3(minX, minY, minZ);
+  var max = new THREE.Vector3(maxX, maxY, maxZ);
   var center = min.clone().add(max.clone()).multiplyScalar(0.5);
   return {
     min: min,

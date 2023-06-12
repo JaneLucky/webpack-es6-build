@@ -6,8 +6,8 @@ import { GetModelJsonFile } from "./index.js";
 export function ModelTree(_Engine, relativePath) {
   let fileName = "ModelTreeList_V1_2";
   let TreeKey = 0;
-  // TreeRename(relativePath);
-  // return;
+  TreeRename(relativePath);
+  return;
   GetModelJsonFile(relativePath, fileName, res => {
     if (res.exist) {
       //上次存储过
@@ -212,7 +212,7 @@ export function ModelTree(_Engine, relativePath) {
 
   function worker(data, path) {
     console.log(new Date().getMinutes() + ":" + new Date().getSeconds(), "构件树映射开始:", data.treeDatas.length);
-    var worker = new Worker("static/js/modeltree.worker.js");
+    var worker = new Worker("bimCDN/js/modeltree.worker.js");
     worker.postMessage(data); //将复杂计算交给子线程,可以理解为给参数让子线程去操作。
     worker.onmessage = function (e) {
       //返回数据进行处理

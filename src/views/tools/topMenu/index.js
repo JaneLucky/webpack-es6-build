@@ -2,6 +2,8 @@ import { CreateSvg } from "@/views/tools/common/index.js";
 import { SetDeviceStyle } from "@/views/tools/style/deviceStyleSet.js";
 import { getDeviceOS } from "@/utils/device";
 import { handleScreenResize } from "@/views/tools/common/screenResize.js";
+import TopMenu from "@/views/tools/components/TopMenu.vue";
+import { create } from "@/utils/create";
 
 export function CreateTopMenu(_Engine) {
   require("@/views/tools/style/" + SetDeviceStyle() + "/TopMenu.scss");
@@ -279,17 +281,41 @@ export function CreateTopMenu(_Engine) {
   _topMenu.AddItem = function (item) {
     CreateItem(item, true);
   };
-  _topMenu.ClickItem = function (pLabel, cLabel) {
-    let itemMenuList, itemMenu;
-    itemMenuList = _topMenu.MenuList.filter(menu => menu.label === pLabel);
-    let itemParent = itemMenuList && itemMenuList.length ? itemMenuList[0] : null;
-    if (cLabel) {
-      let itemMenuChildList = itemParent ? itemParent.children.filter(menu => menu.label === cLabel) : null;
-      itemMenu = itemMenuChildList && itemMenuChildList.length ? itemMenuChildList[0] : null;
-    } else {
-      itemMenu = itemParent;
+  _topMenu.ClickItem = function (label) {
+    let child = null,
+      parent = null;
+    let MenuList = _topMenu.MenuList;
+    for (let i = 0; i < MenuList.length; i++) {
+      if (MenuList[i].label === label) {
+        child = MenuList[i];
+        break;
+      } else {
+        if (MenuList[i].children) {
+          for (let j = 0; j < MenuList[i].children.length; j++) {
+            if (MenuList[i].children[j].label === label) {
+              child = MenuList[i].children[j];
+              parent = MenuList[i];
+              break;
+            }
+          }
+        }
+        if (child) {
+          break;
+        }
+      }
     }
-    itemMenu && itemMenu.domEl && itemMenu.domEl.click();
+    child && child.domEl && child.domEl.click();
+
+    // let itemMenuList, itemMenu;
+    // itemMenuList = _topMenu.MenuList.filter(menu => menu.label === pLabel);
+    // let itemParent = itemMenuList && itemMenuList.length ? itemMenuList[0] : null;
+    // if (cLabel) {
+    //   let itemMenuChildList = itemParent ? itemParent.children.filter(menu => menu.label === cLabel) : null;
+    //   itemMenu = itemMenuChildList && itemMenuChildList.length ? itemMenuChildList[0] : null;
+    // } else {
+    //   itemMenu = itemParent;
+    // }
+    // itemMenu && itemMenu.domEl && itemMenu.domEl.click();
   };
 
   _topMenu.DisabledItem = function (pLabel, cLabel, disabled) {
@@ -318,6 +344,8 @@ export function CreateTopMenu(_Engine) {
   };
 
   function CreateUI() {
+    // _topMenu.Component = create(_container, TopMenu, { _Engine: _Engine, Param: {} });
+    // return;
     menu_container = document.createElement("div");
     menu_container.className = "Top-Menu-Container-Mask Show-Menu-Contain";
 

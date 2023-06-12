@@ -265,6 +265,14 @@ THREE.OrbitControls = function(_Engine, object, domElement) {
 			}
 			let cha = new_off.clone().sub(off);
 
+			if (state == STATE.TOUCH_DOLLY_PAN) {
+				let camera = _Engine.scene.camera;
+				let c_dir = new THREE.Vector3()
+				position.add(camera.getWorldDirection(c_dir).multiplyScalar(scope.object
+					.zoomdir * spherical.radius * 0.05));
+				console.log("缩放")
+			}
+
 			if (cha.x == 0 && cha.y == 0 && cha.z == 0 && (sphericalDelta.theta != 0 || sphericalDelta
 					.phi != 0)) {
 				let camera = _Engine.scene.camera;
@@ -855,12 +863,18 @@ THREE.OrbitControls = function(_Engine, object, domElement) {
 
 		dollyEnd.set(0, distance);
 
-		dollyDelta.set(0, Math.pow(dollyEnd.y / dollyStart.y, scope.zoomSpeed));
+		dollyDelta.set(0, Math.pow(dollyEnd.y / dollyStart.y, scope.zoomSpeed * 0.05));
 
 		dollyDelta.y = 1 + 1 - dollyDelta.y;
 		dollyDelta.y = dollyDelta.y * dollyDelta.y;
-		dollyOut(dollyDelta.y);
+		
+		if (1 - dollyDelta.y < 0) {
+			dollyOut(dollyDelta.y*0.1);
+		} else {
+			dollyIn(dollyDelta.y*0.1);
+		}
 
+		scope.update();
 		dollyStart.copy(dollyEnd);
 
 	}
@@ -894,7 +908,7 @@ THREE.OrbitControls = function(_Engine, object, domElement) {
 
 	function onPointerDown(event) {
 
-		if (scope.enabled === false) return; 
+		if (scope.enabled === false) return;
 		switch (event.pointerType) {
 
 			case 'mouse':
@@ -1142,7 +1156,7 @@ THREE.OrbitControls = function(_Engine, object, domElement) {
 
 	//创建旋转中心图标
 	function getOriginIcon() {
-		if(scope.domElement.parentElement){
+		if (scope.domElement.parentElement) {
 			let icon = scope.domElement.parentElement.getElementsByClassName("Three_OrbitControls_OriginIcon")[0]
 			if (!icon) {
 				icon = document.createElement("div");
@@ -1159,13 +1173,13 @@ THREE.OrbitControls = function(_Engine, object, domElement) {
 				scope.domElement.parentElement.appendChild(icon)
 			}
 			return icon
-		}else{
+		} else {
 			return null
 		}
 	}
 
-	function onStopWheel(){
-		if(scope.moveWheel2){
+	function onStopWheel() {
+		if (scope.moveWheel2) {
 			!_Engine.Measures.isActive && (scope.domElement.style.cursor = "auto")
 			scope.moveWheel2 = false;
 			scope.moveWheel1 = true;
@@ -1185,20 +1199,20 @@ THREE.OrbitControls = function(_Engine, object, domElement) {
 
 		handleMouseWheel(event);
 
-		if(scope.moveWheel1){
-			if(event.wheelDelta){
-				if(event.wheelDelta > 0) {
+		if (scope.moveWheel1) {
+			if (event.wheelDelta) {
+				if (event.wheelDelta > 0) {
 					!_Engine.Measures.isActive && (scope.domElement.style.cursor = "zoom-in")
-				}else if(event.wheelDelta < 0){
+				} else if (event.wheelDelta < 0) {
 					!_Engine.Measures.isActive && (scope.domElement.style.cursor = "zoom-out")
 				}
 			}
 			scope.moveWheel1 = false;
 			scope.moveWheel2 = true;
-			scope.wheelClock = setTimeout(onStopWheel,300);
-		}else {
+			scope.wheelClock = setTimeout(onStopWheel, 300);
+		} else {
 			clearTimeout(scope.wheelClock);
-			scope.wheelClock = setTimeout(onStopWheel,250);
+			scope.wheelClock = setTimeout(onStopWheel, 250);
 		}
 
 	}

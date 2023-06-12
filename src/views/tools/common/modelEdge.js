@@ -21,8 +21,8 @@ export function GetModelEdges(_Engine, relativePath) {
   let rootmodelsAll = _Engine.scene.children.filter(o => o.name == "rootModel" && o.relativePath === relativePath);
   let fileName = "ModelEdgeList";
   if (rootmodelsAll && rootmodelsAll.length) {
-    // calculateEdgeList();
-    // return;
+    calculateEdgeList();
+    return;
     GetModelJsonFile(relativePath, fileName, res => {
       if (res.exist) {
         //上次存储过
@@ -153,7 +153,7 @@ export function GetModelEdges(_Engine, relativePath) {
         // 计算边线开始
         if (modelsList) {
           if (!worker) {
-            worker = new Worker("static/js/edge.worker.js");
+            worker = new Worker("bimCDN/js/edge.worker.js");
           }
           worker.postMessage({
             data: modelsList,

@@ -121,8 +121,7 @@ export default {
     },
     Close() {
       this.Clear();
-      let item = this._Engine.TopMenu && this._Engine.TopMenu.MenuList.filter(item => item.label === "漫游")[0];
-      item && item.domEl.click();
+      this._Engine.TopMenu && this._Engine.TopMenu.ClickItem("漫游");
     },
     Clear() {
       const nodeList = document.querySelectorAll(".el-tooltip__popper");

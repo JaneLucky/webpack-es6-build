@@ -21,16 +21,16 @@ export function OriginalClip(_Engine) {
       //Pad 或 PC
       switch (_Engine.OriginalData.clip.type) {
         case "MultiSide":
-          _Engine.TopMenu.ClickItem("截面分析", "剖切");
+          _Engine.TopMenu.ClickItem("剖切");
           break;
         case "X轴":
-          _Engine.TopMenu.ClickItem("截面分析", "添加X平面");
+          _Engine.TopMenu.ClickItem("添加X平面");
           break;
         case "Y轴":
-          _Engine.TopMenu.ClickItem("截面分析", "添加Y平面");
+          _Engine.TopMenu.ClickItem("添加Y平面");
           break;
         case "Z轴":
-          _Engine.TopMenu.ClickItem("截面分析", "添加Z平面");
+          _Engine.TopMenu.ClickItem("添加Z平面");
           break;
       }
     }

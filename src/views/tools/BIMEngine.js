@@ -471,11 +471,6 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
             }
             if (_bimEngine.cameraGoHome == null) {
               _bimEngine.cameraGoHome = 1;
-              if (_bimEngine.OriginalData.cameraPosition) {
-                OriginalHandle(_bimEngine);
-              } else {
-                _bimEngine.ViewCube.cameraGoHome();
-              }
             }
           }
         } else {
@@ -516,6 +511,11 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
       _bimEngine.LoadedWatcher.AllDone = true;
       _bimEngine.LoadedWatcher.ShowProgress && _bimEngine.Loading.EndAnimate();
       _bimEngine.LoadModelElevation();
+      if (_bimEngine.OriginalData.cameraPosition) {
+        OriginalHandle(_bimEngine);
+      } else {
+        _bimEngine.ViewCube.cameraGoHome();
+      }
     }
   };
 

@@ -11,6 +11,7 @@ export function CreateRightClickMenu(_Engine) {
   let right_click_menu_container;
   let _container = _Engine.scene.renderer.domElement.parentElement;
   let CAMERA_POSITION;
+  let isShowAll = true; //是否显示全部
   _rightClickMenu.MenuList = [
     //右键菜单列表
     // {
@@ -53,7 +54,7 @@ export function CreateRightClickMenu(_Engine) {
       label: "隐藏全部",
       domItem: null,
       childContain: null,
-      alwaysShow: true
+      alwaysShow: false
     },
     {
       value: "7",
@@ -135,15 +136,21 @@ export function CreateRightClickMenu(_Engine) {
         if (!_rightClickMenu.MenuList[i].alwaysShow) {
           if (_rightClickMenu.MenuList[i].value === "8") {
             _rightClickMenu.MenuList[i].domItem.style.display =
-              _Engine.SelectedModels.indexesModels.length || (_Engine.Clipping && _Engine.Clipping.isActive && !_Engine.Clipping.AllClip)
+              (_Engine.SelectedModels.indexesModels.length && isShowAll) ||
+              (_Engine.Clipping && _Engine.Clipping.isActive && !_Engine.Clipping.AllClip)
                 ? "block"
                 : "none";
             _rightClickMenu.MenuList[i].domItem.innerText = "构件框";
             if (_Engine.Clipping.isActive && !_Engine.Clipping.AllClip) {
               _rightClickMenu.MenuList[i].domItem.innerText = "取消构件框";
             }
+          } else if (_rightClickMenu.MenuList[i].value === "5") {
+            _rightClickMenu.MenuList[i].domItem.style.display =
+              _Engine.SelectedModels.indexesModels.length && !isShowAll ? "block" : "none";
+          } else if (_rightClickMenu.MenuList[i].value === "6") {
+            _rightClickMenu.MenuList[i].domItem.style.display = isShowAll ? "block" : "none";
           } else {
-            _rightClickMenu.MenuList[i].domItem.style.display = _Engine.SelectedModels.indexesModels.length ? "block" : "none";
+            _rightClickMenu.MenuList[i].domItem.style.display = _Engine.SelectedModels.indexesModels.length && isShowAll ? "block" : "none";
           }
         }
       }
@@ -328,20 +335,24 @@ export function CreateRightClickMenu(_Engine) {
         indexesList.length && _Engine.ResetSelectedModels_("visible", indexesList, false);
         //显示选中的
         _Engine.SelectedModels.indexesModels.length && _Engine.ResetSelectedModels_("visible", _Engine.SelectedModels.indexesModels, true);
+        isShowAll = false;
         break;
       case "4": //隐藏
         let mids = _Engine.SelectedModels.indexesModels;
         _Engine.SelectedModels.indexesModels.length && _Engine.ResetSelectedModels_("visible", _Engine.SelectedModels.indexesModels, false);
+        isShowAll = false;
         break;
       case "5": //显示全部
         indexesList = _Engine.GetAllIndexesModel();
         indexesList.length && _Engine.ResetSelectedModels_("visible", indexesList, true);
         window.WatcherAllModelShow && (window.WatcherAllModelShow.Type = "all");
+        isShowAll = true;
         break;
       case "6": //隐藏全部
         indexesList = _Engine.GetAllIndexesModel();
         indexesList.length && _Engine.ResetSelectedModels_("visible", indexesList, false);
         window.WatcherAllModelShow && (window.WatcherAllModelShow.Type = "none");
+        isShowAll = false;
         break;
       case "71": //同类构件
         if (_Engine.SelectedModels.indexesModels.length && _Engine.ModelClassify.length) {
@@ -363,25 +374,11 @@ export function CreateRightClickMenu(_Engine) {
           _Engine.ResetSelectedModels_("highlight", NoRepeatSameList, true);
         }
         break;
-      case "8": //隐藏
+      case "8": //构件框
         if (_Engine.Clipping) {
           let domItem = _rightClickMenu.MenuList.filter(item => item.value == val)[0].domItem;
           if (_Engine.Clipping.isActive) {
             if (_Engine.Clipping.AllClip) {
-              switch (_Engine.Clipping.ActiveType) {
-                case "MultiSide":
-                  _Engine.TopMenu.ClickItem("截面分析", "剖切");
-                  break;
-                case "X轴":
-                  _Engine.TopMenu.ClickItem("截面分析", "添加X平面");
-                  break;
-                case "Y轴":
-                  _Engine.TopMenu.ClickItem("截面分析", "添加Y平面");
-                  break;
-                case "Z轴":
-                  _Engine.TopMenu.ClickItem("截面分析", "添加Z平面");
-                  break;
-              }
               _Engine.Clipping.MultiSideOpen(null, false);
               domItem.innerText = "取消构件框";
             } else {
