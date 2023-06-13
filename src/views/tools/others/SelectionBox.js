@@ -176,7 +176,7 @@ export function selectBox(_Engine) {
             }
           }
         }
-        _Engine.ResetSelectedModels_("highlight", BeforeSelection, true);
+        _Engine.ResetModelStatus("highlight", BeforeSelection, true);
         selectionBox.endPoint = {
           x: 0,
           y: 0

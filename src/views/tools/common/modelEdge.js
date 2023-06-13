@@ -7,7 +7,7 @@ export function GetModelEdges(_Engine, relativePath) {
   let size = 500;
   let count = 0;
   let pathIndex = _Engine.ModelPaths.findIndex(item => item === relativePath);
-  let positionOff = pathIndex > -1 ? (_Engine.PathOff[pathIndex] ? _Engine.PathOff[pathIndex] : null) : null;
+  let positionOff = pathIndex > -1 ? (_Engine.ModelOffsets[pathIndex] ? _Engine.ModelOffsets[pathIndex] : null) : null;
   if (positionOff) {
     positionOff = positionOff.split(",");
     positionOff = positionOff.map(item => {
@@ -21,8 +21,8 @@ export function GetModelEdges(_Engine, relativePath) {
   let rootmodelsAll = _Engine.scene.children.filter(o => o.name == "rootModel" && o.relativePath === relativePath);
   let fileName = "ModelEdgeList";
   if (rootmodelsAll && rootmodelsAll.length) {
-    calculateEdgeList();
-    return;
+    // calculateEdgeList();
+    // return;
     GetModelJsonFile(relativePath, fileName, res => {
       if (res.exist) {
         //上次存储过

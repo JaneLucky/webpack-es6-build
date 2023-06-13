@@ -6,8 +6,8 @@ import { GetModelJsonFile } from "./index.js";
 export function ModelTree(_Engine, relativePath) {
   let fileName = "ModelTreeList_V1_2";
   let TreeKey = 0;
-  TreeRename(relativePath);
-  return;
+  // TreeRename(relativePath);
+  // return;
   GetModelJsonFile(relativePath, fileName, res => {
     if (res.exist) {
       //上次存储过

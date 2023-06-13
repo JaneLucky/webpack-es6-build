@@ -1,4 +1,4 @@
-import { GetTwoCharCenterStr } from "@/utils/regex.js";
+import { GetTwoCharCenterStr, GetRgbaColorNum } from "@/utils/regex.js";
 
 // 模型显隐/高亮等设置-模型加载返回的构建列表
 export function HandleModelSelect(_Engine, list, keyList) {
@@ -456,11 +456,19 @@ export function HandleHighlightModelSelect_(_Engine, list, highlight, color) {
 }
 export function HandleHighlightModelSelect_slice(_Engine, list, highlight, color) {
   // let color = new THREE.Color(0.375, 0.63, 1)
-  let meshColor = color ? color : new THREE.Color(0.375, 0.63, 1);
+  let meshColor = new THREE.Color(0.375, 0.63, 1);
+  let opacity = 0.6;
+  if (highlight && color) {
+    let colorList = GetRgbaColorNum(color);
+    if (colorList && colorList.length === 4) {
+      meshColor = new THREE.Color(colorList[0] / 255, colorList[1] / 255, colorList[2] / 255);
+      opacity = colorList[3];
+    }
+  }
   const meshMaterial = new THREE.MeshBasicMaterial({
     color: meshColor,
     transparent: true,
-    opacity: color ? 1 : 0.6,
+    opacity: opacity,
     depthTest: false
   });
   const LineMaterial = new THREE.LineBasicMaterial({
@@ -635,7 +643,7 @@ export function CreateHighLightMesh(geometry, matrix, meshMaterial, LineMaterial
 
 export function GetSelectModelsWithModelKey(_Engine) {
   let ModelKeyList = [];
-  for (const selectModel of _Engine.SelectedModels.indexesModels) {
+  for (const selectModel of _Engine.SelectedModelIndexs) {
     let model = _Engine.scene.children[selectModel[0]].ElementInfos[selectModel[1]];
     let indexPath = ModelKeyList.findIndex(item => item.modelId === model.relativePath);
     let modelName = GetTwoCharCenterStr(model.name).toString().replace(" ", "");

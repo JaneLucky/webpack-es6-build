@@ -73,35 +73,39 @@ import { GetPathEdgeList } from "./common/index.js";
 
 import { OriginalHandle } from "@/views/tools/common/originalHandle.js";
 import { GetModelElevation } from "@/views/tools/common/modelElevation.js";
-// BIM引擎封装
-export function BIMEngine(parentDomId, options, GLTFLoader) {
+
+/**
+ * 创建BIM引擎对象
+ * @param {String} domId 承载引擎的dom的Id名称
+ * @param {Object} options 鉴权参数对象
+ * @param {Object} GLTFLoader glbf的loader对象
+ * @returns 返回引擎的对象实例
+ */
+export function BIMEngine(domId, options, GLTFLoader) {
   var _bimEngine = new Object();
   _bimEngine.RenderSAO = new RenderSAO(_bimEngine);
   _bimEngine.RenderPost = new RenderPost(_bimEngine);
   _bimEngine.DisPlayModel = new disPlayModel(_bimEngine);
   _bimEngine.ModelSelection = new ModelSelection(_bimEngine);
-  _bimEngine.MinMap = new MinMap(_bimEngine);
+  _bimEngine.MinMap = new MinMap(_bimEngine); //场景小地图
   _bimEngine.D3Measure = new D3Measure(_bimEngine);
   _bimEngine.ControlButtons = new ControlButtons(); //按钮管理
   _bimEngine.scene = null;
-  _bimEngine.GLTFLoader = GLTFLoader;
-  _bimEngine.StopClick = false; //是否禁用单击
+  _bimEngine.GLTFLoader = GLTFLoader; // gltf的加载loader
+  _bimEngine.StopClick = false; //场景模型是否禁用单击
   _bimEngine.RightClickActive = true; //是否显示鼠标右键列表
-  _bimEngine.ModelPaths = []; //所有模型加载的路径
-  _bimEngine.AllEdgeList = []; //所有边线数据
-  _bimEngine.treeData = []; //模型树数据
+  _bimEngine.ModelPaths = []; //场景中的模型加载的路径列表
+  _bimEngine.ModelOffsets = []; //场景中的模型加载的路径的相应模型的偏移量列表
+  _bimEngine.AllEdgeList = []; //场景所有模型边线列表
+  _bimEngine.treeData = []; //场景所有模型的模型树数据
   _bimEngine.treeMapper = [];
   _bimEngine.doneModels = [];
-  _bimEngine.ModelClassify = []; //模型类型和层级列表
+  _bimEngine.ModelClassify = []; //场景所有模型的模型类型和层级列表
   _bimEngine.IsMainScene = true; //是不是主视图-用于版本对比
   _bimEngine.move = true;
   _bimEngine.EdgeIgnoreSize = 1000; // 忽略计算边线的geometry.attributes.position的大小
 
-  _bimEngine.SelectedModels = {
-    indexesModels: [], // 模型索引
-    loadedModels: [], //通过加载方式获得模型构建
-    requiredModels: [] //通过接口查询返回的模型构建
-  };
+  _bimEngine.SelectedModelIndexs = []; // 选中模型的索引列表
   _bimEngine.LoadedWatcher = {
     DoneNum: 0, //成功加载完成的模型套数
     TreeKey: 0, //用于模型数key值的唯一性
@@ -115,7 +119,7 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
   _bimEngine.handleLoadDoneFunOnce = false; //模型加载完成需要执行的函数-只能执行一次，是否已经执行
   _bimEngine.FPS = 60; // 设置渲染频率为1FBS，也就是每秒调用渲染器render方法大约1次
   _bimEngine.DeviceType = getDeviceOS(); //显示的设备类型
-  _bimEngine.SetBuild = false; //是否用于打包
+  _bimEngine.SetBuild = true; //是否用于打包
   _bimEngine.SaveJsonSize = 20000000; // 存储JSON文件的字符串长度限制
   _bimEngine.OriginalData = {
     cameraPosition: null,
@@ -131,7 +135,7 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
   createSceneDom();
 
   function createSceneDom() {
-    rootDom = document.getElementById(parentDomId);
+    rootDom = document.getElementById(domId);
     sceneDom = document.createElement("div");
     sceneDom.className = "threejs-sence-container";
     rootDom.appendChild(sceneDom);
@@ -146,7 +150,7 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
   }
 
   //初始化
-  _bimEngine.init = function () {
+  _bimEngine.Init = function () {
     _bimEngine.scene = InitScene();
     let scene = _bimEngine.scene;
     var camera = InitPerCamera(scene);
@@ -324,19 +328,23 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
     _bimEngine.MultiView.updaterender();
   };
 
-  //设置加载路径和偏移
-  _bimEngine.SetLoadPaths = function (list, off) {
+  /**
+   * 设置引擎的模型的加载路径和对应偏移量
+   * @param {Array} pathList 字符串数组 如:["glbs/0","glbs/1"...]
+   * @param {Array} offsetList 字符串数组 如:["10,0,100","10,20,30"...], "10,0,100"，表X轴偏移量10，Y轴偏移量0，Z轴偏移量100
+   */
+  _bimEngine.SetLoadPaths = function (pathList, offsetList) {
     _bimEngine.ModelPaths = [];
-    _bimEngine.PathOff = [];
-    off = off ? off : [];
-    for (let i = 0; i < list.length; i++) {
-      let index = _bimEngine.ModelPaths.findIndex(x => x === list[i]);
+    _bimEngine.ModelOffsets = [];
+    offsetList = offsetList ? offsetList : [];
+    for (let i = 0; i < pathList.length; i++) {
+      let index = _bimEngine.ModelPaths.findIndex(x => x === pathList[i]);
       if (index === -1) {
-        _bimEngine.ModelPaths.push(list[i]);
-        _bimEngine.PathOff.push(off[i] ? off[i] : null);
+        _bimEngine.ModelPaths.push(pathList[i]);
+        _bimEngine.ModelOffsets.push(offsetList[i] ? offsetList[i] : null);
         _bimEngine.ElevationList.push({
-          value: list[i],
-          path: list[i],
+          value: pathList[i],
+          path: pathList[i],
           label: "",
           children: [],
           load: false
@@ -344,15 +352,42 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
       }
     }
     console.log(_bimEngine.ModelPaths);
-    console.log(_bimEngine.PathOff);
+    console.log(_bimEngine.ModelOffsets);
     console.log(new Date().getMinutes() + ":" + new Date().getSeconds(), "开始------------");
+  };
+
+  // 模型按序加载
+  _bimEngine.StartLoad = function () {
+    //加载模型
+    let LoadInOrder = async () => {
+      let LoadItem = async i => {
+        return new Promise((resolve, reject) => {
+          _bimEngine.Start(
+            "file",
+            _bimEngine.ModelPaths[i],
+            "glbjson",
+            {
+              off: _bimEngine.ModelOffsets[i]
+            },
+            () => {
+              resolve();
+            }
+          );
+        });
+      };
+      //for循环调接口
+      for (let i = 0; i < _bimEngine.ModelPaths.length; i++) {
+        await LoadItem(i);
+      }
+    };
+    LoadInOrder();
   };
 
   //加载模型
   //url:模型加载路径
   //type:模型加载类型
   //option:模型加载的一些预设
-  _bimEngine.start = function (rootPath, relativePath, type, option, callback) {
+  _bimEngine.Start = function (rootPath, relativePath, type, option, callback) {
     let url = rootPath + "/" + relativePath;
     let scene = _bimEngine.scene;
     if (type == "glb") {
@@ -580,7 +615,11 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
       });
     }
   };
-  //获取当前所有的模型
+
+  /**
+   * 获取当前所有的模型列表
+   * @returns 模型列表
+   */
   _bimEngine.GetAllVisibilityModel = function () {
     for (let i = 0; i < _bimEngine.scene.children.length; i++) {
       _bimEngine.scene.children[i].index = i;
@@ -589,6 +628,10 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
     return rootmodels;
   };
 
+  /**
+   * 获得当前引擎场景中所有的模型下标列表
+   * @returns 下标列表
+   */
   _bimEngine.GetAllIndexesModel = function () {
     let indexesList = [];
 
@@ -602,81 +645,25 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
     return indexesList;
   };
 
-  //重置选中模型构建
   /**
-   *
-   * @param {*} key 操作类型：visible表示操作显隐，highlight表示操作亮显
-   * @param {*} list 需要操作的模型列表
-   * @param {*} val 是否显隐或者高亮
+   * 重置模型显影或高亮
+   * @param {String} key 操作类型：visible表示操作显隐，highlight表示操作亮显
+   * @param {Array} list 被操作的模型下标列表，如：[[10,20],[10,50]...]
+   * @param {Boolean} val 是否显隐或者高亮
+   * @param {String} color 模型高亮的rgba, 如rgba(255,234,10,0.5)
    */
-  _bimEngine.ResetSelectedModels_ = function (key, list, val, color) {
+  _bimEngine.ResetModelStatus = function (key, list, val, color) {
     switch (key) {
       case "visible":
         HandleRequestModelSelect_(_bimEngine, list, val);
         break;
       case "highlight":
-        _bimEngine.SelectedModels.indexesModels = list;
+        _bimEngine.SelectedModelIndexs = list;
         window.WatcherSelectModel && (window.WatcherSelectModel.Num = list.length);
         HandleHighlightModelSelect_(_bimEngine, list, val, color);
         break;
     }
-    // console.log(_bimEngine.SelectedModels)
     console.log(_bimEngine.CurrentSelect);
-  };
-
-  //重置选中模型构建
-  _bimEngine.ResetSelectedModels = function (key, list) {
-    //恢复接口查询返回的模型构建-选中样式
-    _bimEngine.SelectedModels.requiredModels.length &&
-      HandleRequestModelSelect(_bimEngine.SelectedModels.requiredModels, [
-        {
-          key: "material"
-        }
-      ]);
-    _bimEngine.SelectedModels.requiredModels = [];
-    //恢复加载方式获得模型构建-选中样式
-    _bimEngine.SelectedModels.loadedModels.length &&
-      HandleModelSelect(_bimEngine, _bimEngine.SelectedModels.loadedModels, [
-        {
-          key: "material"
-        }
-      ]);
-    _bimEngine.SelectedModels.loadedModels = [];
-    switch (key) {
-      case "loaded":
-        //设置加载方式获得模型构建-选中样式
-        if (list.length) {
-          let material = new THREE.MeshStandardMaterial({
-            color: new THREE.Color(0.375, 0.63, 1),
-            side: THREE.DoubleSide
-          });
-          HandleModelSelect(_bimEngine, list, [
-            {
-              key: "material",
-              val: material
-            }
-          ]);
-        }
-        _bimEngine.SelectedModels.loadedModels = list;
-        break;
-      case "required":
-        //设置接口查询返回的模型构建-选中样式
-        if (list.length) {
-          let material = new THREE.MeshStandardMaterial({
-            color: new THREE.Color(0.375, 0.63, 1),
-            side: THREE.DoubleSide
-          });
-          HandleRequestModelSelect(_bimEngine, list, [
-            {
-              key: "material",
-              val: material
-            }
-          ]);
-        }
-        _bimEngine.SelectedModels.requiredModels = list;
-        break;
-    }
-    console.log(_bimEngine.SelectedModels);
   };
 
   //加载工程量信息
@@ -764,7 +751,16 @@ export function BIMEngine(parentDomId, options, GLTFLoader) {
       THREE.Cache.clear();
     }
   };
-  //查询文件信息
+
+  /**
+   *查询当前引擎场景的文件信息
+   * @returns {
+   *   triangles: 0, //三角面数量
+   *   vertex: 0, //顶点数量
+   *   pathCount: 0, //文件数量
+   *   modelCount: 0 //构件数量
+   * }
+   */
   _bimEngine.AnalysisModelInfo = function () {
     let info = {
       triangles: 0,

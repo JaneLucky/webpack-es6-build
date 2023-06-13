@@ -225,7 +225,9 @@ export function CreateTopMenu(_Engine) {
   ];
   let DeviceOS = getDeviceOS();
   _topMenu.MenuList = AllMenuList.filter(item => {
-    if (item.value === "7" || item.value === "1" || item.value === "2" || item.value === "3") {
+    if (item.value === "7") {
+      return item.showType.includes(DeviceOS) && _Engine.IsMainScene && !_Engine.SetBuild;
+    } else if (item.value === "1" || item.value === "2" || item.value === "3") {
       return item.showType.includes(DeviceOS) && _Engine.IsMainScene;
     } else {
       return item.showType.includes(DeviceOS);

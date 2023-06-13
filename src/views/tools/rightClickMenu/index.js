@@ -136,7 +136,7 @@ export function CreateRightClickMenu(_Engine) {
         if (!_rightClickMenu.MenuList[i].alwaysShow) {
           if (_rightClickMenu.MenuList[i].value === "8") {
             _rightClickMenu.MenuList[i].domItem.style.display =
-              (_Engine.SelectedModels.indexesModels.length && isShowAll) ||
+              (_Engine.SelectedModelIndexs.length && isShowAll) ||
               (_Engine.Clipping && _Engine.Clipping.isActive && !_Engine.Clipping.AllClip)
                 ? "block"
                 : "none";
@@ -145,12 +145,11 @@ export function CreateRightClickMenu(_Engine) {
               _rightClickMenu.MenuList[i].domItem.innerText = "取消构件框";
             }
           } else if (_rightClickMenu.MenuList[i].value === "5") {
-            _rightClickMenu.MenuList[i].domItem.style.display =
-              _Engine.SelectedModels.indexesModels.length && !isShowAll ? "block" : "none";
+            _rightClickMenu.MenuList[i].domItem.style.display = _Engine.SelectedModelIndexs.length && !isShowAll ? "block" : "none";
           } else if (_rightClickMenu.MenuList[i].value === "6") {
             _rightClickMenu.MenuList[i].domItem.style.display = isShowAll ? "block" : "none";
           } else {
-            _rightClickMenu.MenuList[i].domItem.style.display = _Engine.SelectedModels.indexesModels.length && isShowAll ? "block" : "none";
+            _rightClickMenu.MenuList[i].domItem.style.display = _Engine.SelectedModelIndexs.length && isShowAll ? "block" : "none";
           }
         }
       }
@@ -332,46 +331,45 @@ export function CreateRightClickMenu(_Engine) {
       case "3": //隔离
         //隐藏所有
         indexesList = _Engine.GetAllIndexesModel();
-        indexesList.length && _Engine.ResetSelectedModels_("visible", indexesList, false);
+        indexesList.length && _Engine.ResetModelStatus("visible", indexesList, false);
         //显示选中的
-        _Engine.SelectedModels.indexesModels.length && _Engine.ResetSelectedModels_("visible", _Engine.SelectedModels.indexesModels, true);
+        _Engine.SelectedModelIndexs.length && _Engine.ResetModelStatus("visible", _Engine.SelectedModelIndexs, true);
         isShowAll = false;
         break;
       case "4": //隐藏
-        let mids = _Engine.SelectedModels.indexesModels;
-        _Engine.SelectedModels.indexesModels.length && _Engine.ResetSelectedModels_("visible", _Engine.SelectedModels.indexesModels, false);
+        _Engine.SelectedModelIndexs.length && _Engine.ResetModelStatus("visible", _Engine.SelectedModelIndexs, false);
         isShowAll = false;
         break;
       case "5": //显示全部
         indexesList = _Engine.GetAllIndexesModel();
-        indexesList.length && _Engine.ResetSelectedModels_("visible", indexesList, true);
+        indexesList.length && _Engine.ResetModelStatus("visible", indexesList, true);
         window.WatcherAllModelShow && (window.WatcherAllModelShow.Type = "all");
         isShowAll = true;
         break;
       case "6": //隐藏全部
         indexesList = _Engine.GetAllIndexesModel();
-        indexesList.length && _Engine.ResetSelectedModels_("visible", indexesList, false);
+        indexesList.length && _Engine.ResetModelStatus("visible", indexesList, false);
         window.WatcherAllModelShow && (window.WatcherAllModelShow.Type = "none");
         isShowAll = false;
         break;
       case "71": //同类构件
-        if (_Engine.SelectedModels.indexesModels.length && _Engine.ModelClassify.length) {
+        if (_Engine.SelectedModelIndexs.length && _Engine.ModelClassify.length) {
           let SameTypeList = getSameTypeOrLevelModels("SameType");
-          _Engine.ResetSelectedModels_("highlight", SameTypeList, true);
+          _Engine.ResetModelStatus("highlight", SameTypeList, true);
         }
         break;
       case "72": //同层构件
-        if (_Engine.SelectedModels.indexesModels.length && _Engine.ModelClassify.length) {
+        if (_Engine.SelectedModelIndexs.length && _Engine.ModelClassify.length) {
           let SameLevelList = getSameTypeOrLevelModels("SameLevel");
-          _Engine.ResetSelectedModels_("highlight", SameLevelList, true);
+          _Engine.ResetModelStatus("highlight", SameLevelList, true);
         }
         break;
       case "73": //同类同层构件
-        if (_Engine.SelectedModels.indexesModels.length && _Engine.ModelClassify.length) {
+        if (_Engine.SelectedModelIndexs.length && _Engine.ModelClassify.length) {
           let SameTypeList = getSameTypeOrLevelModels("SameType");
           let SameLevelList = getSameTypeOrLevelModels("SameLevel");
           let NoRepeatSameList = removedup(SameTypeList, SameLevelList);
-          _Engine.ResetSelectedModels_("highlight", NoRepeatSameList, true);
+          _Engine.ResetModelStatus("highlight", NoRepeatSameList, true);
         }
         break;
       case "8": //构件框
@@ -400,7 +398,7 @@ export function CreateRightClickMenu(_Engine) {
   function getSameTypeOrLevelModels(flag) {
     let TypeOrLevelList = [];
     let groupFlag = [];
-    for (let model of _Engine.SelectedModels.indexesModels) {
+    for (let model of _Engine.SelectedModelIndexs) {
       let mesh = _Engine.scene.children[model[0]];
       for (let group of _Engine.ModelClassify) {
         if (mesh.relativePath === group.Path) {

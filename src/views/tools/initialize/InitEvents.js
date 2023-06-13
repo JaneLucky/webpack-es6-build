@@ -79,7 +79,7 @@ export function setEventsMouse(_Engine, callBack) {
             }
             let intersects = rayCaster.intersectObjects(allmodels, true);
             console.log(intersects);
-            let BeforeSelection = JSON.parse(JSON.stringify(_Engine.SelectedModels.indexesModels)); //选中的构建列表
+            let BeforeSelection = JSON.parse(JSON.stringify(_Engine.SelectedModelIndexs)); //选中的构建列表
             let BEFORE_SELECT = _Engine.CurrentSelect
               ? _Engine.CurrentSelect
               : {
@@ -331,7 +331,7 @@ export function setEventsMouse(_Engine, callBack) {
                     max: null,
                     materialName: null
                   };
-                  _Engine.ResetSelectedModels_("highlight", _Engine.SelectedModels.indexesModels, false);
+                  _Engine.ResetModelStatus("highlight", _Engine.SelectedModelIndexs, false);
                 }
                 break;
             }
@@ -342,7 +342,7 @@ export function setEventsMouse(_Engine, callBack) {
             }
             _Engine.CurrentSelect = BEFORE_SELECT;
             callBack(BeforeSelection);
-            _Engine.ResetSelectedModels_("highlight", BeforeSelection, true);
+            _Engine.ResetModelStatus("highlight", BeforeSelection, true);
             sessionStorage.setItem("SelectedSingleModelInfo", JSON.stringify(BEFORE_SELECT));
           }
         }

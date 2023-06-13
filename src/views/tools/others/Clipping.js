@@ -197,7 +197,7 @@ export function ClippingSingleSide(_Engine, scene, status, type, Oconstant) {
 //模型多面剖切
 export function ClippingMultiSide(_Engine, scene, status, Oconstant, allClip = true) {
   let planes = []; //所有剖切plane集合
-  let BoundingBox = allClip ? _Engine.ViewCube.getBoundingBox(_Engine) : GetBoundingBox(_Engine, _Engine.SelectedModels.indexesModels); //场景中的模型包围矩形框
+  let BoundingBox = allClip ? _Engine.ViewCube.getBoundingBox(_Engine) : GetBoundingBox(_Engine, _Engine.SelectedModelIndexs); //场景中的模型包围矩形框
   let MultiSide = getMultiSideSizeAndPosition(Oconstant); //6个剖切面的参数
   let center = BoundingBox.center; //中心点-剖切过程中变化
   let size = {

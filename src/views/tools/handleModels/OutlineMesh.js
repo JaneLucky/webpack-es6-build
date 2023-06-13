@@ -23,7 +23,7 @@ export function OutlineMesh(_Engine, callback) {
       _Engine.StopClick = true;
       //清除之前选中的构建
       _Engine.CurrentSelect = null;
-      _Engine.ResetSelectedModels_("highlight", [], false);
+      _Engine.ResetModelStatus("highlight", [], false);
       _container.addEventListener("pointerdown", onMouseDown);
       _container.addEventListener("pointerup", onMouseUp);
       render();
